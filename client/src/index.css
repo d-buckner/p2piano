@@ -8,6 +8,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #424242;
+  /* temp, this should be applied conditionally on sidescroll in piano-visualizer */
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
 }
 
 code {

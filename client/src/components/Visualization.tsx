@@ -1,36 +1,32 @@
 import React, { PureComponent } from 'react';
-import MidiVisualRenderer from './MidiVisualRenderer';
+import PianoVisualizer from 'piano-visualizer';
 import { Box } from '@chakra-ui/react';
-import Toolbar from '../Toolbar';
+import Toolbar from './Toolbar';
+import * as NoteActions from '../actions/NoteActions';
 
-import type { MidiRange, Note } from '../../constants';
+import type { Note } from '../constants';
 
 type Props = {
     notes: Note[],
-    midiRange: MidiRange,
 };
 
-export default class MidiVisual extends PureComponent<Props> {
+export default class Visualization extends PureComponent<Props> {
     private containerRef = React.createRef<HTMLDivElement>();
-    private renderer?: MidiVisualRenderer;
+    private renderer?: PianoVisualizer;
     private activeNotes = new Map<number, Note>();
 
     componentDidMount() {
         const container = this.containerRef.current;
-        const { midiRange } = this.props;
         if (container && !this.renderer) {
-            this.renderer = new MidiVisualRenderer(container, midiRange);
+            this.renderer = new PianoVisualizer({
+                container,
+                onKeyDown: NoteActions.keyDown,
+                onKeyUp: NoteActions.keyUp,
+            });
         }
     }
 
-    componentDidUpdate(prevProps: Props) {
-        const { midiRange } = this.props;
-        const { midiRange: prevMidiRange } = prevProps;
-
-        if (prevMidiRange[0] !== midiRange[0] || prevMidiRange[1] !== midiRange[1]) {
-            this.renderer?.setMidiRange(midiRange);
-        }
-
+    componentDidUpdate() {
         const currentNotes = this.props.notes.reduce((arr, note) => arr.set(note.midi, note),
             new Map<number, Note>()
         );
@@ -39,7 +35,7 @@ export default class MidiVisual extends PureComponent<Props> {
             const currentEntry = currentNotes.get(note.midi);
             if (!currentEntry || currentEntry.peerId !== note.peerId) {
                 this.activeNotes.delete(note.midi);
-                this.renderer?.noteOff(note.midi);
+                this.renderer?.endNote(note.midi);
             }
         });
 
@@ -47,7 +43,7 @@ export default class MidiVisual extends PureComponent<Props> {
             const prevEntry = this.activeNotes.get(note.midi);
             if (!prevEntry) {
                 this.activeNotes.set(note.midi, note);
-                this.renderer?.noteOn(note.midi, note.color || 'blue');
+                this.renderer?.startNote(note.midi, note.color || 'blue');
             }
         });
     }
