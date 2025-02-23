@@ -7,9 +7,9 @@ export default function Footer() {
                 made by {' '}
                 <Link
                     textDecoration='underline'
-                    href='https://github.com/d-rowe'
+                    href='https://github.com/d-buckner'
                 >
-                    d-rowe
+                    d-buckner
                 </Link>
             </span>
         </Flex>
