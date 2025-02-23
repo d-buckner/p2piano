@@ -8,6 +8,7 @@ type Props = {
 }
 
 const GeneralPage = ({children}: Props) => (
+    // @ts-ignore type union to complex
     <Grid
         templateAreas={`
             "header"

@@ -6,14 +6,7 @@ import {
 } from '@chakra-ui/react';
 import { connect } from 'react-redux';
 import { getMyUser } from '../lib/WorkspaceHelper';
-import Icon from './Icon';
-import {
-    midiRangeZoomIn,
-    midiRangeZoomOut,
-    midiRangeShiftLeft,
-    midiRangeShiftRight,
-    updateInstrument,
-} from '../actions/WorkspaceActions';
+import { updateInstrument } from '../actions/WorkspaceActions';
 import { InstrumentType } from '../instruments/Instrument';
 
 import type { User } from '../lib/workspaceTypes';
@@ -40,41 +33,24 @@ function Toolbar(props: Props) {
             right='0'
             h='14px'
         >
-            <ButtonGroup
-                spacing='0'
+            <Select
                 size='sm'
+                color='white'
+                value={instrument}
+                defaultValue={InstrumentType.PIANO}
+                onChange={e => {
+                    updateInstrument(e.target.value as InstrumentType)
+                }}
             >
-                <Select
-                    size='sm'
-                    color='white'
-                    value={instrument}
-                    defaultValue={InstrumentType.PIANO}
-                    onChange={e => {
-                        updateInstrument(e.target.value as InstrumentType)
-                    }}
-                >
-                    {Object.entries(INSTRUMENTS).map(([type, title], i) => (
-                        <option
-                            value={type}
-                            key={i}
-                        >
-                            {title}
-                        </option>
-                    ))}
-                </Select>
-                <Button p={0} onClick={midiRangeShiftLeft}>
-                    <Icon name='arrow-left' />
-                </Button>
-                <Button p={0} onClick={midiRangeShiftRight}>
-                    <Icon name='arrow-right' />
-                </Button>
-                <Button p={0} onClick={midiRangeZoomOut}>
-                    <Icon name='zoom-out' />
-                </Button>
-                <Button p={0} onClick={midiRangeZoomIn}>
-                    <Icon name='zoom-in' />
-                </Button>
-            </ButtonGroup>
+                {Object.entries(INSTRUMENTS).map(([type, title], i) => (
+                    <option
+                        value={type}
+                        key={i}
+                    >
+                        {title}
+                    </option>
+                ))}
+            </Select>
         </Box >
     );
 }
