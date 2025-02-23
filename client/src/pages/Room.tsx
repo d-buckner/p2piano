@@ -1,6 +1,8 @@
 import React from 'react';
 import {
     Flex,
+    Grid,
+    GridItem,
     Heading,
     Spinner,
 } from '@chakra-ui/react'
@@ -13,6 +15,7 @@ import { selectNotes } from '../slices/notesSlice';
 import Visualization from '../components/Visualization';
 
 import type { NotesByMidi } from '../constants';
+import RoomNav from '../components/RoomNav';
 
 type Props = {
     workspace: Workspace,
@@ -53,7 +56,23 @@ const Room = React.memo(({ workspace, notesByMidi }: Props) => {
 
     const notes = getNotes(notesByMidi);
 
-    return <Visualization notes={notes} />;
+    return (
+        <Grid
+            templateAreas={`
+                "header"
+                "visual"
+            `}
+            gridTemplateRows='32px minmax(0, 1fr)'
+            height='100%'
+        >
+            <GridItem area='header'>
+                <RoomNav workspace={workspace} />
+            </GridItem>
+            <GridItem area='visual'>
+                <Visualization notes={notes} />
+            </GridItem>
+        </Grid>
+    );
 });
 
 function mapStateToProps(state: RootState) {
