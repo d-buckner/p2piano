@@ -5,6 +5,8 @@ services:
     depends_on:
       service:
         condition: service_started
+    environment:
+      - SERVICE_ENDPOINT=service:3001
     volumes:
       - caddy_data:/data
       - caddy_config:/config
@@ -15,6 +17,7 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
+      - MONGO_URI=mongodb://root:password@database:27017
     depends_on:
       database:
         condition: service_started

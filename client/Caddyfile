@@ -7,8 +7,8 @@ http://:8345 {
 		path_regexp ^/\b[a-z]{5}\b$
 	}
 
-	reverse_proxy /api/* service:3001
-	reverse_proxy /socket.io/* service:3001
+	reverse_proxy /api/* {$SERVICE_ENDPOINT}
+	reverse_proxy /socket.io/* {$SERVICE_ENDPOINT}
 
 	handle @room {
 		rewrite * /
