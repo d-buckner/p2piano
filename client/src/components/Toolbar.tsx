@@ -1,7 +1,5 @@
 import {
     Box,
-    Button,
-    ButtonGroup,
     Select,
 } from '@chakra-ui/react';
 import { connect } from 'react-redux';

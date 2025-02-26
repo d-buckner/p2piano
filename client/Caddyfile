@@ -13,4 +13,8 @@ http://:8345 {
 	handle @room {
 		rewrite * /
 	}
+
+	handle /donate {
+		rewrite * /
+	}
 }

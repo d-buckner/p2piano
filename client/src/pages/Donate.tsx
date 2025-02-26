@@ -18,12 +18,9 @@ const Donate = () => (
                 donate
             </Heading>
             <Text fontSize='l'>
-                this project is provided free of charge without advertisements or tracking.
-                if you like this project, please consider making music more accessible by donating
-                to <Link textDecoration='underline' href='https://www.seattlejazzed.org/donate'>Seattle JazzED</Link>
-                or a music education non-profit working in your community. you can also donate your time by contributing
-                code/issues to <Link textDecoration='underline' href='https://github.com/d-buckner/p2piano'>the github repository</Link>
-                if there's things you'd like to change.
+                this project is provided free of charge without advertisements or tracking. if you like this project, please consider making music more accessible by donating to <Link textDecoration='underline' href='https://www.seattlejazzed.org/donate'>Seattle JazzED</Link>
+                {' '}or a music education non-profit working in your community. you can also donate your time by contributing code/issues to <Link textDecoration='underline' href='https://github.com/d-buckner/p2piano'>the github repository</Link>
+                {' '}if there's things you'd like to change.
             </Text>
             </Box>
         </Flex>

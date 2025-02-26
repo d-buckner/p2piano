@@ -20,6 +20,7 @@ export default class Visualization extends PureComponent<Props> {
         if (container && !this.renderer) {
             this.renderer = new PianoVisualizer({
                 container,
+                backgroundColor: 'transparent',
                 onKeyDown: NoteActions.keyDown,
                 onKeyUp: NoteActions.keyUp,
             });
