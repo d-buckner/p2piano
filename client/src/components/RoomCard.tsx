@@ -51,23 +51,21 @@ export default function RoomCard() {
             <Stack>
                 <Heading
                     pt={6}
-                    fontSize='6xl'
+                    fontSize='8xl'
                     textAlign='center'
-                // fontFamily='Mortina Two'
                 >
                     P2Piano
                 </Heading>
-                <Text
-                    fontFamily='Mortina Two'
+                <Heading
                     fontSize='l'
                     textAlign='center'
                 >
                     A Collaboration Space for the Musically Inclined
-                </Text>
+                </Heading>
                 <HStack p={6} alignSelf='center'>
                     <Button
                         bg='background'
-                        h="46px"
+                        h="47px"
                         _hover={{bg:"gray"}}
                         border="1px solid white"
                         rounded='md'

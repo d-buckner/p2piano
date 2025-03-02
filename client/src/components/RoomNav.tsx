@@ -74,7 +74,7 @@ function RoomNav({workspace}: Props) {
         ))}
       </Flex>
       <Link onClick={shareRoom} whiteSpace='nowrap'>
-        room: <b>{workspace.roomId}</b>
+        space: <b>{workspace.roomId}</b>
       </Link>
     </Flex>
   );
