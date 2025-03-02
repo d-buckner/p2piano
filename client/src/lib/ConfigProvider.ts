@@ -1,5 +1,5 @@
 export default class ConfigProvider {
-  private constructor() {}
+  private constructor() { }
 
   static getServiceUrl(): string {
     return process.env.API_URL!;

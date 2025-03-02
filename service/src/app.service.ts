@@ -1,4 +1,4 @@
-import {Injectable} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import SessionProvider from './entities/Session';
 
 import Room from './entities/Room';

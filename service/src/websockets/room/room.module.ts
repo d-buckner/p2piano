@@ -4,4 +4,4 @@ import { Room } from './room';
 @Module({
   providers: [Room],
 })
-export class RoomModule {}
+export class RoomModule { }

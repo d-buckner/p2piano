@@ -4,4 +4,4 @@ import { Signal } from './signal';
 @Module({
   providers: [Signal],
 })
-export class SignalModule {}
+export class SignalModule { }

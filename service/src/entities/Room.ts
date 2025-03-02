@@ -1,15 +1,15 @@
-import {customAlphabet} from 'nanoid';
-import {getNextColor} from '../utils/ColorUtils';
+import { customAlphabet } from 'nanoid';
+import { getNextColor } from '../utils/ColorUtils';
 import Database from '../clients/Database';
-import {RoomNotFoundError} from '../errors';
+import { RoomNotFoundError } from '../errors';
 
-import type {Room as IRoom, User} from '../utils/workspaceTypes';
+import type { Room as IRoom, User } from '../utils/workspaceTypes';
 
 const generateRoomId = customAlphabet('abcdefghjkmnpqrstuvwxyz', 5);
 const RoomCollection = Database.collection<IRoom>('room');
-RoomCollection.createIndex({roomId: 1});
+RoomCollection.createIndex({ roomId: 1 });
 // Room lasts for 1.5 hours
-RoomCollection.createIndex({createdAt: 1}, {expireAfterSeconds: 5400});
+RoomCollection.createIndex({ createdAt: 1 }, { expireAfterSeconds: 5400 });
 
 
 export default class Room {
@@ -30,7 +30,7 @@ export default class Room {
   }
 
   async get(): Promise<IRoom> {
-    const room = await RoomCollection.findOne({roomId: this.roomId});
+    const room = await RoomCollection.findOne({ roomId: this.roomId });
     if (!room) {
       throw new RoomNotFoundError(`Room ${this.roomId} does not exist`);
     }
@@ -40,7 +40,7 @@ export default class Room {
 
   async join(userId: string, displayName: string) {
     const room = await this.get();
-    const {users} = room;
+    const { users } = room;
 
     if (users[userId]) {
       return room;
@@ -56,7 +56,7 @@ export default class Room {
     };
 
     await RoomCollection.updateOne(
-      {roomId: this.roomId},
+      { roomId: this.roomId },
       {
         $set: {
           users,
@@ -71,7 +71,7 @@ export default class Room {
     const room = await this.get();
     room.users[user.userId] = user;
     await RoomCollection.updateOne(
-      {roomId: this.roomId},
+      { roomId: this.roomId },
       {
         $set: {
           users: room.users,
@@ -86,7 +86,7 @@ export default class Room {
     const room = await this.get();
     delete room.users[userId];
     await RoomCollection.updateOne(
-      {roomId: this.roomId},
+      { roomId: this.roomId },
       {
         $set: {
           users: room.users,

@@ -1,11 +1,11 @@
-import {ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway} from '@nestjs/websockets';
-import {Socket} from 'socket.io';
-import {NoteOffPayload, NoteOnPayload} from './payloads';
-import {UseGuards} from '@nestjs/common';
-import {Throttle} from '@nestjs/throttler';
-import {WsThrottlerGuard} from '../../guards/throttler.guard';
-import {NoteEvents} from './events';
-import {broadcastToSubset, defaultWebSocketGatewayOptions} from '../utils';
+import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
+import { Socket } from 'socket.io';
+import { NoteOffPayload, NoteOnPayload } from './payloads';
+import { UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
+import { WsThrottlerGuard } from '../../guards/throttler.guard';
+import { NoteEvents } from './events';
+import { broadcastToSubset, defaultWebSocketGatewayOptions } from '../utils';
 
 @WebSocketGateway(defaultWebSocketGatewayOptions)
 export class Notes {
@@ -23,6 +23,6 @@ export class Notes {
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(NoteEvents.KEY_UP)
     onKeyUp(@MessageBody() payload: NoteOffPayload, @ConnectedSocket() socket: Socket) {
-        broadcastToSubset(socket, payload.targetUserIds, NoteEvents.KEY_UP, {midi: payload.midi});
+        broadcastToSubset(socket, payload.targetUserIds, NoteEvents.KEY_UP, { midi: payload.midi });
     }
 }

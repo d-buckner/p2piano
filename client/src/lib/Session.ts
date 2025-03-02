@@ -1,7 +1,7 @@
 const SESSION_ID_KEY = 'sessionId';
 
 export default class Session {
-  private constructor() {}
+  private constructor() { }
 
   static getSessionId() {
     return sessionStorage.getItem(SESSION_ID_KEY);

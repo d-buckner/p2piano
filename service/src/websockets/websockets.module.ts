@@ -6,4 +6,4 @@ import { NotesModule } from './notes/notes.module';
 @Module({
   imports: [RoomModule, SignalModule, NotesModule],
 })
-export class WebsocketsModule {}
+export class WebsocketsModule { }

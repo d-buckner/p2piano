@@ -4,4 +4,4 @@ import { Notes } from './notes';
 @Module({
   providers: [Notes],
 })
-export class NotesModule {}
+export class NotesModule { }

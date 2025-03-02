@@ -1,3 +1,3 @@
 export default function getRoomId(): string {
-    return window.location.pathname.replace('/', '');
+  return window.location.pathname.replace('/', '');
 }
