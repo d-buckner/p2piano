@@ -32,8 +32,8 @@ export default class InstrumentRegistry {
 const instrumentConstructors = {
     [InstrumentType.PIANO]: Piano,
     [InstrumentType.SYNTH]: Synth,
-    [InstrumentType.ELECTRIC_GUITAR]: ElectricGuitar,
-    [InstrumentType.ACOUSTIC_GUITAR]: AcousticGuitar,
+    // [InstrumentType.ELECTRIC_GUITAR]: ElectricGuitar,
+    // [InstrumentType.ACOUSTIC_GUITAR]: AcousticGuitar,
     [InstrumentType.ELECTRIC_BASS]: ElectricBass,
 }
 

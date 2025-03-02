@@ -16,7 +16,7 @@ export default class Instrument {
 export enum InstrumentType {
     PIANO = 'PIANO',
     SYNTH = 'SYNTH',
-    ELECTRIC_GUITAR = 'ELECTRIC_GUITAR',
-    ACOUSTIC_GUITAR = 'ACOUSTIC_GUITAR',
+    // ELECTRIC_GUITAR = 'ELECTRIC_GUITAR',
+    // ACOUSTIC_GUITAR = 'ACOUSTIC_GUITAR',
     ELECTRIC_BASS = 'ELECTRIC_BASS',
 }

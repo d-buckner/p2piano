@@ -46,7 +46,7 @@ function RoomNav({workspace}: Props) {
       backgroundColor='#424242'
       color='white'
     >
-      <Link onClick={navigateHome}>p2piano</Link>
+      <Link onClick={navigateHome} fontFamily='Mortina Two'>p2piano</Link>
       <Flex>
         {getUsersArray().map((user, i) => (
           <div style={{display: 'flex', alignItems: 'center'}} key={i}>

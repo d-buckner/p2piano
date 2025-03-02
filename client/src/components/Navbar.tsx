@@ -9,14 +9,17 @@ export default function Navbar() {
             <Button
                 as='a'
                 height='32px'
+                _hover={{bg:"gray"}}
                 onClick={() => navigate('/')}
                 background='none'
+                fontFamily="Mortina Two"
             >
                 p2piano
             </Button>
             <Button
                 as='a'
                 height='32px'
+                _hover={{bg:"gray"}}
                 onClick={() => navigate('/donate')}
                 background='none'
             >

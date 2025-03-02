@@ -1,0 +1,26 @@
+@font-face {
+    font-family: 'Mortina Two';
+    src:
+        local('Mortina Two'),
+        url('../fonts/mortina-two.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Ysabeau';
+    src:
+        local('Ysabeau'),
+        url('../fonts/ysabeau.woff2') format('woff2');
+}
+
+body {
+    margin: 0;
+    overscroll-behavior-x: none;
+    overscroll-behavior-y: none;
+}
+
+html,
+body,
+#root {
+    height: 100%;
+    width: 100%;
+}

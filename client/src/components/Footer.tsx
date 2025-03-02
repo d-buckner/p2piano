@@ -4,7 +4,7 @@ export default function Footer() {
     return (
         <Flex justifyContent='center'>
             <span>
-                made by {' '}
+                open to the public 7 days a week. made by {' '}
                 <Link
                     textDecoration='underline'
                     href='https://github.com/d-buckner'

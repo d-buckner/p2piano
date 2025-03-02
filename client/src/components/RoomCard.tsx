@@ -8,11 +8,11 @@ import {
     Button,
     Spinner,
 } from '@chakra-ui/react';
-import {useNavigate} from "react-router-dom";
-import {createNewRoom, getRoom} from '../clients/RoomClient';
-import {useCallback, useState} from 'react';
+import { useNavigate } from "react-router-dom";
+import { createNewRoom, getRoom } from '../clients/RoomClient';
+import { useCallback, useState } from 'react';
 
-import type {ChangeEvent} from 'react';
+import type { ChangeEvent } from 'react';
 
 export default function RoomCard() {
     const [isRoomError, setRoomError] = useState(false);
@@ -53,20 +53,36 @@ export default function RoomCard() {
                     pt={6}
                     fontSize='6xl'
                     textAlign='center'
-                    fontFamily='"Young Serif", serif'
+                // fontFamily='Mortina Two'
                 >
-                    p2piano
+                    P2Piano
                 </Heading>
                 <Text
-                    fontFamily='"Young Serif", serif'
+                    fontFamily='Mortina Two'
                     fontSize='l'
                     textAlign='center'
                 >
-                    play piano with friends over a peer to peer network
+                    A Collaboration Space for the Musically Inclined
                 </Text>
                 <HStack p={6} alignSelf='center'>
+                    <Button
+                        bg='background'
+                        h="46px"
+                        _hover={{bg:"gray"}}
+                        border="1px solid white"
+                        rounded='md'
+                        onClick={createRoom}
+                        disabled={isRoomCreating}
+                    >
+                        {
+                            isRoomCreating
+                                ? <Spinner />
+                                : 'create a space'
+                        }
+                    </Button>
+                    <Text>or</Text>
                     <Input
-                        placeholder='join room code'
+                        placeholder='join a space'
                         size='lg'
                         maxLength={5}
                         width='10rem'
@@ -76,21 +92,6 @@ export default function RoomCard() {
                         errorBorderColor='red.300'
                         textTransform='lowercase'
                     />
-                    <Text>or</Text>
-                    <Button
-                        mt={4}
-                        bg='#151f21'
-                        color='white'
-                        rounded='md'
-                        onClick={createRoom}
-                        disabled={isRoomCreating}
-                    >
-                        {
-                            isRoomCreating
-                                ? <Spinner />
-                                : 'create new room'
-                        }
-                    </Button>
                 </HStack>
             </Stack>
         </Center>
