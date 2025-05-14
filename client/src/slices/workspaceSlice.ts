@@ -4,10 +4,10 @@ import type { RootState } from '../app/store';
 import type {
   Room,
 } from '../lib/workspaceTypes';
-import { MidiRange, Transports } from '../constants';
+import { MidiRange, Transport } from '../constants';
 
 type Connection = {
-  transport: Transports,
+  transport: Transport,
 };
 
 type Connections = {
@@ -63,7 +63,7 @@ export const workspaceSlice = createSlice({
         if (userId === state.connectionId) {
           return;
         }
-        connections[userId] = { transport: Transports.WEBSOCKETS };
+        connections[userId] = { transport: Transport.WEBSOCKETS };
       });
       state.connections = connections;
     },
@@ -74,7 +74,7 @@ export const workspaceSlice = createSlice({
     downgradeConnection: (state, action: PayloadAction<DowngradeConnectionPayload>) => {
       const { userId } = action.payload;
       if (state.connections[userId]) {
-        state.connections[userId].transport = Transports.WEBSOCKETS;
+        state.connections[userId].transport = Transport.WEBSOCKETS;
       }
     },
     removeConnection: (state, action: PayloadAction<RemoveConnectionPayload>) => {

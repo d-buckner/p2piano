@@ -1,6 +1,6 @@
-import {dispatch} from '../app/store';
-import {getWorkspace} from '../lib/WorkspaceHelper';
-import {addNote, removeNote} from '../slices/notesSlice';
+import { dispatch } from '../app/store';
+import { getWorkspace } from '../lib/WorkspaceHelper';
+import { addNote, removeNote } from '../slices/notesSlice';
 import PianoClient from '../clients/PianoClient';
 import InstrumentRegistry from '../instruments/InstrumentRegistry';
 
@@ -15,7 +15,7 @@ export function keyDown(midi: number, velocity = 100, peerId?: string) {
         return;
     }
     InstrumentRegistry.get(resolvedPeerId)?.keyDown(midi, velocity);
-    const {color} = getWorkspace().room?.users?.[resolvedPeerId] || {};
+    const { color } = getWorkspace().room?.users?.[resolvedPeerId] || {};
     dispatch(addNote({
         note: {
             midi,

@@ -1,7 +1,8 @@
-import {dispatch} from '../app/store';
-import {Transports} from '../constants';
-import {getWorkspace} from '../lib/WorkspaceHelper';
-import {downgradeConnection, setConnection} from '../slices/workspaceSlice';
+import { dispatch } from '../app/store';
+import { Payload, Transport } from '../constants';
+import { getWorkspace } from '../lib/WorkspaceHelper';
+import { downgradeConnection, setConnection } from '../slices/workspaceSlice';
+import NetworkController from './NetworkController';
 import WebsocketController from './WebsocketController';
 import SimplePeer from 'simple-peer';
 
@@ -14,34 +15,41 @@ type SignalPayload = {
   signalData: SimplePeer.SignalData;
 };
 
-const ACTIONS = {
+const ACTION = {
   SIGNAL: 'SIGNAL',
   PEER_JOINED: 'PEER_JOINED',
   USER_CONNECT: 'USER_CONNECT',
-};
+} as const;
 
-const textDecoder = new TextDecoder();
+const PEER_EVENT = {
+  CLOSE: 'close',
+  CONNECT: 'connect',
+  DATA: 'data',
+  SIGNAL: 'signal',
+} as const;
+
 
 /**
  * This is in need of a refactor. The controller should not have a dependency on
  * the websocket controller, and rather be a wrapper for SimplePeer. This would
  * allow this controller to be generalized.
- */
+*/
 
-export default class WebRtcController {
+export default class WebRtcController extends NetworkController {
   private static instance?: WebRtcController;
   private websocketController: WebsocketController;
   private initiator = false;
   private peers = new Map<string, SimplePeer.Instance>();
   private activeUserIds = new Set<string>();
-  private messageListeners = new Map<string, Function[]>();
+  private textDecoder = new TextDecoder();
 
   private constructor() {
+    super();
     this.websocketController = WebsocketController.getInstance();
-    // @ts-ignore
-    this.websocketController.on(ACTIONS.SIGNAL, this.onSignalReceived.bind(this));
-    // @ts-ignore
-    this.websocketController.on(ACTIONS.USER_CONNECT, this.onPeerJoined.bind(this));
+    // we just joined, existing peer sent us a signal message
+    this.websocketController.on(ACTION.SIGNAL, this.onSignalReceived.bind(this));
+    // new user joins, we send signal message
+    this.websocketController.on(ACTION.USER_CONNECT, this.onPeerJoined.bind(this));
   }
 
   public static getInstance(): WebRtcController {
@@ -52,49 +60,46 @@ export default class WebRtcController {
     return WebRtcController.instance;
   }
 
-  public send(message: Record<string, unknown>) {
+  public broadcast(action: string, message: Payload) {
     const workspace = getWorkspace();
-    const userIds = Object.keys(workspace?.room?.users || {});
+    const peerIds = Object.keys(workspace?.room?.users || {});
 
     const userIdsForWebsockets: string[] = [];
 
-    userIds.forEach(userId => {
+    peerIds.forEach(peerId => {
       // don't send message back to this client, only peers
-      if (userId === workspace.connectionId) {
+      if (peerId === workspace.connectionId) {
         return;
       }
 
-      const peer = this.peers.get(userId);
       try {
-        if (peer && this.activeUserIds.has(userId)) {
-          peer.send(JSON.stringify(message));
-        } else {
-          throw new Error('Cannot send message to unconnected to peer');
-        }
+        this.sendToPeer(peerId, action, message);
       } catch {
         // fall back to websocket
-        userIdsForWebsockets.push(userId);
+        userIdsForWebsockets.push(peerId);
       }
     });
 
     // broadcast message to all peers that don't have an active webrtc connection
     if (userIdsForWebsockets.length) {
-      const {action, payload} = message;
-      // @ts-ignore
       WebsocketController.getInstance().send(action, {
-        // @ts-ignore
-        ...payload,
+        ...message,
         targetUserIds: userIdsForWebsockets,
       });
     }
   }
 
-  public on(action: string, callback: Function) {
-    if (!this.messageListeners.get(action)) {
-      this.messageListeners.set(action, []);
+  public sendToPeer(peerId: string, action: string, message: Payload) {
+    const peer = this.peers.get(peerId);
+
+    if (!peer || !this.activeUserIds.has(peerId)) {
+      throw new Error('Cannot send message to unavailable peer');
     }
 
-    this.messageListeners.get(action)?.push(callback);
+    peer.send(JSON.stringify({
+      action,
+      payload: message,
+    }));
   }
 
   static destroy() {
@@ -103,7 +108,7 @@ export default class WebRtcController {
   }
 
   private onSignalReceived(message: SignalPayload) {
-    const {userId, signalData} = message;
+    const { userId, signalData } = message;
     if (!this.initiator) {
       this.addPeer(userId);
     }
@@ -122,33 +127,31 @@ export default class WebRtcController {
       trickle: false,
     });
 
-    p.on('connect', () => {
+    p.on(PEER_EVENT.CONNECT, () => {
       this.activeUserIds.add(userId);
       dispatch(setConnection({
         userId,
-        transport: Transports.WEBRTC,
+        transport: Transport.WEBRTC,
       }));
     });
 
-    p.on('signal', signalData => {
-      this.websocketController.send(ACTIONS.SIGNAL, {
+    p.on(PEER_EVENT.SIGNAL, signalData => {
+      this.websocketController.send(ACTION.SIGNAL, {
         userId,
         signalData,
       });
     });
 
-    p.on('close', () => {
-      console.log('Peer closed');
+    p.on(PEER_EVENT.CLOSE, () => {
       this.peers.delete(userId);
       this.activeUserIds.delete(userId);
-      dispatch(downgradeConnection({userId}));
+      dispatch(downgradeConnection({ userId }));
     });
 
-    p.on('data', data => {
-      const text = textDecoder.decode(data);
-      const message = JSON.parse(text);
-      const callbacks = this.messageListeners.get(message.action);
-      callbacks?.forEach(cb => cb({...message.payload, userId}));
+    p.on(PEER_EVENT.DATA, data => {
+      const message = JSON.parse(this.textDecoder.decode(data));
+      const callbacks = this.messageHandlers.get(message.action);
+      callbacks?.forEach(cb => cb({ ...message.payload, userId }));
     });
 
     this.peers.set(userId, p);

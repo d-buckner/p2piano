@@ -1,10 +1,16 @@
 import store from '../app/store';
-import { Transports } from '../constants';
+import { Transport } from '../constants';
 import { selectWorkspace } from '../slices/workspaceSlice';
 
 export function getUsers() {
   const { room } = getWorkspace();
   return room?.users || {};
+}
+
+export function getPeers() {
+  const users = { ...getUsers() };
+  delete users[getMyUserId()];
+  return users;
 }
 
 export function getUser(userId: string) {
@@ -17,16 +23,20 @@ export function getUsersArray() {
 
 export function isConnectionWebRtc(userId: string) {
   const { connections } = getWorkspace();
-  return connections[userId]?.transport === Transports.WEBRTC;
+  return connections[userId]?.transport === Transport.WEBRTC;
 }
 
 export function getMyUser() {
-  const { connectionId, room } = getWorkspace();
-  if (!connectionId) {
-    return null;
-  }
+  const { room } = getWorkspace();
+  return room?.users[getMyUserId()];
+}
 
-  return room?.users[connectionId];
+export function getMyUserId() {
+  const { connectionId: userId } = getWorkspace();
+  if (!userId) {
+    throw new Error('Unable to determine local user id');
+  }
+  return userId;
 }
 
 export function getWorkspace() {

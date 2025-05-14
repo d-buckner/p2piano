@@ -1,6 +1,6 @@
-import {batch} from 'react-redux';
+import { batch } from 'react-redux';
 
-import type {AnyAction, Dispatch, PayloadAction} from '@reduxjs/toolkit';
+import type { AnyAction, Dispatch, PayloadAction } from '@reduxjs/toolkit';
 
 
 export default function getRafDebounce(dispatch: Dispatch<AnyAction>) {

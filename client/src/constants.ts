@@ -13,7 +13,7 @@ export type NotesByMidi = {
 
 export type MidiRange = [number, number];
 
-export enum Transports {
+export enum Transport {
   WEBSOCKETS = 'WEBSOCKETS',
   WEBRTC = 'WEBRTC',
 };

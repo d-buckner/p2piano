@@ -1,18 +1,17 @@
-import {io} from 'socket.io-client';
+import { io } from 'socket.io-client';
 import ClientPreferences from '../lib/ClientPreferences';
 import ConfigProvider from '../lib/ConfigProvider';
 import Session from '../lib/Session';
-import {getWorkspace} from '../lib/WorkspaceHelper';
+import { getWorkspace } from '../lib/WorkspaceHelper';
 
-import type {Payload} from '../constants';
-import type {Socket} from 'socket.io-client';
+import type { Payload } from '../constants';
+import type { Socket } from 'socket.io-client';
 
 export type WebsocketMessage = {
   action: string;
   payload?: Payload;
 };
 
-type MessageCallback = (message: WebsocketMessage) => void;
 
 export default class WebsocketController {
   private static instance?: WebsocketController;
@@ -36,11 +35,11 @@ export default class WebsocketController {
     return WebsocketController.instance;
   }
 
-  on(action: string, callback: MessageCallback) {
+  on<T>(action: string, callback: (message: T) => void) {
     this.socket.on(action, callback);
   }
 
-  off(action: string, callback: MessageCallback) {
+  off<T>(action: string, callback: (message: T) => void) {
     this.socket.off(action, callback);
   }
 
