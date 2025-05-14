@@ -1,16 +1,7 @@
-export default class Instrument {
-    // eslint-disable-next-line no-unused-vars
-    keyUp(midi: number) {
-        throw new Error('Not implemented');
-    }
-    // eslint-disable-next-line no-unused-vars
-    keyDown(midi: number, velocity?: number) {
-        throw new Error('Not implemented');
-    }
-
-    releaseAll() {
-        throw new Error('Not implemented');
-    }
+export interface Instrument {
+    keyUp(midi: number): void;
+    keyDown(midi: number, delay?: number, velocity?: number): void;
+    releaseAll(): void;
 }
 
 export enum InstrumentType {

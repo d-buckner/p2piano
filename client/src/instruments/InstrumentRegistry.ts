@@ -1,7 +1,7 @@
 import AcousticGuitar from './AcousticGuitar';
 import ElectricBass from './ElectricBass';
 import ElectricGuitar from './ElectricGuitar';
-import Instrument, { InstrumentType } from './Instrument';
+import { Instrument, InstrumentType } from './Instrument';
 import Piano from './Piano';
 import Synth from './Synth';
 

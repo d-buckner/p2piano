@@ -1,13 +1,13 @@
-import Instrument from './Instrument';
+import {Instrument} from './Instrument';
 import { PolySynth, Synth as ToneSynth } from 'tone';
 import { toFrequency } from '../lib/NoteHelpers';
+import getDelayTime from './getDelayTime';
 
 
-export default class Synth extends Instrument {
+export default class Synth implements Instrument {
   private instrument: PolySynth;
 
   constructor() {
-    super();
     this.instrument = new PolySynth(ToneSynth, {
       oscillator: {
         type: 'square',
@@ -21,10 +21,10 @@ export default class Synth extends Instrument {
     this.instrument.toDestination();
   }
 
-  keyDown(midi: number, velocity = 100) {
+  keyDown(midi: number, delay = 0, velocity = 100) {
     this.instrument.triggerAttack(
       toFrequency(midi),
-      undefined,
+      getDelayTime(delay),
       velocity / 127,
     );
   }

@@ -82,7 +82,7 @@ export default class RoomHandlers {
         transport: Transport.WEBSOCKETS,
       }))
       dispatch(setRoom({ room }));
-    })
+    });
   }
 
   static userUpdateHandler(payload: UserUpdatePayload) {

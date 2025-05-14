@@ -1,15 +1,17 @@
-import Instrument from './Instrument';
 import { Sampler as ToneSampler } from 'tone';
 import { toFrequency } from '../lib/NoteHelpers';
+import getDelayTime from './getDelayTime';
+
+import type {Instrument} from './Instrument';
+
 
 const BASE_PATH = '/assets/samples/';
 const FILE_TYPE = 'mp3';
 
-export default class Sampler extends Instrument {
+export default class Sampler implements Instrument {
   protected instrument: ToneSampler;
 
   constructor(baseName: string, notenames: string[]) {
-    super();
     this.instrument = new ToneSampler({
       urls: getUrls(notenames),
       baseUrl: `${BASE_PATH}${baseName}/`,
@@ -17,10 +19,10 @@ export default class Sampler extends Instrument {
     this.instrument.toDestination();
   }
 
-  keyDown(midi: number, velocity = 100) {
+  keyDown(midi: number, delay = 0, velocity = 100) {
     this.instrument.triggerAttack(
       toFrequency(midi),
-      undefined,
+      getDelayTime(delay),
       velocity / 127
     );
   }

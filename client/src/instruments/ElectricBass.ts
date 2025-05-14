@@ -12,8 +12,8 @@ export default class ElectricBass extends Sampler {
         ]);
     }
 
-    keyDown(midi: number, velocity = 100) {
-        super.keyDown(midi + MIDI_OFFSET, velocity);
+    keyDown(midi: number, delay = 0, velocity = 100) {
+        super.keyDown(midi + MIDI_OFFSET, delay, velocity);
     }
 
     keyUp(midi: number) {

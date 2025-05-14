@@ -1,8 +1,8 @@
 import { dispatch } from '../app/store';
-import { Payload, Transport } from '../constants';
+import { Transport } from '../constants';
 import { getWorkspace } from '../lib/WorkspaceHelper';
 import { downgradeConnection, setConnection } from '../slices/workspaceSlice';
-import NetworkController from './NetworkController';
+import NetworkController, { Message } from './NetworkController';
 import WebsocketController from './WebsocketController';
 import SimplePeer from 'simple-peer';
 
@@ -40,7 +40,7 @@ export default class WebRtcController extends NetworkController {
   private websocketController: WebsocketController;
   private initiator = false;
   private peers = new Map<string, SimplePeer.Instance>();
-  private activeUserIds = new Set<string>();
+  private activePeerIds = new Set<string>();
   private textDecoder = new TextDecoder();
 
   private constructor() {
@@ -60,7 +60,7 @@ export default class WebRtcController extends NetworkController {
     return WebRtcController.instance;
   }
 
-  public broadcast(action: string, message: Payload) {
+  public broadcast<T extends Message>(action: string, message: T) {
     const workspace = getWorkspace();
     const peerIds = Object.keys(workspace?.room?.users || {});
 
@@ -89,10 +89,10 @@ export default class WebRtcController extends NetworkController {
     }
   }
 
-  public sendToPeer(peerId: string, action: string, message: Payload) {
+  public sendToPeer<T extends Message>(peerId: string, action: string, message: T) {
     const peer = this.peers.get(peerId);
 
-    if (!peer || !this.activeUserIds.has(peerId)) {
+    if (!peer || !this.activePeerIds.has(peerId)) {
       throw new Error('Cannot send message to unavailable peer');
     }
 
@@ -100,6 +100,10 @@ export default class WebRtcController extends NetworkController {
       action,
       payload: message,
     }));
+  }
+
+  public getActivePeerIds(): Set<string> {
+    return this.activePeerIds;
   }
 
   static destroy() {
@@ -128,7 +132,7 @@ export default class WebRtcController extends NetworkController {
     });
 
     p.on(PEER_EVENT.CONNECT, () => {
-      this.activeUserIds.add(userId);
+      this.activePeerIds.add(userId);
       dispatch(setConnection({
         userId,
         transport: Transport.WEBRTC,
@@ -144,7 +148,7 @@ export default class WebRtcController extends NetworkController {
 
     p.on(PEER_EVENT.CLOSE, () => {
       this.peers.delete(userId);
-      this.activeUserIds.delete(userId);
+      this.activePeerIds.delete(userId);
       dispatch(downgradeConnection({ userId }));
     });
 

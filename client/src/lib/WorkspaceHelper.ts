@@ -7,12 +7,6 @@ export function getUsers() {
   return room?.users || {};
 }
 
-export function getPeers() {
-  const users = { ...getUsers() };
-  delete users[getMyUserId()];
-  return users;
-}
-
 export function getUser(userId: string) {
   return getUsers()[userId];
 }
@@ -28,15 +22,16 @@ export function isConnectionWebRtc(userId: string) {
 
 export function getMyUser() {
   const { room } = getWorkspace();
-  return room?.users[getMyUserId()];
+  const userId = getMyUserId();
+  if (userId === undefined) {
+    return;
+  }
+
+  return room?.users[userId];
 }
 
 export function getMyUserId() {
-  const { connectionId: userId } = getWorkspace();
-  if (!userId) {
-    throw new Error('Unable to determine local user id');
-  }
-  return userId;
+  return getWorkspace().connectionId;
 }
 
 export function getWorkspace() {

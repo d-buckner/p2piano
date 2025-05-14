@@ -5,6 +5,7 @@ import MidiDeviceController from '../controllers/MidiDeviceController';
 import WebRtcController from '../controllers/WebRtcController';
 import WebsocketController from '../controllers/WebsocketController';
 import InstrumentRegistry from '../instruments/InstrumentRegistry';
+import { TimeSyncronizer } from '../timeSync/TimeSyncronizer';
 
 const RTC_HANDLERS = {
   KEY_DOWN: RoomHandlers.keyDownHandler,
@@ -29,6 +30,8 @@ export function register() {
   subscribe(WebRtcController.getInstance(), RTC_HANDLERS);
   subscribe(WebsocketController.getInstance(), WEBSOCKET_HANDLERS);
   window.addEventListener('blur', RoomHandlers.blurHandler);
+
+  TimeSyncronizer.getInstance();
 
   const keyboardController = KeyboardController.getInstance();
   keyboardController.registerKeyDownHandler(NoteActions.keyDown);

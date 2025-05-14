@@ -1,5 +1,5 @@
-type Message = Map<string, any>;
-type MessageHandler = (event: Message) => void;
+export type Message = Record<string, any>;
+export type MessageHandler<T extends Message = any> = (event: T) => void;
 
 export default abstract class NetworkController {
   protected messageHandlers: Map<string, Set<MessageHandler>>;
@@ -8,7 +8,7 @@ export default abstract class NetworkController {
     this.messageHandlers = new Map();
   }
   
-  public on(eventType: string, handler: MessageHandler) {
+  public on<T extends MessageHandler>(eventType: string, handler: T) {
     if (!this.messageHandlers.get(eventType)) {
       this.messageHandlers.set(eventType, new Set())
     }
@@ -16,7 +16,7 @@ export default abstract class NetworkController {
     this.messageHandlers.get(eventType)!.add(handler)
   }
 
-  public off(eventType: string, handler: MessageHandler) {
+  public off<T extends MessageHandler>(eventType: string, handler: T) {
     this.messageHandlers.get(eventType)?.delete(handler);
   }
 
