@@ -1,3 +1,6 @@
+/**
+ * Ring buffer to provide rolling average for a given window size
+ */
 export default class RollingAvg {
   private windowSize: number;
   private buffer: number[];

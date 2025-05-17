@@ -3,7 +3,7 @@ import { getWorkspace } from '../lib/WorkspaceHelper';
 import { addNote, removeNote } from '../slices/notesSlice';
 import PianoClient from '../clients/PianoClient';
 import InstrumentRegistry from '../instruments/InstrumentRegistry';
-import { TimeSyncronizer } from '../timeSync/TimeSyncronizer';
+import TimeSync from '../lib/TimeSync';
 
 export function keyDown(midi: number, velocity = 100, peerId?: string) {
   if (!peerId) {
@@ -16,11 +16,12 @@ export function keyDown(midi: number, velocity = 100, peerId?: string) {
     return;
   }
 
-  const audioDelay = peerId
-    ? TimeSyncronizer.getInstance().getDelayForPeer(resolvedPeerId)
-    : TimeSyncronizer.getInstance().getSelfDelay();
+  InstrumentRegistry.get(resolvedPeerId)?.keyDown(
+    midi,
+    TimeSync.getInstance().getAudioDelay(resolvedPeerId),
+    velocity,
+  );
 
-  InstrumentRegistry.get(resolvedPeerId)?.keyDown(midi, audioDelay, velocity);
   const { color } = getWorkspace().room?.users?.[resolvedPeerId] || {};
   dispatch(addNote({
     note: {
@@ -42,7 +43,11 @@ export function keyUp(midi: number, peerId?: string) {
     // can't perform piano actions before room connection is setup
     return;
   }
-  InstrumentRegistry.get(resolvedPeerId)?.keyUp(midi);
+
+  InstrumentRegistry.get(resolvedPeerId)?.keyUp(
+    midi,
+    TimeSync.getInstance().getAudioDelay(resolvedPeerId),
+  );
   dispatch(removeNote({
     note: {
       midi,

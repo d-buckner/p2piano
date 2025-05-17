@@ -1,5 +1,5 @@
 export interface Instrument {
-    keyUp(midi: number): void;
+    keyUp(midi: number, delay?: number): void;
     keyDown(midi: number, delay?: number, velocity?: number): void;
     releaseAll(): void;
 }

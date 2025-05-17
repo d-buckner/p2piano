@@ -1,6 +1,8 @@
 import getDelayTime from './getDelayTime';
-import type {Instrument} from './Instrument';
 import { Piano as TonePiano } from '@tonejs/piano';
+
+import type {Instrument} from './Instrument';
+
 
 export default class Piano implements Instrument {
   private instrument: TonePiano;
@@ -15,12 +17,15 @@ export default class Piano implements Instrument {
     this.instrument.keyDown({
       note: midi.toString(),
       time: getDelayTime(delay),
-      velocity: velocity / 127,
+      velocity: Math.floor(velocity / 127),
     });
   }
 
-  keyUp(midi: number): void {
-    this.instrument.keyUp({ note: midi.toString() });
+  keyUp(midi: number, delay = 0): void {
+    this.instrument.keyUp({
+      note: midi.toString(),
+      time: getDelayTime(delay),
+    });
   }
 
   releaseAll() {

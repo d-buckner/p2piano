@@ -12,8 +12,10 @@ import { InstrumentType } from '../instruments/Instrument';
 import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
 import { removeNotesFromPeer, selectNotes } from '../slices/notesSlice';
 import { Transport } from '../constants';
+import TimeSync from '../lib/TimeSync';
 
 import type { Room } from '../lib/workspaceTypes';
+
 
 type KeyDownPayload = {
   midi: number;
@@ -62,6 +64,9 @@ export default class RoomHandlers {
     Object.values(room.users).forEach(u => {
       InstrumentRegistry.register(u.userId, u.instrument as InstrumentType);
     });
+
+    TimeSync.getInstance();
+
     dispatch(initializeRoom({
       userId,
       room,
@@ -102,6 +107,7 @@ export default class RoomHandlers {
   static userDisconnectHandler(payload: UserDisconnectPayload) {
     const { userId, room } = payload;
     InstrumentRegistry.deregister(userId);
+    TimeSync.getInstance().removePeer(userId);
     batch(() => {
       dispatch(removeNotesFromPeer({ peerId: userId }));
       dispatch(removeConnection({ userId }));

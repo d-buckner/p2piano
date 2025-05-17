@@ -11,8 +11,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import { createNewRoom, getRoom } from '../clients/RoomClient';
 import { useCallback, useState } from 'react';
+import { dispatch } from '../app/store';
+import { setRoom } from '../slices/workspaceSlice';
 
 import type { ChangeEvent } from 'react';
+
 
 export default function RoomCard() {
     const [isRoomError, setRoomError] = useState(false);
@@ -24,6 +27,7 @@ export default function RoomCard() {
     const createRoom = useCallback(async () => {
         setRoomCreating(true);
         const room = await createNewRoom();
+        dispatch(setRoom({ room }));
         navigateToRoom(room.roomId);
     }, [navigateToRoom]);
 
@@ -35,14 +39,14 @@ export default function RoomCard() {
         }
 
         try {
-            await getRoom(roomId);
+            const room = await getRoom(roomId);
+            dispatch(setRoom({ room }));
         } catch {
             setRoomError(true);
             return;
         }
 
         setRoomError(false);
-
         navigateToRoom(roomId);
     }
 
@@ -66,7 +70,7 @@ export default function RoomCard() {
                     <Button
                         bg='background'
                         h="47px"
-                        _hover={{bg:"gray"}}
+                        _hover={{ bg: "gray" }}
                         border="1px solid white"
                         rounded='md'
                         onClick={createRoom}

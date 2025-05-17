@@ -27,8 +27,8 @@ export default class Sampler implements Instrument {
     );
   }
 
-  keyUp(midi: number) {
-    this.instrument.triggerRelease(toFrequency(midi));
+  keyUp(midi: number, delay = 0) {
+    this.instrument.triggerRelease(toFrequency(midi), getDelayTime(delay));
   }
 
   releaseAll() {
