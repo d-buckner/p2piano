@@ -11,23 +11,23 @@ import { getMyUserId } from './WorkspaceHelper';
  * values are used to determine the audio playback delay for each user.
  * 
  * For example: imagine we have 3 peers with the following avg latencies:
- *   - peer 1: 50ms
- *   - peer 2: 30ms
- *   - peer 3: 500ms
+ *   - peer 1: 35ms
+ *   - peer 2: 15ms
+ *   - peer 3: 100ms
  * 
  * To find the max latency, we exclude peer 3 since 500ms is beyond our cuttoff and find the max between peer 1 and 2
  * which is 50ms. That dictates that for:
  *   - peer 1, we don't wait at all before triggering playback for their instrument since it's the max latency
  *   - peer 2, we wait 20ms (max - latency) before triggering playback for their instrument
  *   - peer 3, we don't wait before triggering playback for their instrument, since it's already coming in noticably late
- *   - for ourselves, we wait 50ms before triggering playback for our own instrumentinstrument
+ *   - for ourselves, we wait 35ms before triggering playback for our own instrumentinstrument
  * 
  * To visualize this, the first | represents the time a user started playing a note and the second | represents when it
  * was recieved by us:
- *   Peer 1    |-----------------|playback
- *   Peer 2    |-----------|------playback
- *   Peer 3    |------------------------------------------|playback (oh well, at least we still hear them)
- *   Ourselves ||-----------------playback
+ *   Peer 1    |-----------------|playback (35ms latency, 0ms audio delay)
+ *   Peer 2    |-----------|------playback (15ms latency, 20ms audio delay)
+ *   Peer 3    |------------------------------------------|playback (100ms latency, 0ms audio delay, past latency cutoff)
+ *   Ourselves ||-----------------playback (0ms latency, 35ms audio delay)
  * 
  * Since there's no way to ensure time scheduling of this precision in js, the playback engine uses the WebAudio
  * scheduling capabilities via tone.js.
@@ -35,7 +35,7 @@ import { getMyUserId } from './WorkspaceHelper';
 
 // tuning values
 const MAX_LATENCY_CUTOFF_MS = 100;
-const MIN_LATENCY_CUTOFF_MS = 20;
+const MIN_LATENCY_CUTOFF_MS = 10;
 const SAMPLES_PER_MINUTE = 500;
 /**
  * time window to smooth peer latency values
@@ -133,13 +133,13 @@ export default class TimeSync {
 
     this.maxLatency = Object
       .values(this.peerLatencyWindows)
-      .reduce((currentMax, peerLatency) => {
-        if (peerLatency.avg > MAX_LATENCY_CUTOFF_MS) {
+      .reduce((currentMax, window) => {
+        if (window.avg > MAX_LATENCY_CUTOFF_MS) {
           // ignore client due to excessive latency
           return currentMax;
         }
 
-        return Math.floor(Math.max(currentMax, peerLatency.avg));
+        return Math.floor(Math.max(currentMax, window.avg));
       }, 0);
 
     // @ts-ignore
