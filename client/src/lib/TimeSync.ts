@@ -31,6 +31,10 @@ import { getMyUserId } from './WorkspaceHelper';
  * 
  * Since there's no way to ensure time scheduling of this precision in js, the playback engine uses the WebAudio
  * scheduling capabilities via tone.js.
+ * 
+ * Relevant resources:
+ *   - https://en.wikipedia.org/wiki/Network_Time_Protocol
+ *   - https://en.wikipedia.org/wiki/Precision_Time_Protocol
  */
 
 // tuning values
