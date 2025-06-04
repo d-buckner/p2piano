@@ -1,17 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from "../app/store";
-import { Transport } from '../constants';
+import { Connection, Transport } from '../constants';
+import Logger from '../lib/Logger';
 
-
-interface Connection {
-  maxLatency: number;
-  peerConnections: {
-    [peerId: string]: {
-      latency: number,
-      transport: Transport,
-    },
-  }
-}
 
 interface PeerLatencyPayload {
   peerId: string;
@@ -39,11 +30,10 @@ export const connectionSlice = createSlice({
     setPeerTransport: (state, action: PayloadAction<PeerTransportPayload>) => {
       const { peerId, transport } = action.payload;
       if (!state.peerConnections[peerId]) {
-        state.peerConnections[peerId] = {
-          transport,
-          latency: 0,
-        }
+        Logger.WARN('Cannot set peer transport for disconnected peer');
+        return;
       }
+
       state.peerConnections[peerId].transport = transport;
     },
     addPeerConnection: (state, action: PayloadAction<PeerTransportPayload>) => {

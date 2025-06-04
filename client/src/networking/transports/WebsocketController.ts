@@ -5,9 +5,20 @@ import ConfigProvider from '../../lib/ConfigProvider';
 import Session from '../../lib/Session';
 import { getWorkspace } from '../../lib/WorkspaceHelper';
 
-import type { Payload } from '../../constants';
+import { Transport, type Payload } from '../../constants';
 import type { Socket } from 'socket.io-client';
+import { connectionActions } from '../../slices/connectionSlice';
+import { dispatch } from '../../app/store';
 
+
+export const WEBSOCKET_ACTIONS = {
+  USER_CONNECT: 'USER_CONNECT',
+  USER_DISCONNECT: 'USER_DISCONNECT',
+} as const;
+
+interface UserConnectionMessage {
+  userId: string
+}
 
 export default class WebsocketController extends AbstractNetworkController {
   private static instance?: WebsocketController;
@@ -22,6 +33,8 @@ export default class WebsocketController extends AbstractNetworkController {
         roomId: getWorkspace().roomId
       },
     });
+    this.on(WEBSOCKET_ACTIONS.USER_CONNECT, this.onUserConnect);
+    this.on(WEBSOCKET_ACTIONS.USER_DISCONNECT, this.onUserDisconnect);
   }
 
   public static getInstance(): WebsocketController {
@@ -40,22 +53,33 @@ export default class WebsocketController extends AbstractNetworkController {
     this.socket.off(action, callback);
   }
 
-  broadcast(action: string, payload?: Payload): void {
+  public broadcast(action: string, payload?: Payload): void {
     this.socket.emit(action, payload);
   }
-  
-  sendToPeer(peerId: string, action: string, payload?: Payload): void {
+
+  public sendToPeer(peerId: string, action: string, payload?: Payload): void {
     this.broadcast(action, {
       ...payload,
       targetUserIds: [peerId],
     });
   }
 
-  sendToPeers(peerIds: string[], action: string, payload?: Payload): void {
+  public sendToPeers(peerIds: string[], action: string, payload?: Payload): void {
     this.broadcast(action, {
       ...payload,
       targetUserIds: peerIds,
     });
+  }
+
+  private onUserConnect(message: UserConnectionMessage) {
+    dispatch(connectionActions.addPeerConnection({
+      peerId: message.userId,
+      transport: Transport.WEBSOCKETS,
+    }));
+  }
+
+  private onUserDisconnect(message: UserConnectionMessage) {
+    dispatch(connectionActions.removePeerConnection(message.userId));
   }
 
   static destroy(): void {

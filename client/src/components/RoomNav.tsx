@@ -1,16 +1,16 @@
 import React from 'react';
-import {Flex, Link} from '@chakra-ui/react';
-import {useNavigate} from 'react-router-dom';
+import { Flex, Link } from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
-import {getUsersArray, isConnectionWebRtc} from '../lib/WorkspaceHelper';
+import { getUsersArray } from '../lib/WorkspaceHelper';
 
-import type {Workspace} from '../slices/workspaceSlice';
+import type { Workspace } from '../slices/workspaceSlice';
 
 type Props = {
   workspace: Workspace;
 };
 
-function RoomNav({workspace}: Props) {
+function RoomNav({ workspace }: Props) {
   const navigate = useNavigate();
 
   async function shareRoom() {
@@ -49,7 +49,7 @@ function RoomNav({workspace}: Props) {
       <Link onClick={navigateHome} fontFamily='Mortina Two'>p2piano</Link>
       <Flex>
         {getUsersArray().map((user, i) => (
-          <div style={{display: 'flex', alignItems: 'center'}} key={i}>
+          <div style={{ display: 'flex', alignItems: 'center' }} key={i}>
             <div
               style={{
                 borderRadius: '50%',
@@ -63,9 +63,6 @@ function RoomNav({workspace}: Props) {
               style={{
                 cursor: 'pointer',
                 margin: '0 12px 0 4px',
-                fontWeight: isConnectionWebRtc(user.userId)
-                  ? 'bold'
-                  : 'normal',
               }}
             >
               {user.displayName}

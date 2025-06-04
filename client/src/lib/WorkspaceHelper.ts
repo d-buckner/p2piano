@@ -18,11 +18,6 @@ export function getUsersArray() {
   return Object.values(getUsers());
 }
 
-export function isConnectionWebRtc(userId: string) {
-  const { connections } = getWorkspace();
-  return connections[userId]?.transport === Transport.WEBRTC;
-}
-
 export function getMyUser() {
   const { room } = getWorkspace();
   const userId = getMyUserId();

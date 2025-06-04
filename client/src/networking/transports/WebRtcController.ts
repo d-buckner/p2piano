@@ -44,8 +44,6 @@ export default class WebRtcController extends AbstractNetworkController {
     this.websocketController.on(ACTION.SIGNAL, this.onSignalReceived.bind(this));
     // new user joins, we send signal message
     this.websocketController.on(ACTION.USER_CONNECT, this.onPeerJoined.bind(this));
-    // user leaves, remove connection
-    this.websocketController.on(ACTION.USER_DISCONNECT, this.onPeerLeft.bind(this));
   }
 
   public static getInstance(): WebRtcController {
@@ -100,16 +98,8 @@ export default class WebRtcController extends AbstractNetworkController {
   }
 
   private onPeerJoined(message: UserPayload) {
-    dispatch(connectionActions.addPeerConnection({
-      peerId: message.userId,
-      transport: Transport.WEBSOCKETS,
-    }));
     this.initiator = true;
     this.addPeer(message.userId);
-  }
-
-  private onPeerLeft(message: UserPayload) {
-    dispatch(connectionActions.removePeerConnection(message.userId));
   }
 
   private addPeer(userId: string) {

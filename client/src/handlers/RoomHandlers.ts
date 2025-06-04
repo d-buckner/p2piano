@@ -4,14 +4,11 @@ import * as NoteActions from '../actions/NoteActions';
 import InstrumentRegistry from '../instruments/InstrumentRegistry';
 import {
   setRoom,
-  setConnection,
-  removeConnection,
   initializeRoom,
 } from '../slices/workspaceSlice';
 import { InstrumentType } from '../instruments/Instrument';
 import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
 import { removeNotesFromPeer, selectNotes } from '../slices/notesSlice';
-import { Transport } from '../constants';
 
 import type { Room } from '../lib/workspaceTypes';
 
@@ -78,13 +75,8 @@ export default class RoomHandlers {
     const { userId, room } = payload;
     const instrument = room.users[userId].instrument as InstrumentType;
     InstrumentRegistry.register(userId, instrument);
-    batch(() => {
-      dispatch(setConnection({
-        userId,
-        transport: Transport.WEBSOCKETS,
-      }))
-      dispatch(setRoom({ room }));
-    });
+
+    dispatch(setRoom({ room }));
   }
 
   static userUpdateHandler(payload: UserUpdatePayload) {
@@ -106,7 +98,6 @@ export default class RoomHandlers {
     InstrumentRegistry.deregister(userId);
     batch(() => {
       dispatch(removeNotesFromPeer({ peerId: userId }));
-      dispatch(removeConnection({ userId }));
       dispatch(setRoom({ room }));
     });
   }
