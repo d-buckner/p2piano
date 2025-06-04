@@ -1,50 +1,52 @@
-import WebRtcController from '../controllers/WebRtcController';
-import RollingAvg from './RollingAvg';
-import { getMyUserId } from './WorkspaceHelper';
+import RollingAvg from '../lib/RollingAvg';
+import { getMyUserId } from '../lib/WorkspaceHelper';
+import { dispatch } from "../app/store";
+import { connectionActions } from "../slices/connectionSlice";
+import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from "./utils";
+import { getConnectedPeerIds } from '../lib/ConnectionUtils';
+import RealTimeController from '../networking/RealTimeController';
+import { ACTION } from '../networking/transports/WebRtcController';
 
 /**
- * TimeSync is responsible for syncronizing playback across users.
- * 
+ * AudioSyncCoordinator is responsible for coordinating the audio synchronization process.
+ *
  * To do this, it first samples latencies by measuring the round trip time (PING + PONG)
  * for each peer. These latency samples are then smoothed via rolling avg, before we calculate
  * the max latency across peers (within our cutoff window). The max latency and individual latency
  * values are used to determine the audio playback delay for each user.
- * 
- * For example: imagine we have 3 peers with the following avg latencies:
+ *
+ * For example, imagine we have 3 peers with the following avg latencies:
  *   - peer 1: 35ms
  *   - peer 2: 15ms
- *   - peer 3: 100ms
- * 
- * To find the max latency, we exclude peer 3 since 500ms is beyond our cuttoff and find the max between peer 1 and 2
+ *   - peer 3: 120ms
+ *
+ * To find the max latency, we exclude peer 3 since 120ms is beyond our cutoff and find the max between peer 1 and 2
  * which is 50ms. That dictates that for:
  *   - peer 1, we don't wait at all before triggering playback for their instrument since it's the max latency
  *   - peer 2, we wait 20ms (max - latency) before triggering playback for their instrument
- *   - peer 3, we don't wait before triggering playback for their instrument, since it's already coming in noticably late
- *   - for ourselves, we wait 35ms before triggering playback for our own instrumentinstrument
- * 
+ *   - peer 3, we don't wait before triggering playback for their instrument, since it's already coming in noticeably late
+ *   - for ourselves, we wait 35ms before triggering playback for our own instrument
+ *
  * To visualize this, the first | represents the time a user started playing a note and the second | represents when it
- * was recieved by us:
+ * was received by us:
  *   Peer 1    |-----------------|playback (35ms latency, 0ms audio delay)
  *   Peer 2    |-----------|------playback (15ms latency, 20ms audio delay)
- *   Peer 3    |------------------------------------------|playback (100ms latency, 0ms audio delay, past latency cutoff)
+ *   Peer 3    |------------------------------------------|playback (120ms latency, 0ms audio delay, past latency cutoff)
  *   Ourselves ||-----------------playback (0ms latency, 35ms audio delay)
- * 
+ *
  * Since there's no way to ensure time scheduling of this precision in js, the playback engine uses the WebAudio
  * scheduling capabilities via tone.js.
- * 
+ *
  * Relevant resources:
  *   - https://en.wikipedia.org/wiki/Network_Time_Protocol
  *   - https://en.wikipedia.org/wiki/Precision_Time_Protocol
  */
 
-// tuning values
-const MAX_LATENCY_CUTOFF_MS = 100;
-const MIN_LATENCY_CUTOFF_MS = 10;
-const SAMPLES_PER_MINUTE = 500;
+const SAMPLES_PER_MINUTE = 120;
 /**
  * time window to smooth peer latency values
- * 
- * it's a tradeoff between syncronization accuracy (lower is better) and
+ *
+ * it's a tradeoff between synchronization accuracy (lower is better) and
  * consistency in playback audio offset (higher is better)
  */
 const SMOOTHING_WINDOW_SECONDS = 2;
@@ -57,6 +59,7 @@ const SYNC_EVENT = {
   LATENCY_PONG: 'LATENCY_PONG',
 } as const;
 
+
 interface PeerLatencyWindows {
   [peerId: string]: RollingAvg
 }
@@ -66,65 +69,78 @@ interface SamplingMessage {
   peerId: string,
 }
 
-export default class TimeSync {
-  static instance?: TimeSync;
-  private webrtcController: WebRtcController;
+interface PeerLeftMessage {
+  userId: string
+}
+
+class AudioSyncCoordinator {
   private peerLatencyWindows: PeerLatencyWindows;
+  private isRunning: boolean;
   private maxLatency: number;
   private myUserId?: string;
 
-  public static getInstance(): TimeSync {
-    if (!TimeSync.instance) {
-      TimeSync.instance = new TimeSync();
-    }
-
-    return TimeSync.instance;
-  }
-
-  private constructor() {
-    this.webrtcController = WebRtcController.getInstance();
-    this.webrtcController.on(SYNC_EVENT.LATENCY_PING, this.onPing.bind(this));
-    this.webrtcController.on(SYNC_EVENT.LATENCY_PONG, this.onPong.bind(this));
+  constructor() {
+    this.isRunning = false;
     this.maxLatency = 0;
     this.peerLatencyWindows = {};
+    this.onPing = this.onPing.bind(this);
+    this.onPong = this.onPong.bind(this);
+    this.onPeerLeft = this.onPeerLeft.bind(this);
     this.tick = this.tick.bind(this);
+  }
+
+  public start() {
+    this.isRunning = true;
+    const realTimeController = RealTimeController.getInstance();
+    realTimeController.on(SYNC_EVENT.LATENCY_PING, this.onPing);
+    realTimeController.on(SYNC_EVENT.LATENCY_PONG, this.onPong);
+    realTimeController.on(ACTION.USER_DISCONNECT, this.onPeerLeft)
     this.tick();
+  }
+
+  public stop() {
+    this.isRunning = false;
+    this.peerLatencyWindows = {};
+    const realTimeController = RealTimeController.getInstance();
+    realTimeController.off(SYNC_EVENT.LATENCY_PING, this.onPing);
+    realTimeController.off(SYNC_EVENT.LATENCY_PONG, this.onPong);
   }
 
   public removePeer(peerId: string) {
     delete this.peerLatencyWindows[peerId];
+    dispatch(connectionActions.removePeerConnection(peerId));
   }
 
   public getAudioDelay(userId: string): number {
-    return userId === this.myUserId
-      ? this.getDelayForSelf()
-      : this.getDelayForPeer(userId);
-  }
-
-  private getDelayForPeer(peerId: string): number {
-    const peerAvg = this.peerLatencyWindows[peerId]?.avg ?? 0;
-    const delay = this.maxLatency - peerAvg;
+    if (userId === this.myUserId) {
+      return this.maxLatency;
+    }
+    const latency = this.peerLatencyWindows[userId]?.avg ?? 0;
+    const delay = this.maxLatency - latency;
     if (delay < MIN_LATENCY_CUTOFF_MS) {
-      // ignore unperceptable delay
+      // ignore imperceptible delay
       return 0;
     }
 
     return Math.max(delay, 0);
   }
 
-  private getDelayForSelf(): number {
-    return this.maxLatency;
-  }
-
   private tick() {
-    this.webrtcController.getActivePeerIds().forEach(peerId => {
+    if (!this.isRunning) {
+      return;
+    }
+
+    getConnectedPeerIds().forEach(peerId => {
       const pingTime = performance.now();
       try {
         this.verifyMyUserId();
-        this.webrtcController.sendToPeer(peerId, SYNC_EVENT.LATENCY_PING, {
-          pingTime,
-          peerId: this.myUserId!,
-        });
+        RealTimeController.getInstance().sendToPeer(
+          peerId,
+          SYNC_EVENT.LATENCY_PING,
+          {
+            pingTime,
+            peerId: this.myUserId!,
+          });
       } catch (err) {
         // gracefully handle sample failure, we'll keep trying at the sample rate
         return;
@@ -146,6 +162,8 @@ export default class TimeSync {
         return Math.floor(Math.max(currentMax, window.avg));
       }, 0);
 
+    dispatch(connectionActions.setMaxLatency(this.maxLatency));
+
     // @ts-ignore
     if (window.DEBUG_LATENCY) {
       this.logLatencies();
@@ -157,10 +175,13 @@ export default class TimeSync {
   private onPing(response: SamplingMessage) {
     try {
       this.verifyMyUserId();
-      this.webrtcController.sendToPeer(response.peerId, SYNC_EVENT.LATENCY_PONG, {
-        pingTime: response.pingTime,
-        peerId: this.myUserId!,
-      });
+      RealTimeController.getInstance().sendToPeer(
+        response.peerId,
+        SYNC_EVENT.LATENCY_PONG,
+        {
+          pingTime: response.pingTime,
+          peerId: this.myUserId!,
+        });
     } catch (err) {
       return;
     }
@@ -171,12 +192,21 @@ export default class TimeSync {
     const latency = (performance.now() - pingTime) / 2;
     const peerLatencyWindow = this.peerLatencyWindows[peerId];
     peerLatencyWindow.add(latency);
+
+    dispatch(connectionActions.setPeerLatency({
+      peerId,
+      latency: peerLatencyWindow.avg,
+    }));
+  }
+
+  private onPeerLeft(message: PeerLeftMessage) {
+    this.removePeer(message.userId);
   }
 
   private verifyMyUserId() {
     if (!this.myUserId) {
       this.myUserId = getMyUserId();
-      throw new Error('User id not yet retreived'); // TODO: ensure room bootstap is complete before initializing
+      throw new Error('User id not yet retrieved'); // TODO: ensure room bootstrap is complete before initializing
     }
   }
 
@@ -192,3 +222,5 @@ export default class TimeSync {
     }
   }
 }
+
+export default new AudioSyncCoordinator();

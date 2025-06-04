@@ -61,7 +61,7 @@ export class Room {
       roomId,
     } = getSocketMetadata(socket);
     if (!roomId || !sessionId) {
-      Logger.WARN(`User denied connection due to invalid cookies ${JSON.stringify({ roomId, userId: sessionId })}`);
+      Logger.WARN(`User denied connection due to invalid metadata ${JSON.stringify({ roomId, userId: sessionId })}`);
       socket.disconnect();
       return;
     }

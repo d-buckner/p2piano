@@ -4,9 +4,6 @@ import type { RootState } from '../app/store';
 import type { Note, NotesByMidi } from '../constants';
 
 
-type NotePayload = {
-  note: Note,
-};
 type RemoveNotesFromAuthorPayload = {
   peerId: string,
 };
@@ -17,23 +14,23 @@ export const notesSlice = createSlice({
   name: 'notes',
   initialState,
   reducers: {
-    addNote: (state, action: PayloadAction<NotePayload>) => {
-      const { note } = action.payload;
-      const { midi } = note;
-      if (!state[midi]) {
-        state[midi] = [];
+    addNote: (state, action: PayloadAction<Note>) => {
+      const note = action.payload;
+      if (!state[note.midi]) {
+        state[note.midi] = [];
       }
 
-      const existingNoteIndex = state[midi].findIndex(n => n.peerId === note.peerId);
+      const existingNoteIndex = state[note.midi]
+        .findIndex(n => n.peerId === note.peerId);
       if (existingNoteIndex === -1) {
-        state[midi].push(note);
+        state[note.midi].push(note);
       }
 
-      state[midi][existingNoteIndex] = note;
+      state[note.midi][existingNoteIndex] = note;
     },
 
-    removeNote: (state, action: PayloadAction<NotePayload>) => {
-      const { midi, peerId } = action.payload.note;
+    removeNote: (state, action: PayloadAction<Note>) => {
+      const { midi, peerId } = action.payload;
       const midiMatchedNotes = state[midi];
 
       if (!midiMatchedNotes) {

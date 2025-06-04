@@ -2,10 +2,11 @@ import * as NoteActions from '../actions/NoteActions';
 import RoomHandlers from '../handlers/RoomHandlers';
 import KeyboardController from '../controllers/KeyboardController';
 import MidiDeviceController from '../controllers/MidiDeviceController';
-import WebRtcController from '../controllers/WebRtcController';
-import WebsocketController from '../controllers/WebsocketController';
+import WebRtcController from '../networking/transports/WebRtcController';
+import WebsocketController from '../networking/transports/WebsocketController';
 import InstrumentRegistry from '../instruments/InstrumentRegistry';
-import TimeSync from './TimeSync';
+import AudioSyncCoordinator from '../audioSync/AudioSyncCoordinator';
+import AbstractNetworkController, { MessageHandler } from '../networking/AbstractNetworkController';
 
 const RTC_HANDLERS = {
   KEY_DOWN: RoomHandlers.keyDownHandler,
@@ -34,16 +35,22 @@ export function register() {
   const keyboardController = KeyboardController.getInstance();
   keyboardController.registerKeyDownHandler(NoteActions.keyDown);
   keyboardController.registerKeyUpHandler(NoteActions.keyUp);
+
+  AudioSyncCoordinator.start();
 }
 
 export function destroy() {
   // TODO: unsubscribe from all events
   InstrumentRegistry.empty();
   KeyboardController.getInstance().destroy();
+  AudioSyncCoordinator.stop();
   window.removeEventListener('blur', RoomHandlers.blurHandler);
 }
 
-function subscribe(controller: any, handlers: any) {
+function subscribe(
+  controller: AbstractNetworkController | MidiDeviceController,
+  handlers: Record<string, MessageHandler>
+) {
   Object.entries(handlers).forEach(([action, handler]) => {
     controller.on(action, handler);
   });

@@ -1,13 +1,13 @@
 export type Message = Record<string, any>;
 export type MessageHandler<T extends Message = any> = (event: T) => void;
 
-export default abstract class NetworkController {
+export default abstract class AbstractNetworkController {
   protected messageHandlers: Map<string, Set<MessageHandler>>;
 
   protected constructor() {
     this.messageHandlers = new Map();
   }
-  
+
   public on<T extends MessageHandler>(eventType: string, handler: T) {
     if (!this.messageHandlers.get(eventType)) {
       this.messageHandlers.set(eventType, new Set())
@@ -25,6 +25,10 @@ export default abstract class NetworkController {
   }
 
   public sendToPeer(peerId: string, action: string, message: Message) {
+    throw new Error('Not implemented');
+  }
+
+  public sendToPeers(peerIds: string[], action: string, message: Message) {
     throw new Error('Not implemented');
   }
 }

@@ -2,7 +2,7 @@ import { Sampler as ToneSampler } from 'tone';
 import { toFrequency } from '../lib/NoteHelpers';
 import getDelayTime from './getDelayTime';
 
-import type {Instrument} from './Instrument';
+import type { Instrument } from './Instrument';
 
 
 const BASE_PATH = '/assets/samples/';

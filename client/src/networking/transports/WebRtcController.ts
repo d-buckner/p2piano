@@ -1,12 +1,11 @@
-import { dispatch } from '../app/store';
-import { Transport } from '../constants';
-import { getWorkspace } from '../lib/WorkspaceHelper';
-import { downgradeConnection, setConnection } from '../slices/workspaceSlice';
-import NetworkController, { Message } from './NetworkController';
+import { dispatch } from '../../app/store';
+import { Transport } from '../../constants';
+import { connectionActions } from '../../slices/connectionSlice';
+import AbstractNetworkController, { Message } from '../AbstractNetworkController';
 import WebsocketController from './WebsocketController';
 import SimplePeer from 'simple-peer';
 
-type UserConnectPayload = {
+type UserPayload = {
   userId: string;
 };
 
@@ -15,10 +14,11 @@ type SignalPayload = {
   signalData: SimplePeer.SignalData;
 };
 
-const ACTION = {
+export const ACTION = {
   SIGNAL: 'SIGNAL',
   PEER_JOINED: 'PEER_JOINED',
   USER_CONNECT: 'USER_CONNECT',
+  USER_DISCONNECT: 'USER_DISCONNECT',
 } as const;
 
 const PEER_EVENT = {
@@ -29,13 +29,7 @@ const PEER_EVENT = {
 } as const;
 
 
-/**
- * This is in need of a refactor. The controller should not have a dependency on
- * the websocket controller, and rather be a wrapper for SimplePeer. This would
- * allow this controller to be generalized.
-*/
-
-export default class WebRtcController extends NetworkController {
+export default class WebRtcController extends AbstractNetworkController {
   private static instance?: WebRtcController;
   private websocketController: WebsocketController;
   private initiator = false;
@@ -50,6 +44,8 @@ export default class WebRtcController extends NetworkController {
     this.websocketController.on(ACTION.SIGNAL, this.onSignalReceived.bind(this));
     // new user joins, we send signal message
     this.websocketController.on(ACTION.USER_CONNECT, this.onPeerJoined.bind(this));
+    // user leaves, remove connection
+    this.websocketController.on(ACTION.USER_DISCONNECT, this.onPeerLeft.bind(this));
   }
 
   public static getInstance(): WebRtcController {
@@ -61,32 +57,15 @@ export default class WebRtcController extends NetworkController {
   }
 
   public broadcast<T extends Message>(action: string, message: T) {
-    const workspace = getWorkspace();
-    const peerIds = Object.keys(workspace?.room?.users || {});
-
-    const userIdsForWebsockets: string[] = [];
-
-    peerIds.forEach(peerId => {
-      // don't send message back to this client, only peers
-      if (peerId === workspace.connectionId) {
-        return;
-      }
-
-      try {
-        this.sendToPeer(peerId, action, message);
-      } catch {
-        // fall back to websocket
-        userIdsForWebsockets.push(peerId);
-      }
+    this.activePeerIds.forEach(peerId => {
+      this.sendToPeer(peerId, action, message);
     });
+  }
 
-    // broadcast message to all peers that don't have an active webrtc connection
-    if (userIdsForWebsockets.length) {
-      WebsocketController.getInstance().send(action, {
-        ...message,
-        targetUserIds: userIdsForWebsockets,
-      });
-    }
+  public sendToPeers<T extends Message>(peerIds: string[], action: string, message: T) {
+    peerIds.forEach(peerId => {
+      this.sendToPeer(peerId, action, message);
+    })
   }
 
   public sendToPeer<T extends Message>(peerId: string, action: string, message: T) {
@@ -120,9 +99,17 @@ export default class WebRtcController extends NetworkController {
     this.peers.get(userId)?.signal(signalData);
   }
 
-  private onPeerJoined(message: UserConnectPayload) {
+  private onPeerJoined(message: UserPayload) {
+    dispatch(connectionActions.addPeerConnection({
+      peerId: message.userId,
+      transport: Transport.WEBSOCKETS,
+    }));
     this.initiator = true;
     this.addPeer(message.userId);
+  }
+
+  private onPeerLeft(message: UserPayload) {
+    dispatch(connectionActions.removePeerConnection(message.userId));
   }
 
   private addPeer(userId: string) {
@@ -133,14 +120,14 @@ export default class WebRtcController extends NetworkController {
 
     p.on(PEER_EVENT.CONNECT, () => {
       this.activePeerIds.add(userId);
-      dispatch(setConnection({
-        userId,
+      dispatch(connectionActions.setPeerTransport({
+        peerId: userId,
         transport: Transport.WEBRTC,
       }));
     });
 
     p.on(PEER_EVENT.SIGNAL, signalData => {
-      this.websocketController.send(ACTION.SIGNAL, {
+      this.websocketController.broadcast(ACTION.SIGNAL, {
         userId,
         signalData,
       });
@@ -149,7 +136,10 @@ export default class WebRtcController extends NetworkController {
     p.on(PEER_EVENT.CLOSE, () => {
       this.peers.delete(userId);
       this.activePeerIds.delete(userId);
-      dispatch(downgradeConnection({ userId }));
+      dispatch(connectionActions.setPeerTransport({
+        peerId: userId,
+        transport: Transport.WEBSOCKETS,
+      }));
     });
 
     p.on(PEER_EVENT.DATA, data => {

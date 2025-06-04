@@ -1,35 +1,33 @@
 import { dispatch } from '../app/store';
-import { getWorkspace } from '../lib/WorkspaceHelper';
+import { getUser, getWorkspace } from '../lib/WorkspaceHelper';
 import { addNote, removeNote } from '../slices/notesSlice';
 import PianoClient from '../clients/PianoClient';
 import InstrumentRegistry from '../instruments/InstrumentRegistry';
-import TimeSync from '../lib/TimeSync';
+import { getAudioDelay } from '../audioSync/utils';
 
 export function keyDown(midi: number, velocity = 100, peerId?: string) {
   if (!peerId) {
     PianoClient.keyDown(midi, velocity);
   }
-  
-  const resolvedPeerId = getResolvedPeerId(peerId);
-  if (!resolvedPeerId) {
-    // can't perform piano actions before room connection are setup
+
+  const resolvedUserId = getResolvedUserId(peerId);
+  if (!resolvedUserId) {
+    // can't perform piano actions before room connection are set up
     return;
   }
 
-  InstrumentRegistry.get(resolvedPeerId)?.keyDown(
+  InstrumentRegistry.get(resolvedUserId)?.keyDown(
     midi,
-    TimeSync.getInstance().getAudioDelay(resolvedPeerId),
+    getAudioDelay(resolvedUserId),
     velocity,
   );
 
-  const { color } = getWorkspace().room?.users?.[resolvedPeerId] || {};
+  const {color} = getUser(resolvedUserId) ?? {};
   dispatch(addNote({
-    note: {
-      midi,
-      peerId: resolvedPeerId,
-      velocity,
-      color
-    }
+    midi,
+    peerId: resolvedUserId,
+    velocity,
+    color
   }));
 }
 
@@ -38,26 +36,24 @@ export function keyUp(midi: number, peerId?: string) {
     PianoClient.keyUp(midi);
   }
 
-  const resolvedPeerId = getResolvedPeerId(peerId);
-  if (!resolvedPeerId) {
-    // can't perform piano actions before room connection is setup
+  const resolvedUserId = getResolvedUserId(peerId);
+  if (!resolvedUserId) {
+    // can't perform piano actions before room connection is set up
     return;
   }
 
-  InstrumentRegistry.get(resolvedPeerId)?.keyUp(
+  InstrumentRegistry.get(resolvedUserId)?.keyUp(
     midi,
-    TimeSync.getInstance().getAudioDelay(resolvedPeerId),
+    getAudioDelay(resolvedUserId),
   );
   dispatch(removeNote({
-    note: {
-      midi,
-      peerId: resolvedPeerId,
-      velocity: 0,
-    }
+    midi,
+    peerId: resolvedUserId,
+    velocity: 0,
   }));
 }
 
-function getResolvedPeerId(peerId?: string): string | undefined {
-  return peerId
-    || getWorkspace().connectionId
+function getResolvedUserId(userId?: string): string | undefined {
+  return userId
+    || getWorkspace().userId
 }

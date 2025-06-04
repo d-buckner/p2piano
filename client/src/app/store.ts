@@ -1,14 +1,16 @@
-import {configureStore} from '@reduxjs/toolkit';
-import {workspaceReducer} from '../slices/workspaceSlice';
-import {notesReducer} from '../slices/notesSlice';
+import { configureStore } from '@reduxjs/toolkit';
+import { workspaceReducer } from '../slices/workspaceSlice';
+import { notesReducer } from '../slices/notesSlice';
+import { connectionReducer } from "../slices/connectionSlice";
 import getRafDebounce from '../actions/rafDispatch';
 
 const store = configureStore({
-    reducer: {
-        workspace: workspaceReducer,
-        notesByMidi: notesReducer,
-    },
-    devTools: process.env.NODE_ENV !== 'production',
+  reducer: {
+    workspace: workspaceReducer,
+    notesByMidi: notesReducer,
+    connection: connectionReducer,
+  },
+  devTools: process.env.NODE_ENV !== 'production',
 });
 
 export const dispatch = getRafDebounce(store.dispatch);

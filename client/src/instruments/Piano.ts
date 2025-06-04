@@ -1,7 +1,7 @@
 import getDelayTime from './getDelayTime';
 import { Piano as TonePiano } from '@tonejs/piano';
 
-import type {Instrument} from './Instrument';
+import type { Instrument } from './Instrument';
 
 
 export default class Piano implements Instrument {

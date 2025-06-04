@@ -16,7 +16,7 @@ type Connections = {
 
 export type Workspace = {
   roomId?: string,
-  connectionId?: string,
+  userId?: string,
   isValid?: boolean,
   isLoading?: boolean,
   room?: Room,
@@ -26,7 +26,7 @@ export type Workspace = {
 
 const initialState: Workspace = {
   roomId: undefined,
-  connectionId: undefined,
+  userId: undefined,
   connections: {},
   isValid: undefined,
   isLoading: undefined,
@@ -56,11 +56,11 @@ export const workspaceSlice = createSlice({
     },
     initializeRoom: (state, action: PayloadAction<InitializeRoomPayload>) => {
       const { room, userId } = action.payload;
-      state.connectionId = userId;
+      state.userId = userId;
       state.room = room;
       const connections: Connections = {};
       Object.keys(room.users).forEach(userId => {
-        if (userId === state.connectionId) {
+        if (userId === state.userId) {
           return;
         }
         connections[userId] = { transport: Transport.WEBSOCKETS };

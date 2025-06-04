@@ -6,9 +6,12 @@ export function getUsers() {
   const { room } = getWorkspace();
   return room?.users || {};
 }
-
 export function getUser(userId: string) {
   return getUsers()[userId];
+}
+
+export function getUserCount(): number {
+  return Object(getUsers()).length;
 }
 
 export function getUsersArray() {
@@ -31,7 +34,7 @@ export function getMyUser() {
 }
 
 export function getMyUserId() {
-  return getWorkspace().connectionId;
+  return getWorkspace().userId;
 }
 
 export function getWorkspace() {

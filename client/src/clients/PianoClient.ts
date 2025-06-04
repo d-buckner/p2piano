@@ -1,7 +1,4 @@
-import WebRtcController from '../controllers/WebRtcController';
-import WebsocketController from '../controllers/WebsocketController';
-
-import type { Payload } from '../constants';
+import WebRtcController from '../networking/transports/WebRtcController';
 
 
 const KEY_ACTIONS = {
@@ -10,18 +7,6 @@ const KEY_ACTIONS = {
 } as const;
 
 const PianoClient = {
-  // TODO: Move subscriptions to RoomActionBridge
-  onKeyDown(callback: (payload: Payload) => void) {
-    WebRtcController.getInstance().on(KEY_ACTIONS.KEY_DOWN, callback);
-    WebsocketController.getInstance().on(KEY_ACTIONS.KEY_DOWN, callback);
-  },
-
-  // TODO: Move subscriptions to RoomActionBridge
-  onKeyUp(callback: (payload: Payload) => void) {
-    WebRtcController.getInstance().on(KEY_ACTIONS.KEY_UP, callback);
-    WebsocketController.getInstance().on(KEY_ACTIONS.KEY_UP, callback);
-  },
-
   keyDown(midi: number, velocity: number) {
     WebRtcController.getInstance().broadcast(KEY_ACTIONS.KEY_DOWN, { midi, velocity });
   },
