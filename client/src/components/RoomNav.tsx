@@ -2,9 +2,10 @@ import React from 'react';
 import { Flex, Link } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
-import { getUsersArray } from '../lib/WorkspaceHelper';
+import UserItems from './UserItems';
 
 import type { Workspace } from '../slices/workspaceSlice';
+
 
 type Props = {
   workspace: Workspace;
@@ -30,13 +31,6 @@ function RoomNav({ workspace }: Props) {
     WorkspaceActions.destroyRoom();
   }
 
-  function updateDisplayName() {
-    const displayName = prompt('update display name');
-    if (displayName) {
-      WorkspaceActions.updateDisplayName(displayName);
-    }
-  }
-
   return (
     <Flex
       w='full'
@@ -47,29 +41,7 @@ function RoomNav({ workspace }: Props) {
       color='white'
     >
       <Link onClick={navigateHome} fontFamily='Mortina Two'>p2piano</Link>
-      <Flex>
-        {getUsersArray().map((user, i) => (
-          <div style={{ display: 'flex', alignItems: 'center' }} key={i}>
-            <div
-              style={{
-                borderRadius: '50%',
-                width: '8px',
-                height: '8px',
-                backgroundColor: user.color,
-              }}
-            />
-            <b
-              onClick={updateDisplayName}
-              style={{
-                cursor: 'pointer',
-                margin: '0 12px 0 4px',
-              }}
-            >
-              {user.displayName}
-            </b>
-          </div>
-        ))}
-      </Flex>
+      <UserItems />
       <Link onClick={shareRoom} whiteSpace='nowrap'>
         space: <b>{workspace.roomId}</b>
       </Link>

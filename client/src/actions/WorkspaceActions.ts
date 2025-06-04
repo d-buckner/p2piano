@@ -15,6 +15,8 @@ import {
 import * as RoomActionBridge from '../lib/RoomActionBridge';
 import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
 import { InstrumentType } from '../instruments/Instrument';
+import { connectionActions } from '../slices/connectionSlice';
+import { Transport } from '../constants';
 
 export async function joinRoom(roomId: string) {
   batch(() => {
@@ -26,7 +28,15 @@ export async function joinRoom(roomId: string) {
     const { room } = getWorkspace();
     if (!room) {
       const room = await getRoom(roomId);
-      dispatch(setRoom({ room }));
+      batch(() => {
+        dispatch(setRoom({ room }));
+        Object.values(room.users).forEach(user => {
+          dispatch(connectionActions.addPeerConnection({
+            peerId: user.userId,
+            transport: Transport.WEBSOCKETS,
+          }));
+        })
+      });
     }
     if (!Session.getSessionId()) {
       const session = await createSession();

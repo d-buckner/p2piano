@@ -23,8 +23,6 @@ export type NotesByMidi = {
   [midi: string]: Note[];
 };
 
-export type MidiRange = [number, number];
-
 export enum Transport {
   WEBSOCKETS = 'WEBSOCKETS',
   WEBRTC = 'WEBRTC',

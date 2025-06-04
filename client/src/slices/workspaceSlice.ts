@@ -72,5 +72,6 @@ export const {
 } = workspaceSlice.actions;
 
 export const selectWorkspace = (state: RootState) => state.workspace;
+export const selectUsers = (state: RootState) => selectWorkspace(state).room?.users ?? {};
 
 export const workspaceReducer = workspaceSlice.reducer;

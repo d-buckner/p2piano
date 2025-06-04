@@ -159,7 +159,7 @@ class AudioSyncCoordinator {
           return currentMax;
         }
 
-        return Math.floor(Math.max(currentMax, window.avg));
+        return truncate(Math.max(currentMax, window.avg));
       }, 0);
 
     dispatch(connectionActions.setMaxLatency(this.maxLatency));
@@ -189,13 +189,13 @@ class AudioSyncCoordinator {
 
   private onPong(response: SamplingMessage) {
     const { peerId, pingTime } = response;
-    const latency = (performance.now() - pingTime) / 2;
+    const latency = truncate((performance.now() - pingTime) / 2);
     const peerLatencyWindow = this.peerLatencyWindows[peerId];
     peerLatencyWindow.add(latency);
 
     dispatch(connectionActions.setPeerLatency({
       peerId,
-      latency: peerLatencyWindow.avg,
+      latency: truncate(peerLatencyWindow.avg),
     }));
   }
 
@@ -213,7 +213,7 @@ class AudioSyncCoordinator {
   private logLatencies() {
     const table = Object.entries(this.peerLatencyWindows).map(([peerId, window]) => ({
       user: peerId,
-      ping: Math.floor(window.avg),
+      ping: truncate(window.avg),
       'playback offset': this.getAudioDelay(peerId),
     }));
 
@@ -221,6 +221,10 @@ class AudioSyncCoordinator {
       console.table(table);
     }
   }
+}
+
+function truncate(val: number) {
+  return Math.floor(val * 100) / 100;
 }
 
 export default new AudioSyncCoordinator();
