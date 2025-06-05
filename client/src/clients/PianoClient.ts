@@ -1,4 +1,4 @@
-import WebRtcController from '../networking/transports/WebRtcController';
+import RealTimeController from '../networking/RealTimeController';
 
 
 const KEY_ACTIONS = {
@@ -8,11 +8,11 @@ const KEY_ACTIONS = {
 
 const PianoClient = {
   keyDown(midi: number, velocity: number) {
-    WebRtcController.getInstance().broadcast(KEY_ACTIONS.KEY_DOWN, { midi, velocity });
+    RealTimeController.getInstance().broadcast(KEY_ACTIONS.KEY_DOWN, { midi, velocity });
   },
 
   keyUp(midi: number) {
-    WebRtcController.getInstance().broadcast(KEY_ACTIONS.KEY_UP, { midi });
+    RealTimeController.getInstance().broadcast(KEY_ACTIONS.KEY_UP, { midi });
   },
 };
 

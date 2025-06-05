@@ -49,7 +49,7 @@ const SAMPLES_PER_MINUTE = 120;
  * it's a tradeoff between synchronization accuracy (lower is better) and
  * consistency in playback audio offset (higher is better)
  */
-const SMOOTHING_WINDOW_SECONDS = 2;
+const SMOOTHING_WINDOW_SECONDS = 20;
 
 // window sample size
 const WINDOW_SIZE = Math.floor(SAMPLES_PER_MINUTE / 60 * SMOOTHING_WINDOW_SECONDS);
@@ -76,12 +76,10 @@ interface PeerLeftMessage {
 class AudioSyncCoordinator {
   private peerLatencyWindows: PeerLatencyWindows;
   private isRunning: boolean;
-  private maxLatency: number;
   private myUserId?: string;
 
   constructor() {
     this.isRunning = false;
-    this.maxLatency = 0;
     this.peerLatencyWindows = {};
     this.onPing = this.onPing.bind(this);
     this.onPong = this.onPong.bind(this);
@@ -111,20 +109,6 @@ class AudioSyncCoordinator {
     dispatch(connectionActions.removePeerConnection(peerId));
   }
 
-  public getAudioDelay(userId: string): number {
-    if (userId === this.myUserId) {
-      return this.maxLatency;
-    }
-    const latency = this.peerLatencyWindows[userId]?.avg ?? 0;
-    const delay = this.maxLatency - latency;
-    if (delay < MIN_LATENCY_CUTOFF_MS) {
-      // ignore imperceptible delay
-      return 0;
-    }
-
-    return Math.max(delay, 0);
-  }
-
   private tick() {
     if (!this.isRunning) {
       return;
@@ -151,7 +135,7 @@ class AudioSyncCoordinator {
       }
     });
 
-    this.maxLatency = Object
+    const maxLatency = Object
       .values(this.peerLatencyWindows)
       .reduce((currentMax, window) => {
         if (window.avg > MAX_LATENCY_CUTOFF_MS) {
@@ -162,12 +146,7 @@ class AudioSyncCoordinator {
         return truncate(Math.max(currentMax, window.avg));
       }, 0);
 
-    dispatch(connectionActions.setMaxLatency(this.maxLatency));
-
-    // @ts-ignore
-    if (window.DEBUG_LATENCY) {
-      this.logLatencies();
-    }
+    dispatch(connectionActions.setMaxLatency(maxLatency));
 
     setTimeout(this.tick, 60_000 / SAMPLES_PER_MINUTE);
   }
@@ -207,18 +186,6 @@ class AudioSyncCoordinator {
     if (!this.myUserId) {
       this.myUserId = getMyUserId();
       throw new Error('User id not yet retrieved'); // TODO: ensure room bootstrap is complete before initializing
-    }
-  }
-
-  private logLatencies() {
-    const table = Object.entries(this.peerLatencyWindows).map(([peerId, window]) => ({
-      user: peerId,
-      ping: truncate(window.avg),
-      'playback offset': this.getAudioDelay(peerId),
-    }));
-
-    if (Object.values(table).length) {
-      console.table(table);
     }
   }
 }

@@ -46,7 +46,9 @@ export default class RealTimeController extends AbstractNetworkController {
       });
     });
 
-    this.websocketController.sendToPeers(websocketPeerIds, action, message);
+    if (websocketPeerIds.length) {
+      this.websocketController.sendToPeers(websocketPeerIds, action, message);
+    }
   }
 
   public sendToPeer<T extends Message>(
@@ -72,7 +74,9 @@ export default class RealTimeController extends AbstractNetworkController {
       });
     });
 
-    this.websocketController.sendToPeers(websocketPeerIds, action, message);
+    if (websocketPeerIds.length) {
+      this.websocketController.sendToPeers(websocketPeerIds, action, message);
+    }
   }
 
   private sendWithFallback<T extends Message>(

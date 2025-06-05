@@ -2,11 +2,11 @@ import * as NoteActions from '../actions/NoteActions';
 import RoomHandlers from '../handlers/RoomHandlers';
 import KeyboardController from '../controllers/KeyboardController';
 import MidiDeviceController from '../controllers/MidiDeviceController';
-import WebRtcController from '../networking/transports/WebRtcController';
 import WebsocketController from '../networking/transports/WebsocketController';
 import InstrumentRegistry from '../instruments/InstrumentRegistry';
 import AudioSyncCoordinator from '../audioSync/AudioSyncCoordinator';
 import AbstractNetworkController, { MessageHandler } from '../networking/AbstractNetworkController';
+import RealTimeController from '../networking/RealTimeController';
 
 const RTC_HANDLERS = {
   KEY_DOWN: RoomHandlers.keyDownHandler,
@@ -17,8 +17,6 @@ const WEBSOCKET_HANDLERS = {
   USER_CONNECT: RoomHandlers.userConnectHandler,
   USER_DISCONNECT: RoomHandlers.userDisconnectHandler,
   USER_UPDATE: RoomHandlers.userUpdateHandler,
-  KEY_DOWN: RoomHandlers.keyDownHandler,
-  KEY_UP: RoomHandlers.keyUpHandler,
   disconnect: RoomHandlers.roomDisconnectHandler,
 } as const;
 const MIDI_HANDLERS = {
@@ -28,7 +26,7 @@ const MIDI_HANDLERS = {
 
 export function register() {
   subscribe(MidiDeviceController.getInstance(), MIDI_HANDLERS);
-  subscribe(WebRtcController.getInstance(), RTC_HANDLERS);
+  subscribe(RealTimeController.getInstance(), RTC_HANDLERS);
   subscribe(WebsocketController.getInstance(), WEBSOCKET_HANDLERS);
   window.addEventListener('blur', RoomHandlers.blurHandler);
 
