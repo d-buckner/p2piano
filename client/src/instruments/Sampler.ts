@@ -19,7 +19,7 @@ export default class Sampler implements Instrument {
     this.instrument.toDestination();
   }
 
-  keyDown(midi: number, delay = 0, velocity = 100) {
+  keyDown(midi: number, delay?: number, velocity = 100) {
     this.instrument.triggerAttack(
       toFrequency(midi),
       getDelayTime(delay),
@@ -27,7 +27,7 @@ export default class Sampler implements Instrument {
     );
   }
 
-  keyUp(midi: number, delay = 0) {
+  keyUp(midi: number, delay?: number) {
     this.instrument.triggerRelease(toFrequency(midi), getDelayTime(delay));
   }
 

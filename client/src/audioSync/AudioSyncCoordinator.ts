@@ -2,7 +2,7 @@ import RollingAvg from '../lib/RollingAvg';
 import { getMyUserId } from '../lib/WorkspaceHelper';
 import { dispatch } from "../app/store";
 import { connectionActions } from "../slices/connectionSlice";
-import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from "./utils";
+import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from "./constants";
 import { getConnectedPeerIds } from '../lib/ConnectionUtils';
 import RealTimeController from '../networking/RealTimeController';
 import { ACTION } from '../networking/transports/WebRtcController';
@@ -49,7 +49,7 @@ const SAMPLES_PER_MINUTE = 120;
  * it's a tradeoff between synchronization accuracy (lower is better) and
  * consistency in playback audio offset (higher is better)
  */
-const SMOOTHING_WINDOW_SECONDS = 20;
+const SMOOTHING_WINDOW_SECONDS = 2;
 
 // window sample size
 const WINDOW_SIZE = Math.floor(SAMPLES_PER_MINUTE / 60 * SMOOTHING_WINDOW_SECONDS);
@@ -138,7 +138,7 @@ class AudioSyncCoordinator {
     const maxLatency = Object
       .values(this.peerLatencyWindows)
       .reduce((currentMax, window) => {
-        if (window.avg > MAX_LATENCY_CUTOFF_MS) {
+        if (window.avg > MAX_LATENCY_CUTOFF_MS || window.avg < MIN_LATENCY_CUTOFF_MS) {
           // ignore client due to excessive latency
           return currentMax;
         }

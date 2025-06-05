@@ -1,6 +1,6 @@
 // takes delay in ms and converts to tonejs time string
-export default function getDelayTime(delay: number): string | undefined {
-  if (delay === 0) {
+export default function getDelayTime(delay?: number): string | undefined {
+  if (!delay) {
     return;
   }
 

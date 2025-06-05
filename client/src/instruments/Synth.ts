@@ -1,4 +1,4 @@
-import {Instrument} from './Instrument';
+import { Instrument } from './Instrument';
 import { PolySynth, Synth as ToneSynth } from 'tone';
 import { toFrequency } from '../lib/NoteHelpers';
 import getDelayTime from './getDelayTime';
@@ -21,7 +21,7 @@ export default class Synth implements Instrument {
     this.instrument.toDestination();
   }
 
-  keyDown(midi: number, delay = 0, velocity = 100) {
+  keyDown(midi: number, delay?: number, velocity = 100) {
     this.instrument.triggerAttack(
       toFrequency(midi),
       getDelayTime(delay),
@@ -29,8 +29,11 @@ export default class Synth implements Instrument {
     );
   }
 
-  keyUp(midi: number) {
-    this.instrument.triggerRelease(toFrequency(midi));
+  keyUp(midi: number, delay?: number) {
+    this.instrument.triggerRelease(
+      toFrequency(midi),
+      getDelayTime(delay)
+    );
   }
 
   releaseAll() {

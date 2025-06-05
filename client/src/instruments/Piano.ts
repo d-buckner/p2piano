@@ -8,12 +8,12 @@ export default class Piano implements Instrument {
   private instrument: TonePiano;
 
   constructor() {
-    this.instrument = new TonePiano({ velocities: 1 });
+    this.instrument = new TonePiano({ velocities: 2 });
     this.instrument.load();
     this.instrument.toDestination();
   }
 
-  keyDown(midi: number, delay = 0, velocity = 100): void {
+  keyDown(midi: number, delay?: number, velocity = 100): void {
     this.instrument.keyDown({
       note: midi.toString(),
       time: getDelayTime(delay),
@@ -21,7 +21,7 @@ export default class Piano implements Instrument {
     });
   }
 
-  keyUp(midi: number, delay = 0): void {
+  keyUp(midi: number, delay?: number): void {
     this.instrument.keyUp({
       note: midi.toString(),
       time: getDelayTime(delay),
