@@ -1,8 +1,8 @@
 @font-face {
-    font-family: 'Mortina Two';
+    font-family: 'Ysabeau Office';
     src:
-        local('Mortina Two'),
-        url('../fonts/mortina-two.woff2') format('woff2');
+        local('Ysabeau Office'),
+        url('../fonts/ysabeau-office.woff2') format('woff2');
 }
 
 @font-face {

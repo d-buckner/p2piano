@@ -1,30 +1,30 @@
-import {Button, Flex} from '@chakra-ui/react';
-import {useNavigate} from 'react-router-dom';
+import { Button, Flex } from '@chakra-ui/react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Navbar() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    return (
-        <Flex justifyContent='space-between'>
-            <Button
-                as='a'
-                height='32px'
-                _hover={{bg:"gray"}}
-                onClick={() => navigate('/')}
-                background='none'
-                fontFamily="Mortina Two"
-            >
-                p2piano
-            </Button>
-            <Button
-                as='a'
-                height='32px'
-                _hover={{bg:"gray"}}
-                onClick={() => navigate('/donate')}
-                background='none'
-            >
-                donate
-            </Button>
-        </Flex>
-    );
+  return (
+    <Flex justifyContent='space-between'>
+      <Button
+        as='a'
+        height='32px'
+        _hover={{ bg: "gray" }}
+        onClick={() => navigate('/')}
+        background='none'
+        fontFamily='Ysabeau Office'
+      >
+        p2piano
+      </Button>
+      <Button
+        as='a'
+        height='32px'
+        _hover={{ bg: "gray" }}
+        onClick={() => navigate('/donate')}
+        background='none'
+      >
+        donate
+      </Button>
+    </Flex>
+  );
 }

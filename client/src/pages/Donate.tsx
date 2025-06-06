@@ -13,7 +13,8 @@ const Donate = () => (
         <Heading
           padding='16px 0'
           textAlign='center'
-          fontFamily='Mortina Two'
+          fontFamily='Ysabeau Office'
+          textTransform='lowercase'
         >
           donate
         </Heading>

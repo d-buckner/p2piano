@@ -40,7 +40,7 @@ function RoomNav({ workspace }: Props) {
       backgroundColor='#424242'
       color='white'
     >
-      <Link onClick={navigateHome} fontFamily='Mortina Two'>p2piano</Link>
+      <Link onClick={navigateHome} fontFamily='Ysabeau Office'>p2piano</Link>
       <UserItems />
       <Link onClick={shareRoom} whiteSpace='nowrap'>
         space: <b>{workspace.roomId}</b>
