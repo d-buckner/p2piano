@@ -1,6 +1,4 @@
-// import AcousticGuitar from './AcousticGuitar';
 import ElectricBass from './ElectricBass';
-// import ElectricGuitar from './ElectricGuitar';
 import { Instrument, InstrumentType } from './Instrument';
 import Piano from './Piano';
 import Synth from './Synth';
@@ -19,7 +17,7 @@ export default class InstrumentRegistry {
     return InstrumentRegistry.peerInstruments.get(peerId) || null;
   }
 
-  static deregister(peerId: string) {
+  static unregister(peerId: string) {
     InstrumentRegistry.get(peerId)?.releaseAll();
     InstrumentRegistry.peerInstruments.delete(peerId);
   }
@@ -29,19 +27,17 @@ export default class InstrumentRegistry {
   }
 }
 
-const instrumentConstructors = {
+const concreteInstruments = {
   [InstrumentType.PIANO]: Piano,
   [InstrumentType.SYNTH]: Synth,
-  // [InstrumentType.ELECTRIC_GUITAR]: ElectricGuitar,
-  // [InstrumentType.ACOUSTIC_GUITAR]: AcousticGuitar,
   [InstrumentType.ELECTRIC_BASS]: ElectricBass,
-}
+} as const;
 
 function createInstrument(type: InstrumentType): Instrument {
-  const constructor = instrumentConstructors[type];
-  if (!constructor) {
+  const ConcreteInstrument = concreteInstruments[type];
+  if (!ConcreteInstrument) {
     throw new Error('Unknown instrument type');
   }
 
-  return new constructor();
+  return new ConcreteInstrument();
 }

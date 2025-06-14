@@ -12,8 +12,6 @@ import type { User } from '../lib/workspaceTypes';
 const INSTRUMENTS: Record<InstrumentType, string> = {
   [InstrumentType.PIANO]: 'Piano',
   [InstrumentType.SYNTH]: 'Synth',
-  // [InstrumentType.ELECTRIC_GUITAR]: 'Electric guitar',
-  // [InstrumentType.ACOUSTIC_GUITAR]: 'Acoustic guitar',
   [InstrumentType.ELECTRIC_BASS]: 'Electric bass',
 };
 

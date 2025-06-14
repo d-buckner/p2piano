@@ -104,7 +104,7 @@ export default class RoomHandlers {
 
   static userDisconnectHandler(payload: UserDisconnectPayload) {
     const { userId, room } = payload;
-    InstrumentRegistry.deregister(userId);
+    InstrumentRegistry.unregister(userId);
     batch(() => {
       dispatch(removeNotesFromPeer({ peerId: userId }));
       dispatch(setRoom({ room }));
