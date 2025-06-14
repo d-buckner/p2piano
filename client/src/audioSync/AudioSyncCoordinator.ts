@@ -44,15 +44,12 @@ import { ACTION } from '../networking/transports/WebRtcController';
 
 const SAMPLES_PER_MINUTE = 120;
 /**
- * time window to smooth peer latency values
- *
+ * window sample size
+ * 
  * it's a tradeoff between synchronization accuracy (lower is better) and
  * consistency in playback audio offset (higher is better)
  */
-const SMOOTHING_WINDOW_SECONDS = 2;
-
-// window sample size
-const WINDOW_SIZE = Math.floor(SAMPLES_PER_MINUTE / 60 * SMOOTHING_WINDOW_SECONDS);
+const WINDOW_SIZE = 3;
 
 const SYNC_EVENT = {
   LATENCY_PING: 'LATENCY_PING',
