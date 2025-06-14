@@ -5,12 +5,12 @@ import {
   Context as ToneContext,
 } from 'tone';
 import * as NoteActions from '../actions/NoteActions';
-import InstrumentRegistry from '../instruments/InstrumentRegistry';
+import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import {
   setRoom,
   initializeRoom,
 } from '../slices/workspaceSlice';
-import { InstrumentType } from '../instruments/Instrument';
+import { InstrumentType } from '../audio/instruments/Instrument';
 import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
 import { removeNotesFromPeer, selectNotes } from '../slices/notesSlice';
 

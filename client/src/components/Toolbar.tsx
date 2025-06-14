@@ -5,7 +5,7 @@ import {
 import { connect } from 'react-redux';
 import { getMyUser } from '../lib/WorkspaceHelper';
 import { updateInstrument } from '../actions/WorkspaceActions';
-import { InstrumentType } from '../instruments/Instrument';
+import { InstrumentType } from '../audio/instruments/Instrument';
 
 import type { User } from '../lib/workspaceTypes';
 

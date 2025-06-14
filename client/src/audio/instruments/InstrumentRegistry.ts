@@ -5,25 +5,25 @@ import Synth from './Synth';
 
 
 export default class InstrumentRegistry {
-  private static peerInstruments: Map<string, Instrument> = new Map();
+  private static userInstruments: Map<string, Instrument> = new Map();
   private constructor() { }
 
-  static register(peerId: string, instrumentType: InstrumentType) {
-    InstrumentRegistry.get(peerId)?.releaseAll();
-    InstrumentRegistry.peerInstruments.set(peerId, createInstrument(instrumentType))
+  static register(userId: string, instrumentType: InstrumentType) {
+    InstrumentRegistry.get(userId)?.releaseAll();
+    InstrumentRegistry.userInstruments.set(userId, createInstrument(instrumentType))
   }
 
-  static get(peerId: string): Instrument | null {
-    return InstrumentRegistry.peerInstruments.get(peerId) || null;
+  static get(userId: string): Instrument | null {
+    return InstrumentRegistry.userInstruments.get(userId) || null;
   }
 
-  static unregister(peerId: string) {
-    InstrumentRegistry.get(peerId)?.releaseAll();
-    InstrumentRegistry.peerInstruments.delete(peerId);
+  static unregister(userId: string) {
+    InstrumentRegistry.get(userId)?.releaseAll();
+    InstrumentRegistry.userInstruments.delete(userId);
   }
 
   static empty() {
-    InstrumentRegistry.peerInstruments = new Map();
+    InstrumentRegistry.userInstruments = new Map();
   }
 }
 

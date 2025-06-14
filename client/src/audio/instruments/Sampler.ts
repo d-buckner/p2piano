@@ -1,5 +1,5 @@
 import { Sampler as ToneSampler } from 'tone';
-import { toFrequency } from '../lib/NoteHelpers';
+import { toFrequency } from '../../lib/NoteHelpers';
 import getDelayTime from './getDelayTime';
 
 import type { Instrument } from './Instrument';

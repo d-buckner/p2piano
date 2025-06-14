@@ -1,7 +1,7 @@
-import store from "../app/store";
-import { selectMaxLatency, selectPeerConnections } from "../slices/connectionSlice";
-import { selectWorkspace } from "../slices/workspaceSlice";
-import { MIN_LATENCY_CUTOFF_MS } from "./constants";
+import store from '../../app/store';
+import { selectMaxLatency, selectPeerConnections } from '../../slices/connectionSlice';
+import { selectWorkspace } from '../../slices/workspaceSlice';
+import { MIN_LATENCY_CUTOFF_MS } from './constants';
 
 
 export function getAudioDelay(userId: string): number | undefined {

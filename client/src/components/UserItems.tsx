@@ -5,7 +5,7 @@ import { selectMaxLatency, selectPeerConnections } from '../slices/connectionSli
 import { selectUsers } from '../slices/workspaceSlice';
 import { Room } from '../lib/workspaceTypes';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
-import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from '../audioSync/constants';
+import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from '../audio/syncronization/constants';
 import Icon from './Icon';
 
 const MIDPOINT_LATENCY = ((MAX_LATENCY_CUTOFF_MS - MIN_LATENCY_CUTOFF_MS) / 2) + MIN_LATENCY_CUTOFF_MS;

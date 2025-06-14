@@ -14,7 +14,7 @@ import {
 } from '../slices/workspaceSlice';
 import * as RoomActionBridge from '../lib/RoomActionBridge';
 import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
-import { InstrumentType } from '../instruments/Instrument';
+import { InstrumentType } from '../audio/instruments/Instrument';
 import { connectionActions } from '../slices/connectionSlice';
 import { Transport } from '../constants';
 

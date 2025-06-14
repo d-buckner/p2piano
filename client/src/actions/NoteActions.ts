@@ -2,8 +2,8 @@ import { dispatch } from '../app/store';
 import { getUser, getWorkspace } from '../lib/WorkspaceHelper';
 import { addNote, removeNote } from '../slices/notesSlice';
 import PianoClient from '../clients/PianoClient';
-import InstrumentRegistry from '../instruments/InstrumentRegistry';
-import { getAudioDelay } from '../audioSync/utils';
+import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
+import { getAudioDelay } from '../audio/syncronization/utils';
 
 export function keyDown(midi: number, velocity = 100, peerId?: string) {
   if (!peerId) {

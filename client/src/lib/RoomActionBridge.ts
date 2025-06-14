@@ -3,10 +3,11 @@ import RoomHandlers from '../handlers/RoomHandlers';
 import KeyboardController from '../controllers/KeyboardController';
 import MidiDeviceController from '../controllers/MidiDeviceController';
 import WebsocketController from '../networking/transports/WebsocketController';
-import InstrumentRegistry from '../instruments/InstrumentRegistry';
-import AudioSyncCoordinator from '../audioSync/AudioSyncCoordinator';
+import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
+import AudioSyncCoordinator from '../audio/syncronization/AudioSyncCoordinator';
 import AbstractNetworkController, { MessageHandler } from '../networking/AbstractNetworkController';
 import RealTimeController from '../networking/RealTimeController';
+
 
 const RTC_HANDLERS = {
   KEY_DOWN: RoomHandlers.keyDownHandler,
