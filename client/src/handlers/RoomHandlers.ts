@@ -1,5 +1,9 @@
 import { batch } from 'react-redux';
 import store, { dispatch } from '../app/store';
+import {
+  setContext as setToneContext,
+  Context as ToneContext,
+} from 'tone';
 import * as NoteActions from '../actions/NoteActions';
 import InstrumentRegistry from '../instruments/InstrumentRegistry';
 import {
@@ -56,6 +60,11 @@ export default class RoomHandlers {
   }
 
   static roomJoinHandler(payload: RoomJoinPayload) {
+    // configure our audiocontext for minimal latency
+    setToneContext(new ToneContext({
+      latencyHint: 'interactive',
+      lookAhead: 0,
+    }));
     const { room, userId } = payload;
     Object.values(room.users).forEach(u => {
       InstrumentRegistry.register(u.userId, u.instrument as InstrumentType);
