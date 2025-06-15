@@ -6,6 +6,7 @@ import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from './constants';
 import { getConnectedPeerIds } from '../../lib/ConnectionUtils';
 import RealTimeController from '../../networking/RealTimeController';
 import { ACTION } from '../../networking/transports/WebRtcController';
+import Logger from '../../lib/Logger';
 
 
 /**
@@ -46,7 +47,7 @@ import { ACTION } from '../../networking/transports/WebRtcController';
 const SAMPLES_PER_MINUTE = 120;
 /**
  * window sample size
- * 
+ *
  * it's a tradeoff between synchronization accuracy (lower is better) and
  * consistency in playback audio offset (higher is better)
  */
@@ -169,6 +170,11 @@ class AudioSyncCoordinator {
     const latency = truncate((performance.now() - pingTime) / 2);
     const peerLatencyWindow = this.peerLatencyWindows[peerId];
     peerLatencyWindow.add(latency);
+
+    // @ts-ignore
+    if (window.LATENCY_DEBUG) {
+      Logger.INFO(`Peer ${peerId} latency: ${peerLatencyWindow.avg}`);
+    }
 
     dispatch(connectionActions.setPeerLatency({
       peerId,
