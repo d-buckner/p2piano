@@ -7,7 +7,7 @@ export default function Footer() {
                 open to the public 7 days a week. made by {' '}
                 <Link
                     textDecoration='underline'
-                    href='https://github.com/d-buckner'
+                    href='https://d-buckner.org'
                 >
                     d-buckner
                 </Link>
