@@ -1,5 +1,3 @@
-import navigator from 'jzz';
-
 export default class MidiDeviceController {
     private static instance?: MidiDeviceController;
     private access?: WebMidi.MIDIAccess;
