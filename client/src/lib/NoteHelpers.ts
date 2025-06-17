@@ -1,4 +1,4 @@
-import { Note, NotesByMidi } from '../constants';
+import type { Note, NotesByMidi } from '../constants';
 
 export function getNotes(notesByMidi: NotesByMidi): Note[] {
   return Object.entries(notesByMidi).reduce((notes, midiNotes) => {

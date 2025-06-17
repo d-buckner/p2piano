@@ -12,6 +12,7 @@ import ClientPreferences from './lib/ClientPreferences';
 import DisplayNameModal from './components/DisplayNameModal';
 import Donate from './pages/Donate';
 
+
 const App = () => {
   const [displayName, setDisplayName] = useState<string | null>(ClientPreferences.getDisplayName());
   const location = useLocation();

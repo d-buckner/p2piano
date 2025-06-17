@@ -1,7 +1,7 @@
 import { dispatch } from '../../app/store';
 import { Transport } from '../../constants';
 import { connectionActions } from '../../slices/connectionSlice';
-import AbstractNetworkController, { Message } from '../AbstractNetworkController';
+import AbstractNetworkController, { type Message } from '../AbstractNetworkController';
 import WebsocketController from './WebsocketController';
 import SimplePeer from 'simple-peer';
 

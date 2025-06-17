@@ -2,8 +2,8 @@ import { Transport } from "../constants";
 import { getConnectedPeerIds, getPeerConnection } from "../lib/ConnectionUtils";
 import Logger from "../lib/Logger";
 import AbstractNetworkController, {
-  Message,
-  MessageHandler,
+  type Message,
+  type MessageHandler,
 } from "./AbstractNetworkController";
 import WebRtcController from "./transports/WebRtcController";
 import WebsocketController from "./transports/WebsocketController";
