@@ -1,12 +1,13 @@
 import { Flex } from '@chakra-ui/react';
-import { RootState } from '../app/store';
 import { connect } from 'react-redux';
 import { selectMaxLatency, selectPeerConnections } from '../slices/connectionSlice';
 import { selectUsers } from '../slices/workspaceSlice';
-import { Room } from '../lib/workspaceTypes';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
 import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from '../audio/syncronization/constants';
 import Icon from './Icon';
+
+import type { Room } from '../lib/workspaceTypes';
+import type { RootState } from '../app/store';
 
 const MIDPOINT_LATENCY = ((MAX_LATENCY_CUTOFF_MS - MIN_LATENCY_CUTOFF_MS) / 2) + MIN_LATENCY_CUTOFF_MS;
 

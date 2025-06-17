@@ -1,5 +1,5 @@
 import ElectricBass from './ElectricBass';
-import { Instrument, InstrumentType } from './Instrument';
+import { type Instrument, InstrumentType } from './Instrument';
 import Piano from './Piano';
 import Synth from './Synth';
 

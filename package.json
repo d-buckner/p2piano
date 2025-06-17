@@ -2,7 +2,7 @@
   "name": "p2piano",
   "version": "0.1.0",
   "scripts": {
-    "client:dev": "cd client && npm start",
+    "client:dev": "cd client && npm run dev",
     "client:build": "cd client && npm run build",
     "service:dev": "cd service && nest start --watch",
     "dev": "concurrently \"npm run client:dev\" \"npm run service:dev\"",

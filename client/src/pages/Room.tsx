@@ -7,15 +7,16 @@ import {
   Spinner,
 } from '@chakra-ui/react'
 import { Link } from 'react-router-dom';
-import { RootState } from '../app/store';
 import { connect } from 'react-redux';
 import { getNotes } from '../lib/NoteHelpers';
-import { selectWorkspace, Workspace } from '../slices/workspaceSlice';
+import { selectWorkspace, type Workspace } from '../slices/workspaceSlice';
 import { selectNotes } from '../slices/notesSlice';
 import Visualization from '../components/Visualization';
-
-import type { NotesByMidi } from '../constants';
 import RoomNav from '../components/RoomNav';
+
+import type { RootState } from '../app/store';
+import type { NotesByMidi } from '../constants';
+
 
 type Props = {
   workspace: Workspace,

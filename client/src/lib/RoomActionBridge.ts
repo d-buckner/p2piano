@@ -5,7 +5,7 @@ import MidiDeviceController from '../controllers/MidiDeviceController';
 import WebsocketController from '../networking/transports/WebsocketController';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import AudioSyncCoordinator from '../audio/syncronization/AudioSyncCoordinator';
-import AbstractNetworkController, { MessageHandler } from '../networking/AbstractNetworkController';
+import AbstractNetworkController, { type MessageHandler } from '../networking/AbstractNetworkController';
 import RealTimeController from '../networking/RealTimeController';
 
 
