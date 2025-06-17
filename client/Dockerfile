@@ -1,4 +1,4 @@
-FROM node:18-alpine AS build-stage
+FROM node:20-alpine AS build-stage
 
 WORKDIR /app
 
@@ -7,13 +7,13 @@ COPY tsconfig*.json ./
 
 RUN npm install
 
-ADD config ./config
 ADD public ./public
-ADD scripts ./scripts
+ADD index.html .
+ADD vite.config.ts .
 ADD src ./src
 
 RUN npm run build
 
 FROM caddy:2.8.4-alpine
 COPY Caddyfile /etc/caddy/Caddyfile
-COPY --from=build-stage /app/build /www
+COPY --from=build-stage /app/dist /www
