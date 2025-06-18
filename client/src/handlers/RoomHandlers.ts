@@ -18,14 +18,14 @@ import type { Room } from '../lib/workspaceTypes';
 
 
 type KeyDownPayload = {
-  midi: number;
+  note: number;
   velocity: number;
-  userId: string;
+  userId?: string;
 };
 
 type KeyUpPayload = {
-  midi: number;
-  userId: string;
+  note: number;
+  userId?: string;
 };
 
 type RoomJoinPayload = {
@@ -52,11 +52,11 @@ export default class RoomHandlers {
   private constructor() { }
 
   static keyDownHandler(payload: KeyDownPayload) {
-    NoteActions.keyDown(payload.midi, payload.velocity, payload.userId);
+    NoteActions.keyDown(payload.note, payload.velocity, payload.userId);
   }
 
   static keyUpHandler(payload: KeyUpPayload) {
-    NoteActions.keyUp(payload.midi, payload.userId);
+    NoteActions.keyUp(payload.note, payload.userId);
   }
 
   static roomJoinHandler(payload: RoomJoinPayload) {

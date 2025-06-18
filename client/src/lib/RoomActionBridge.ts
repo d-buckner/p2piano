@@ -1,12 +1,13 @@
+import HuMIDI from 'humidi';
 import * as NoteActions from '../actions/NoteActions';
 import RoomHandlers from '../handlers/RoomHandlers';
 import KeyboardController from '../controllers/KeyboardController';
-import MidiDeviceController from '../controllers/MidiDeviceController';
 import WebsocketController from '../networking/transports/WebsocketController';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import AudioSyncCoordinator from '../audio/syncronization/AudioSyncCoordinator';
-import AbstractNetworkController, { type MessageHandler } from '../networking/AbstractNetworkController';
 import RealTimeController from '../networking/RealTimeController';
+
+import type { MessageHandler } from '../networking/AbstractNetworkController';
 
 
 const RTC_HANDLERS = {
@@ -21,12 +22,17 @@ const WEBSOCKET_HANDLERS = {
   disconnect: RoomHandlers.roomDisconnectHandler,
 } as const;
 const MIDI_HANDLERS = {
-  KEY_DOWN: RoomHandlers.keyDownHandler,
-  KEY_UP: RoomHandlers.keyUpHandler,
+  noteon: RoomHandlers.keyDownHandler,
+  noteoff: RoomHandlers.keyUpHandler,
 } as const;
 
+type Subscribable = any & {
+  on: (action: string, handler: Function) => void;
+};
+
 export function register() {
-  subscribe(MidiDeviceController.getInstance(), MIDI_HANDLERS);
+  HuMIDI.requestAccess();
+  subscribe(HuMIDI, MIDI_HANDLERS);
   subscribe(RealTimeController.getInstance(), RTC_HANDLERS);
   subscribe(WebsocketController.getInstance(), WEBSOCKET_HANDLERS);
   window.addEventListener('blur', RoomHandlers.blurHandler);
@@ -39,7 +45,7 @@ export function register() {
 }
 
 export function destroy() {
-  // TODO: unsubscribe from all events
+  HuMIDI.reset();
   InstrumentRegistry.empty();
   KeyboardController.getInstance().destroy();
   AudioSyncCoordinator.stop();
@@ -47,10 +53,10 @@ export function destroy() {
 }
 
 function subscribe(
-  controller: AbstractNetworkController | MidiDeviceController,
+  subscribable: Subscribable,
   handlers: Record<string, MessageHandler>
 ) {
   Object.entries(handlers).forEach(([action, handler]) => {
-    controller.on(action, handler);
+    subscribable.on(action, handler);
   });
 }
