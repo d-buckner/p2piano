@@ -67,7 +67,7 @@ export default function RoomCard() {
           textAlign='center'
           fontStyle='Ysabeau'
         >
-          a peer-to-peer collaboration space for the musically inclined
+          a collaboration space for the musically inclined
         </Heading>
         <HStack p={6} alignSelf='center'>
           <Button
