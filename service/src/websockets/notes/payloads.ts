@@ -1,10 +1,10 @@
 export type NoteOnPayload = {
-  midi: number;
+  note: number;
   velocity: number;
   targetUserIds: string[],
 };
 
 export type NoteOffPayload = {
-  midi: number,
+  note: number,
   targetUserIds: string[],
 };

@@ -7,12 +7,12 @@ const KEY_ACTIONS = {
 } as const;
 
 const PianoClient = {
-  keyDown(midi: number, velocity: number) {
-    RealTimeController.getInstance().broadcast(KEY_ACTIONS.KEY_DOWN, { midi, velocity });
+  keyDown(note: number, velocity: number) {
+    RealTimeController.getInstance().broadcast(KEY_ACTIONS.KEY_DOWN, { note, velocity });
   },
 
-  keyUp(midi: number) {
-    RealTimeController.getInstance().broadcast(KEY_ACTIONS.KEY_UP, { midi });
+  keyUp(note: number) {
+    RealTimeController.getInstance().broadcast(KEY_ACTIONS.KEY_UP, { note });
   },
 };
 

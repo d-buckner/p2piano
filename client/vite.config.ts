@@ -7,8 +7,9 @@ export default defineConfig({
   plugins: [react()],
   define: {
     global: {},
+    TONE_SILENCE_LOGGING: true,
     'process.env': {
-      NODE_ENV: isProduction ? 'production' : 'developement',
+      NODE_ENV: isProduction ? 'production' : 'development',
       API_URL: isProduction
           ? '/api'
           : 'http://localhost:3001/api'

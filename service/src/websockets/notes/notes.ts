@@ -14,7 +14,7 @@ export class Notes {
     @SubscribeMessage(NoteEvents.KEY_DOWN)
     onKeyDown(@MessageBody() payload: NoteOnPayload, @ConnectedSocket() socket: Socket) {
         broadcastToSubset(socket, payload.targetUserIds, NoteEvents.KEY_DOWN, {
-            midi: payload.midi,
+            note: payload.note,
             velocity: payload.velocity,
         });
     }
@@ -23,6 +23,6 @@ export class Notes {
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(NoteEvents.KEY_UP)
     onKeyUp(@MessageBody() payload: NoteOffPayload, @ConnectedSocket() socket: Socket) {
-        broadcastToSubset(socket, payload.targetUserIds, NoteEvents.KEY_UP, { midi: payload.midi });
+        broadcastToSubset(socket, payload.targetUserIds, NoteEvents.KEY_UP, { note: payload.note });
     }
 }
