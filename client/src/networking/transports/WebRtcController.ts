@@ -296,30 +296,40 @@ export default class WebRtcController extends AbstractNetworkController {
 
   private setupPeerConnectionHandlers(peer: PeerConnection, userId: string) {
     peer.connection.onicecandidate = (event) => {
-      if (event.candidate) {
-        Logger.DEBUG(`[WebRTC] ICE candidate generated for ${userId}`);
-        this.websocketController.broadcast(ACTION.SIGNAL, {
-          userId,
-          signalData: { type: SIGNAL_TYPE.ICE_CANDIDATE, candidate: event.candidate },
-        });
-      } else {
+      if (!event.candidate) {
         Logger.DEBUG(`[WebRTC] ICE gathering complete for ${userId}`);
+        return;
       }
+
+      Logger.DEBUG(`[WebRTC] ICE candidate generated for ${userId}`);
+      this.websocketController.broadcast(ACTION.SIGNAL, {
+        userId,
+        signalData: { type: SIGNAL_TYPE.ICE_CANDIDATE, candidate: event.candidate },
+      });
     };
 
     peer.connection.oniceconnectionstatechange = () => {
       Logger.DEBUG(`[WebRTC] ICE connection state changed for ${userId}: ${peer.connection.iceConnectionState}`);
 
-      if (peer.connection.iceConnectionState === 'failed') {
+      if (peer.connection.iceConnectionState === CONNECTION_STATE.FAILED) {
         Logger.ERROR(`[WebRTC] ICE connection failed for ${userId}, restarting ICE`);
         peer.connection.restartIce();
-      } else if (peer.connection.iceConnectionState === 'disconnected') {
+        return;
+      }
+
+      if (peer.connection.iceConnectionState === CONNECTION_STATE.DISCONNECTED) {
         Logger.WARN(`[WebRTC] ICE connection disconnected for ${userId}`);
       }
     };
 
     peer.connection.onconnectionstatechange = () => {
       Logger.DEBUG(`[WebRTC] Connection state changed for ${userId}: ${peer.connection.connectionState}`);
+
+      if (peer.connection.connectionState === CONNECTION_STATE.FAILED) {
+        Logger.WARN(`[WebRTC] Peer ${userId} ${peer.connection.connectionState}, cleaning up`);
+        this.cleanupPeer(userId);
+        return;
+      }
 
       if (peer.connection.connectionState === CONNECTION_STATE.CONNECTED) {
         peer.isConnected = true;
@@ -330,9 +340,6 @@ export default class WebRtcController extends AbstractNetworkController {
           peerId: userId,
           transport: Transport.WEBRTC,
         }));
-      } else if (peer.connection.connectionState === CONNECTION_STATE.FAILED) {
-        Logger.WARN(`[WebRTC] Peer ${userId} ${peer.connection.connectionState}, cleaning up`);
-        this.cleanupPeer(userId);
       }
     };
   }
