@@ -1,9 +1,9 @@
 import { dispatch } from '../../app/store';
 import { Transport } from '../../constants';
+import Logger from '../../lib/Logger';
 import { connectionActions } from '../../slices/connectionSlice';
 import AbstractNetworkController, { type Message } from '../AbstractNetworkController';
 import WebsocketController from './WebsocketController';
-import SimplePeer from 'simple-peer';
 
 type UserPayload = {
   userId: string;
@@ -11,7 +11,12 @@ type UserPayload = {
 
 type SignalPayload = {
   userId: string;
-  signalData: SimplePeer.SignalData;
+  signalData: {
+    type: 'offer' | 'answer' | 'ice-candidate';
+    offer?: RTCSessionDescriptionInit;
+    answer?: RTCSessionDescriptionInit;
+    candidate?: RTCIceCandidateInit;
+  };
 };
 
 export const ACTION = {
@@ -21,28 +26,24 @@ export const ACTION = {
   USER_DISCONNECT: 'USER_DISCONNECT',
 } as const;
 
-const PEER_EVENT = {
-  CLOSE: 'close',
-  CONNECT: 'connect',
-  DATA: 'data',
-  SIGNAL: 'signal',
-} as const;
-
+interface PeerConnection {
+  pc: RTCPeerConnection;
+  dataChannel?: RTCDataChannel;
+  isConnected: boolean;
+}
 
 export default class WebRtcController extends AbstractNetworkController {
   private static instance?: WebRtcController;
   private websocketController: WebsocketController;
-  private initiator = false;
-  private peers = new Map<string, SimplePeer.Instance>();
+  private pendingOffers = new Map<string, SignalPayload>();
+  private processingOffer = false;
+  private peers = new Map<string, PeerConnection>();
   private activePeerIds = new Set<string>();
-  private textDecoder = new TextDecoder();
 
   private constructor() {
     super();
     this.websocketController = WebsocketController.getInstance();
-    // we just joined, existing peer sent us a signal message
     this.websocketController.on(ACTION.SIGNAL, this.onSignalReceived.bind(this));
-    // new user joins, we send signal message
     this.websocketController.on(ACTION.USER_CONNECT, this.onPeerJoined.bind(this));
   }
 
@@ -50,7 +51,6 @@ export default class WebRtcController extends AbstractNetworkController {
     if (!WebRtcController.instance) {
       WebRtcController.instance = new WebRtcController();
     }
-
     return WebRtcController.instance;
   }
 
@@ -63,17 +63,17 @@ export default class WebRtcController extends AbstractNetworkController {
   public sendToPeers<T extends Message>(peerIds: string[], action: string, message: T) {
     peerIds.forEach(peerId => {
       this.sendToPeer(peerId, action, message);
-    })
+    });
   }
 
   public sendToPeer<T extends Message>(peerId: string, action: string, message: T) {
     const peer = this.peers.get(peerId);
 
-    if (!peer || !this.activePeerIds.has(peerId)) {
+    if (!peer?.dataChannel || !this.activePeerIds.has(peerId)) {
       throw new Error('Cannot send message to unavailable peer');
     }
 
-    peer.send(JSON.stringify({
+    peer.dataChannel.send(JSON.stringify({
       action,
       payload: message,
     }));
@@ -84,60 +84,194 @@ export default class WebRtcController extends AbstractNetworkController {
   }
 
   static destroy() {
-    WebRtcController.instance?.peers.forEach(peer => peer.destroy());
+    WebRtcController.instance?.peers.forEach(peer => {
+      peer.dataChannel?.close();
+      peer.pc.close();
+    });
     WebRtcController.instance = undefined;
   }
 
-  private onSignalReceived(message: SignalPayload) {
+  private async onSignalReceived(message: SignalPayload) {
     const { userId, signalData } = message;
-    if (!this.initiator) {
-      this.addPeer(userId);
+
+    Logger.INFO(`Received ${signalData.type} from ${userId}, existing peers: ${Array.from(this.peers.keys())}`);
+
+    if (!this.peers.has(userId)) {
+      await this.addPeer(userId, false);
     }
 
-    this.peers.get(userId)?.signal(signalData);
+    const peer = this.peers.get(userId);
+    if (!peer) return;
+
+    try {
+      if (signalData.type === 'offer') {
+        // Queue offers if we're already processing one
+        if (this.processingOffer) {
+          Logger.INFO(`Queueing offer from ${userId}`);
+          this.pendingOffers.set(userId, message);
+          return;
+        }
+
+        await this.processOffer(message);
+
+        // Process any queued offers
+        for (const [queuedUserId, queuedMessage] of this.pendingOffers) {
+          Logger.INFO(`Processing queued offer from ${queuedUserId}`);
+          await this.processOffer(queuedMessage);
+          this.pendingOffers.delete(queuedUserId);
+        }
+      } else if (signalData.type === 'answer') {
+        await peer.pc.setRemoteDescription(signalData.answer!);
+      } else if (signalData.type === 'ice-candidate') {
+        await peer.pc.addIceCandidate(signalData.candidate!);
+      }
+    } catch (error) {
+      Logger.ERROR(`Error handling signal: ${error}`);
+    }
+    //   if (signalData.type === 'offer') {
+    //     Logger.INFO(`Processing offer from ${userId}`);
+    //     await peer.pc.setRemoteDescription(signalData.offer!);
+    //     Logger.INFO(`Remote description set for ${userId}`);
+
+    //     const answer = await peer.pc.createAnswer();
+    //     Logger.INFO(`Answer created for ${userId}`);
+
+    //     await peer.pc.setLocalDescription(answer);
+    //     Logger.INFO(`Local description set for ${userId}`);
+
+    //     this.websocketController.broadcast(ACTION.SIGNAL, {
+    //       userId,
+    //       signalData: { type: 'answer', answer },
+    //     });
+    //     Logger.INFO(`Answer sent to ${userId}`);
+    //   } else if (signalData.type === 'answer') {
+    //     await peer.pc.setRemoteDescription(signalData.answer!);
+    //   } else if (signalData.type === 'ice-candidate') {
+    //     await peer.pc.addIceCandidate(signalData.candidate!);
+    //   }
+    // } catch (error) {
+    //   Logger.ERROR(`Error handling signal: ${error}`);
+    // }
   }
 
-  private onPeerJoined(message: UserPayload) {
-    this.initiator = true;
-    this.addPeer(message.userId);
+  private async onPeerJoined(message: UserPayload) {
+    await this.addPeer(message.userId, true);
   }
 
-  private addPeer(userId: string) {
-    const p = new SimplePeer({
-      initiator: this.initiator,
-      trickle: false,
-    });
+  private async addPeer(userId: string, isInitiator: boolean) {
+    Logger.INFO(`Adding peer: ${userId}, isInitiator: ${isInitiator}, existing peers: ${Array.from(this.peers.keys())}`);
 
-    p.on(PEER_EVENT.CONNECT, () => {
-      this.activePeerIds.add(userId);
-      dispatch(connectionActions.setPeerTransport({
-        peerId: userId,
-        transport: Transport.WEBRTC,
-      }));
-    });
+    const pc = new RTCPeerConnection();
+    if (!isInitiator) {
+      Logger.INFO(`Setting up data channel listener for ${userId}`);
+      pc.ondatachannel = (event) => {
+        Logger.INFO(`Data channel received from ${userId}`);
+        peer.dataChannel = event.channel;
+        this.setupDataChannel(event.channel, userId);
+      };
+    }
 
-    p.on(PEER_EVENT.SIGNAL, signalData => {
+    const peer: PeerConnection = { pc, isConnected: false };
+    this.peers.set(userId, peer);
+
+    // ICE candidate handling
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        this.websocketController.broadcast(ACTION.SIGNAL, {
+          userId,
+          signalData: { type: 'ice-candidate', candidate: event.candidate },
+        });
+      }
+    };
+
+    // Add ICE connection state logging
+    pc.oniceconnectionstatechange = () => {
+      Logger.INFO(`ICE connection state for ${userId}: ${pc.iceConnectionState}`);
+    };
+
+    // Connection state handling
+    pc.onconnectionstatechange = () => {
+      Logger.INFO(`Connection state for ${userId}: ${pc.connectionState}`);
+
+      if (pc.connectionState === 'connected') {
+        peer.isConnected = true;
+        this.activePeerIds.add(userId);
+        dispatch(connectionActions.setPeerTransport({
+          peerId: userId,
+          transport: Transport.WEBRTC,
+        }));
+      } else if (pc.connectionState === 'disconnected' || pc.connectionState === 'failed') {
+        this.peers.delete(userId);
+        this.activePeerIds.delete(userId);
+        dispatch(connectionActions.setPeerTransport({
+          peerId: userId,
+          transport: Transport.WEBSOCKET,
+        }));
+      }
+    };
+
+    // Data channel setup
+    if (isInitiator) {
+      Logger.INFO(`Creating data channel for ${userId}`);
+      const dataChannel = pc.createDataChannel('messages', {
+        ordered: true // Ensure ordered delivery
+      });
+      peer.dataChannel = dataChannel;
+      this.setupDataChannel(dataChannel, userId);
+
+      Logger.INFO(`Creating offer for ${userId}`);
+      // Wait for ICE gathering to complete before creating offer
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+
+      Logger.INFO(`Sending offer to ${userId}`);
       this.websocketController.broadcast(ACTION.SIGNAL, {
         userId,
-        signalData,
+        signalData: { type: 'offer', offer },
       });
-    });
+    }
+  }
 
-    p.on(PEER_EVENT.CLOSE, () => {
-      this.peers.delete(userId);
-      this.activePeerIds.delete(userId);
-      dispatch(connectionActions.setPeerTransport({
-        peerId: userId,
-        transport: Transport.WEBSOCKETS,
-      }));
-    });
 
-    p.on(PEER_EVENT.DATA, data => {
-      const message = JSON.parse(this.textDecoder.decode(data));
+  private setupDataChannel(dataChannel: RTCDataChannel, userId: string) {
+    dataChannel.onopen = () => {
+      Logger.INFO(`Data channel opened for peer: ${userId}`);
+    };
+
+    dataChannel.onclose = () => {
+      Logger.INFO(`Data channel closed for peer: ${userId}`);
+    };
+
+    dataChannel.onmessage = (event) => {
+      const message = JSON.parse(event.data);
       const callbacks = this.messageHandlers.get(message.action);
       callbacks?.forEach(cb => cb({ ...message.payload, userId }));
-    });
+    };
+  }
 
-    this.peers.set(userId, p);
+  private async processOffer(message: SignalPayload) {
+    const { userId, signalData } = message;
+    const peer = this.peers.get(userId);
+    if (!peer) return;
+
+    this.processingOffer = true;
+
+    Logger.INFO(`Processing offer from ${userId}`);
+    await peer.pc.setRemoteDescription(signalData.offer!);
+    Logger.INFO(`Remote description set for ${userId}`);
+
+    const answer = await peer.pc.createAnswer();
+    Logger.INFO(`Answer created for ${userId}`);
+
+    await peer.pc.setLocalDescription(answer);
+    Logger.INFO(`Local description set for ${userId}`);
+
+    this.websocketController.broadcast(ACTION.SIGNAL, {
+      userId,
+      signalData: { type: 'answer', answer },
+    });
+    Logger.INFO(`Answer sent to ${userId}`);
+
+    this.processingOffer = false;
   }
 }

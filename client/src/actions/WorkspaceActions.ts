@@ -33,7 +33,7 @@ export async function joinRoom(roomId: string) {
         Object.values(room.users).forEach(user => {
           dispatch(connectionActions.addPeerConnection({
             peerId: user.userId,
-            transport: Transport.WEBSOCKETS,
+            transport: Transport.WEBSOCKET,
           }));
         })
       });
