@@ -74,7 +74,7 @@ export default class WebsocketController extends AbstractNetworkController {
   private onUserConnect(message: UserConnectionMessage) {
     dispatch(connectionActions.addPeerConnection({
       peerId: message.userId,
-      transport: Transport.WEBSOCKETS,
+      transport: Transport.WEBSOCKET,
     }));
   }
 

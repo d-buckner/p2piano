@@ -8,6 +8,7 @@ export default defineConfig({
   define: {
     global: {},
     TONE_SILENCE_LOGGING: true,
+    LOG_LEVEL: isProduction ? '"error"' : '"debug"',
     'process.env': {
       NODE_ENV: isProduction ? 'production' : 'development',
       API_URL: isProduction

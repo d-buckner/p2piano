@@ -24,6 +24,6 @@ export type NotesByMidi = {
 };
 
 export enum Transport {
-  WEBSOCKETS = 'WEBSOCKETS',
+  WEBSOCKET = 'WEBSOCKET',
   WEBRTC = 'WEBRTC',
 };

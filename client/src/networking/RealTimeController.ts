@@ -89,8 +89,9 @@ export default class RealTimeController extends AbstractNetworkController {
       try {
         this.webrtcController.sendToPeer(peerId, action, message);
         return;
-      } catch {
+      } catch (err) {
         // swallow to move to fallback
+        Logger.ERROR(err);
         Logger.WARN("webrtc message failed to send. invoking fallback");
       }
     }
