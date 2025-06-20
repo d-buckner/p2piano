@@ -6,34 +6,34 @@ const LOG_LEVEL = {
   NONE: 'none',
 } as const;
 
-
 const infoLevels = new Set([LOG_LEVEL.DEBUG, LOG_LEVEL.INFO]);
 
+const noop = () => { };
+
 const Logger = {
-  DEBUG(message: string) {
+  get DEBUG() {
     // @ts-expect-error
-    if (window.LOG_LEVEL === LOG_LEVEL.DEBUG) {
-      console.info(`[DEBUG]: ${message}`);
-    }
+    return getLogMethod(console.debug, window.LOG_LEVEL === LOG_LEVEL.DEBUG);
   },
-  INFO(message: string) {
-  // @ts-expect-error
-    if (infoLevels.has(window.LOG_LEVEL)) {
-      console.info(`[INFO] ${message}`);
-    }
-  },
-  WARN(message: string) {
+  get INFO() {
     // @ts-expect-error
-    if (window.LOG_LEVEL !== LOG_LEVEL.ERROR) {
-      console.warn(`[WARN] ${message}`);
-    }
+    return getLogMethod(console.info, infoLevels.has(window.LOG_LEVEL));
   },
-  ERROR(message: string) {
+  get WARN() {
     // @ts-expect-error
-    if (window.LOG_LEVEL !== LOG_LEVEL.NONE) {
-      console.error(`[ERROR] ${message}`);
-    }
+    return getLogMethod(console.warn, window.LOG_LEVEL !== LOG_LEVEL.ERROR);
+  },
+  get ERROR() {
+    return getLogMethod(console.error);
   }
+};
+
+function getLogMethod(method: Function, enabled: boolean = true) {
+  // @ts-ignore
+  return enabled || window.LOG_LEVEL !== LOG_LEVEL.NONE
+    ? method
+    : noop;
 }
 
 export default Logger;
+

@@ -99,7 +99,6 @@ export default class WebRtcController extends AbstractNetworkController {
       throw new Error('Cannot send message to unavailable peer');
     }
 
-    Logger.DEBUG(`[WebRTC] Sending ${action} to peer ${peerId}`);
     peer.dataChannel.send(JSON.stringify({
       action,
       payload: message,
@@ -323,7 +322,6 @@ export default class WebRtcController extends AbstractNetworkController {
     };
 
     dataChannel.onmessage = (event) => {
-      Logger.DEBUG(`[WebRTC] Message received from ${userId} (size: ${event.data.length} bytes)`);
       const message = JSON.parse(event.data);
       const callbacks = this.messageHandlers.get(message.action);
       callbacks?.forEach(cb => cb({ ...message.payload, userId }));
