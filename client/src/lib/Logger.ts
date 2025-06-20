@@ -30,7 +30,7 @@ const Logger = {
 
 function getLogMethod(method: Function, enabled: boolean = true) {
   // @ts-ignore
-  return enabled || window.LOG_LEVEL !== LOG_LEVEL.NONE
+  return enabled && window.LOG_LEVEL !== LOG_LEVEL.NONE
     ? method
     : noop;
 }
