@@ -1,4 +1,3 @@
-import { batch } from 'react-redux';
 import store, { dispatch } from '../app/store';
 import {
   setContext as setToneContext,
@@ -105,10 +104,8 @@ export default class RoomHandlers {
   static userDisconnectHandler(payload: UserDisconnectPayload) {
     const { userId, room } = payload;
     InstrumentRegistry.unregister(userId);
-    batch(() => {
-      dispatch(removeNotesFromPeer({ peerId: userId }));
-      dispatch(setRoom({ room }));
-    });
+    dispatch(removeNotesFromPeer({ peerId: userId }));
+    dispatch(setRoom({ room }));
   }
 
   static blurHandler() {

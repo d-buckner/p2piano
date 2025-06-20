@@ -4,6 +4,11 @@ import Session from '../lib/Session';
 
 import type { Room } from '../lib/workspaceTypes';
 
+
+interface SessionPayload {
+    sessionId: string
+}
+
 function url(paths: string[]): string {
     return [ConfigProvider.getServiceUrl(), ...paths].join('/');
 }
@@ -12,8 +17,18 @@ export function createNewRoom() {
     return post<Room>('room');
 }
 
-export function createSession() {
-    return post<Session>('session');
+async function createSession() {
+    const response = await post<SessionPayload>('session');
+    const session = Session.setSessionId(response.sessionId);
+    return session;
+}
+
+export async function ensureSession() {
+    if (Session.getSessionId()) {
+        return;
+    }
+
+    await createSession();
 }
 
 export function getRoom(roomId: string) {

@@ -1,7 +1,6 @@
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { UseGuards } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
-import { SignalThrottlerGuard } from 'src/guards/signalthrottler.guard';
+import { SignalThrottlerGuard } from '../../guards/signalthrottler.guard';
 import { SignalEvents } from './events';
 import { SignalPayload } from './payloads';
 import { defaultWebSocketGatewayOptions, getSocketSessionId } from '../utils';

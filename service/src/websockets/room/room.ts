@@ -5,7 +5,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { UseGuards } from '@nestjs/common';
+import { Logger, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { WsThrottlerGuard } from '../../guards/throttler.guard';
 import {
@@ -19,7 +19,6 @@ import RoomEntity from '../../entities/Room';
 import SessionProvider from '../../entities/Session';
 import { UserUpdatePayload } from './payloads';
 import SessionRegistry from '../SessionRegistry';
-import Logger from '../../utils/Logger';
 
 import type { Server, Socket } from 'socket.io';
 
@@ -60,16 +59,19 @@ export class Room {
       sessionId,
       roomId,
     } = getSocketMetadata(socket);
+
     if (!roomId || !sessionId) {
-      Logger.WARN(`User denied connection due to invalid metadata ${JSON.stringify({ roomId, userId: sessionId })}`);
+      Logger.warn(`User denied connection due to invalid metadata ${JSON.stringify({ roomId, userId: sessionId })}`);
       socket.disconnect();
       return;
     }
+
     try {
       await SessionProvider.get(sessionId);
     } catch {
-      Logger.WARN(`User denied connection due to invalid session ${sessionId}`);
+      Logger.warn(`User denied connection due to invalid session ${sessionId}`);
       socket.disconnect();
+      return;
     }
 
     const prevSocket = SessionRegistry.getSocket(sessionId);
@@ -80,7 +82,9 @@ export class Room {
     const roomEntity = new RoomEntity(roomId);
 
     try {
-      const roomData = await roomEntity.join(sessionId, displayName as string);
+      // Retry logic for race condition handling in the case the room was just created
+      const roomData = await this.retryRoomJoin(roomEntity, sessionId, displayName as string, 3);
+
       socket.join(roomId);
       socket.on(SocketEvents.DISCONNECT, reason => this.destroyConnection(socket, reason));
 
@@ -99,11 +103,27 @@ export class Room {
         room: roomData,
       });
 
-      Logger.INFO(`Session ${sessionId} connected to room ${roomId}`);
+      Logger.log(`Session ${sessionId} connected to room ${roomId}`);
     } catch (err) {
       console.error(err);
       SessionRegistry.destroySession(sessionId);
       socket.disconnect();
+    }
+  }
+
+  private async retryRoomJoin(roomEntity: RoomEntity, sessionId: string, displayName: string, maxRetries: number): Promise<any> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await roomEntity.join(sessionId, displayName);
+      } catch (err) {
+        if (attempt >= maxRetries) throw err;
+
+        // Exponential backoff: 50ms, 100ms, 200ms
+        const delay = 50 * Math.pow(2, attempt - 1);
+        await new Promise(resolve => setTimeout(resolve, delay));
+
+        Logger.warn(`Room join attempt ${attempt} failed for session ${sessionId}, retrying in ${delay}ms`);
+      }
     }
   }
 
@@ -112,21 +132,28 @@ export class Room {
       sessionId,
       roomId,
     } = getSocketMetadata(socket);
+
+    if (!sessionId || !roomId) return;
+
     const roomEntity = new RoomEntity(roomId);
 
     if (SessionRegistry.getSocket(sessionId)?.id !== socket.id) {
-      // Session has swapped sockets from socketio reconnection
-      Logger.INFO(`Session ${sessionId} reconnected to room ${roomId} due to ${reason}`);
+      Logger.log(`Session ${sessionId} reconnected to room ${roomId} due to ${reason}`);
       return;
     }
 
     SessionRegistry.destroySession(sessionId);
 
-    broadcast(socket, RoomEvents.USER_DISCONNECT, {
-      userId: sessionId,
-      room: await roomEntity.leave(sessionId),
-    });
+    try {
+      const roomData = await roomEntity.leave(sessionId);
+      broadcast(socket, RoomEvents.USER_DISCONNECT, {
+        userId: sessionId,
+        room: roomData,
+      });
+    } catch (err) {
+      Logger.error(`Failed to leave room for session ${sessionId}:`, err);
+    }
 
-    Logger.INFO(`Session ${sessionId} disconnected to room ${roomId} due to ${reason}`);
+    Logger.log(`Session ${sessionId} disconnected from room ${roomId} due to ${reason}`);
   }
 }
