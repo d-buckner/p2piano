@@ -1,7 +1,5 @@
-import { batch } from 'react-redux';
 import { dispatch } from '../app/store';
-import { createSession, getRoom } from '../clients/RoomClient';
-import Session from '../lib/Session';
+import { ensureSession, getRoom } from '../clients/RoomClient';
 import WebRtcController from '../networking/transports/WebRtcController';
 import WebsocketController from '../networking/transports/WebsocketController';
 import ClientPreferences from '../lib/ClientPreferences';
@@ -19,38 +17,30 @@ import { connectionActions } from '../slices/connectionSlice';
 import { Transport } from '../constants';
 
 export async function joinRoom(roomId: string) {
-  batch(() => {
-    dispatch(setRoomId({ roomId }));
-    dispatch(setIsLoading({ isLoading: true }));
-  });
+  dispatch(setRoomId({ roomId }));
+  dispatch(setIsLoading({ isLoading: true }));
+
   let isValid = true;
   try {
     const { room } = getWorkspace();
     if (!room) {
       const room = await getRoom(roomId);
-      batch(() => {
-        dispatch(setRoom({ room }));
-        Object.values(room.users).forEach(user => {
-          dispatch(connectionActions.addPeerConnection({
-            peerId: user.userId,
-            transport: Transport.WEBSOCKET,
-          }));
-        })
+      dispatch(setRoom({ room }));
+      Object.values(room.users).forEach(user => {
+        dispatch(connectionActions.addPeerConnection({
+          peerId: user.userId,
+          transport: Transport.WEBSOCKET,
+        }));
       });
     }
-    if (!Session.getSessionId()) {
-      const session = await createSession();
-      // @ts-ignore
-      Session.setSessionId(session.sessionId);
-    }
+
+    await ensureSession();
   } catch {
     isValid = false;
   }
 
-  batch(() => {
-    dispatch(setValidity({ isValid }));
-    dispatch(setIsLoading({ isLoading: false }));
-  });
+  dispatch(setValidity({ isValid }));
+  dispatch(setIsLoading({ isLoading: false }));
 
   if (isValid) {
     RoomActionBridge.register();
