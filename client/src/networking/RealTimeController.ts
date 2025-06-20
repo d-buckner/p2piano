@@ -96,7 +96,7 @@ export default class RealTimeController extends AbstractNetworkController {
       }
     }
 
-    // fallback();
+    fallback();
   }
 
   static destroy() {

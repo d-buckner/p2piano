@@ -13,7 +13,7 @@ const Logger = {
   DEBUG(message: string) {
     // @ts-expect-error
     if (window.LOG_LEVEL === LOG_LEVEL.DEBUG) {
-      console.debug(`[DEBUG]: ${message}`);
+      console.info(`[DEBUG]: ${message}`);
     }
   },
   INFO(message: string) {
