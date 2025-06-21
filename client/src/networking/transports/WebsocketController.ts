@@ -4,11 +4,12 @@ import ClientPreferences from '../../lib/ClientPreferences';
 import ConfigProvider from '../../lib/ConfigProvider';
 import Session from '../../lib/Session';
 import { getWorkspace } from '../../lib/WorkspaceHelper';
-
 import { Transport, type Payload } from '../../constants';
-import type { Socket } from 'socket.io-client';
 import { connectionActions } from '../../slices/connectionSlice';
 import { dispatch } from '../../app/store';
+import Logger from '../../lib/Logger';
+
+import type { Socket } from 'socket.io-client';
 
 
 export const WEBSOCKET_ACTIONS = {
@@ -35,6 +36,7 @@ export default class WebsocketController extends AbstractNetworkController {
     });
     this.on(WEBSOCKET_ACTIONS.USER_CONNECT, this.onUserConnect);
     this.on(WEBSOCKET_ACTIONS.USER_DISCONNECT, this.onUserDisconnect);
+    this.on('exception', () => Logger.ERROR('You have exceeded websocket message limits, please slow down!'));
   }
 
   public static getInstance(): WebsocketController {

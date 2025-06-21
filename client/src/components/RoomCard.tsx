@@ -82,12 +82,12 @@ export default function RoomCard() {
             {
               isRoomCreating
                 ? <Spinner />
-                : 'create a space'
+                : 'create room'
             }
           </Button>
           <Text>or</Text>
           <Input
-            placeholder='join a space'
+            placeholder='join room code'
             size='lg'
             maxLength={5}
             width='10rem'

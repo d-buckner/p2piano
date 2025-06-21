@@ -6,11 +6,10 @@ const LOG_LEVEL = {
   NONE: 'none',
 } as const;
 
-// @ts-ignore this line gets replaced with static value during prod build
-const logLevel = window.LOG_LEVEL;
-
+const searchParams = new URLSearchParams(location.search);
+// @ts-ignore
+const logLevel = searchParams.get('log') || window.LOG_LEVEL;
 const infoLevels = new Set([LOG_LEVEL.DEBUG, LOG_LEVEL.INFO]);
-
 const noop = () => { };
 
 const Logger = {

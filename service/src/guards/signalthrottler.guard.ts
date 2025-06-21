@@ -4,10 +4,10 @@ import { ThrottlerGuard } from '@nestjs/throttler';
 @Injectable()
 export class SignalThrottlerGuard extends ThrottlerGuard {
   private readonly WEBRTC_LIMITS = {
-    'ice-candidate': { limit: 300, ttl: 60000, burst: 50, burstTtl: 10000 },
-    'offer': { limit: 60, ttl: 60000, burst: 10, burstTtl: 10000 },
-    'answer': { limit: 60, ttl: 60000, burst: 10, burstTtl: 10000 },
-    'default': { limit: 30, ttl: 60000, burst: 5, burstTtl: 10000 }
+    'ice-candidate': { limit: 600, ttl: 60000, burst: 100, burstTtl: 10000 },
+    'offer': { limit: 120, ttl: 60000, burst: 20, burstTtl: 10000 },
+    'answer': { limit: 120, ttl: 60000, burst: 20, burstTtl: 10000 },
+    'default': { limit: 60, ttl: 60000, burst: 10, burstTtl: 10000 }
   };
 
   async handleRequest(context: ExecutionContext): Promise<boolean> {

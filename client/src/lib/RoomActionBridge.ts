@@ -31,7 +31,6 @@ type Subscribable = any & {
 };
 
 export function register() {
-  HuMIDI.requestAccess();
   subscribe(HuMIDI, MIDI_HANDLERS);
   subscribe(RealTimeController.getInstance(), RTC_HANDLERS);
   subscribe(WebsocketController.getInstance(), WEBSOCKET_HANDLERS);
