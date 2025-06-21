@@ -6,22 +6,22 @@ const LOG_LEVEL = {
   NONE: 'none',
 } as const;
 
+// @ts-ignore this line gets replaced with static value during prod build
+const logLevel = window.LOG_LEVEL;
+
 const infoLevels = new Set([LOG_LEVEL.DEBUG, LOG_LEVEL.INFO]);
 
 const noop = () => { };
 
 const Logger = {
   get DEBUG() {
-    // @ts-expect-error
-    return getLogMethod(console.debug, window.LOG_LEVEL === LOG_LEVEL.DEBUG);
+    return getLogMethod(console.debug, logLevel === LOG_LEVEL.DEBUG);
   },
   get INFO() {
-    // @ts-expect-error
-    return getLogMethod(console.info, infoLevels.has(window.LOG_LEVEL));
+    return getLogMethod(console.info, infoLevels.has(logLevel));
   },
   get WARN() {
-    // @ts-expect-error
-    return getLogMethod(console.warn, window.LOG_LEVEL !== LOG_LEVEL.ERROR);
+    return getLogMethod(console.warn, logLevel !== LOG_LEVEL.ERROR);
   },
   get ERROR() {
     return getLogMethod(console.error);
@@ -29,8 +29,7 @@ const Logger = {
 };
 
 function getLogMethod(method: Function, enabled: boolean = true) {
-  // @ts-ignore
-  return enabled && window.LOG_LEVEL !== LOG_LEVEL.NONE
+  return enabled && logLevel !== LOG_LEVEL.NONE
     ? method
     : noop;
 }

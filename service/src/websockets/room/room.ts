@@ -83,7 +83,7 @@ export class Room {
 
     try {
       // Retry logic for race condition handling in the case the room was just created
-      const roomData = await this.retryRoomJoin(roomEntity, sessionId, displayName as string, 3);
+      const roomData = await this.retryRoomJoin(roomEntity, sessionId, displayName as string, 5);
 
       socket.join(roomId);
       socket.on(SocketEvents.DISCONNECT, reason => this.destroyConnection(socket, reason));
