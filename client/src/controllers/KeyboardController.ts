@@ -92,6 +92,7 @@ export default class KeyboardController {
       return;
     }
 
+    e.preventDefault();
     this.activeMidi.add(midi);
     this.onKeyDown(midi);
   }

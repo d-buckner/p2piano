@@ -33,6 +33,7 @@ function Toolbar(props: Props) {
         zIndex="1"
         size='sm'
         color='white'
+        backgroundColor='black'
         value={instrument}
         defaultValue={InstrumentType.PIANO}
         onChange={e => {
