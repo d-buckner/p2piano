@@ -6,17 +6,15 @@ const isProduction = process.env.NODE_ENV === 'production';
 export default defineConfig({
   plugins: [react()],
   define: {
-    global: {},
+    global: 'globalThis',
     TONE_SILENCE_LOGGING: true,
-    LOG_LEVEL: isProduction ? '"error"' : '"debug"',
-    'process.env': {
+    LOG_LEVEL: JSON.stringify(isProduction ? 'error' : 'debug'),
+    'process.env': JSON.stringify({
       NODE_ENV: isProduction ? 'production' : 'development',
-      API_URL: isProduction
-          ? '/api'
-          : 'http://localhost:3001/api'
-    }
+      API_URL: isProduction ? '/api' : 'http://localhost:3001/api'
+    })
   },
   build: {
     outDir: 'dist',
   }
-})
+});
