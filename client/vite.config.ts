@@ -16,12 +16,16 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       rollupOptions: {
+        output: {
+          entryFileNames: `assets/[name].js`,
+          chunkFileNames: `assets/[name].js`,
+          assetFileNames: `assets/[name].[ext]`
+        },
         plugins: replace({
           preventAssignment: true,
           'theWindow.TONE_SILENCE_LOGGING': true,
         }),
       },
-      minify: false,
       outDir: 'dist',
     }
   }
