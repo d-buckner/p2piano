@@ -1,14 +1,24 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import replace from '@rollup/plugin-replace';
 
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
   return {
-    plugins: [react()],
+    plugins: [
+      react(),
+      // for simple-peer
+      nodePolyfills({
+        globals: {
+          process: true,
+          global: true,
+        }
+      })
+    ],
     define: {
-      global: {},
+      // for tonejs's very persistent logger (dev server)
       'TONE_SILENCE_LOGGING': JSON.stringify(true),
       'window.LOG_LEVEL': JSON.stringify(isProduction ? 'error' : 'debug'),
       'process.env.NODE_ENV': JSON.stringify(mode),
@@ -23,6 +33,7 @@ export default defineConfig(({ mode }) => {
         },
         plugins: replace({
           preventAssignment: true,
+          // for tonejs's very persistent logger (prod build)
           'theWindow.TONE_SILENCE_LOGGING': true,
         }),
       },
