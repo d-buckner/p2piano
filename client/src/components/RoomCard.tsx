@@ -65,7 +65,6 @@ export default function RoomCard() {
         <Heading
           fontSize='xl'
           textAlign='center'
-          fontStyle='Ysabeau'
         >
           a collaboration space for the musically inclined
         </Heading>

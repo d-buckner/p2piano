@@ -7,8 +7,8 @@ import store from './app/store';
 import App from './App';
 import theme from './theme';
 
-const container = document.getElementById('root')!;
-const root = createRoot(container);
+
+const root = createRoot(document.body);
 
 root.render(
   <React.StrictMode>

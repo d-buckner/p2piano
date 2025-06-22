@@ -41,8 +41,9 @@ function RoomNav({ workspace }: Props) {
       padding='4px 16px'
       backgroundColor='#424242'
       color='white'
+      as='nav'
     >
-      <Link onClick={navigateHome} fontFamily='Ysabeau Office'>p2piano</Link>
+      <Link onClick={navigateHome}>p2piano</Link>
       <UserItems />
       <Flex>
         <Button

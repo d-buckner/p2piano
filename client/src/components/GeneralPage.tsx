@@ -1,32 +1,30 @@
-import {Grid, GridItem} from '@chakra-ui/react'
+import { Grid, GridItem } from '@chakra-ui/react'
 import Navbar from '../components/Navbar';
-import {ReactNode} from 'react';
 import Footer from './Footer';
+
+import type { ReactNode } from 'react';
+
 
 type Props = {
     children: ReactNode,
 }
 
-const GeneralPage = ({children}: Props) => (
-    // @ts-ignore type union to complex
+const GeneralPage = ({ children }: Props) => (
+    // @ts-ignore type union too complex
     <Grid
-        templateAreas={`
-            "header"
-            "main"
-            "footer"
-        `}
+        templateAreas={`"header""main""footer"`}
         gridTemplateRows='32px minmax(0, 1fr) 32px'
         height='100%'
         backgroundColor='background'
         color='foreground'
     >
-        <GridItem area='header'>
+        <GridItem area='header' as='nav'>
             <Navbar />
         </GridItem>
-        <GridItem area='main'>
+        <GridItem area='main' as='main'>
             {children}
         </GridItem>
-        <GridItem area='footer'>
+        <GridItem area='footer' as='footer'>
             <Footer />
         </GridItem>
     </Grid>

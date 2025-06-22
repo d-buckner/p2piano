@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   Flex,
   Grid,
@@ -13,6 +13,7 @@ import { selectWorkspace, type Workspace } from '../slices/workspaceSlice';
 import { selectNotes } from '../slices/notesSlice';
 import Visualization from '../components/Visualization';
 import RoomNav from '../components/RoomNav';
+import { joinRoom } from '../actions/WorkspaceActions';
 
 import type { RootState } from '../app/store';
 import type { NotesByMidi } from '../constants';
@@ -24,6 +25,15 @@ type Props = {
 };
 
 const Room = React.memo(({ workspace, notesByMidi }: Props) => {
+  useEffect(() => {
+    const roomId = location.pathname.replace('/', '');
+    if (!roomId) {
+      return;
+    }
+
+    joinRoom(roomId);
+  }, []);
+
   if (workspace.isLoading !== false) {
     return (
       <Flex
@@ -59,17 +69,14 @@ const Room = React.memo(({ workspace, notesByMidi }: Props) => {
 
   return (
     <Grid
-      templateAreas={`
-                "header"
-                "visual"
-            `}
+      templateAreas={`"header""visual"`}
       gridTemplateRows='32px minmax(0, 1fr)'
       height='100%'
     >
-      <GridItem area='header'>
+      <GridItem area='header' as='nav'>
         <RoomNav workspace={workspace} />
       </GridItem>
-      <GridItem area='visual'>
+      <GridItem area='visual' as='main'>
         <Visualization notes={notes} />
       </GridItem>
     </Grid>

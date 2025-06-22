@@ -12,7 +12,6 @@ export default function Navbar() {
         _hover={{ bg: "gray" }}
         onClick={() => navigate('/')}
         background='none'
-        fontFamily='Ysabeau Office'
       >
         p2piano
       </Button>
