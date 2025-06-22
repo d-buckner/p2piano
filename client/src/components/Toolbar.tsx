@@ -1,62 +1,22 @@
-import {
-  Box,
-  Select,
-} from '@chakra-ui/react';
-import { connect } from 'react-redux';
-import { getMyUser } from '../lib/WorkspaceHelper';
-import { updateInstrument } from '../actions/WorkspaceActions';
-import { InstrumentType } from '../audio/instruments/Instrument';
+import React from 'react';
+import { Button } from '@chakra-ui/react';
+import HuMIDI from 'humidi';
+import Icon from './Icon';
 
-import type { User } from '../lib/workspaceTypes';
 
-const INSTRUMENTS: Record<InstrumentType, string> = {
-  [InstrumentType.PIANO]: 'Piano',
-  [InstrumentType.SYNTH]: 'Synth',
-  [InstrumentType.ELECTRIC_BASS]: 'Electric bass',
-};
-
-type Props = {
-  user: User | null | undefined,
-};
-
-function Toolbar(props: Props) {
-  const { user } = props;
-  const { instrument } = user || {};
-
+function Toolbar() {
   return (
-    <Box
-      pos='absolute'
-      right='0'
-      h='14px'
+    <Button
+      color='foreground'
+      onClick={HuMIDI.requestAccess}
+      backgroundColor='unset'
+      height='24px'
+      mr='4px'
+      _hover={{ bg: "gray" }}
     >
-      <Select
-        zIndex="1"
-        size='sm'
-        color='white'
-        backgroundColor='black'
-        value={instrument}
-        defaultValue={InstrumentType.PIANO}
-        onChange={e => {
-          updateInstrument(e.target.value as InstrumentType)
-        }}
-      >
-        {Object.entries(INSTRUMENTS).map(([type, title], i) => (
-          <option
-            value={type}
-            key={i}
-          >
-            {title}
-          </option>
-        ))}
-      </Select>
-    </Box >
+      <Icon name='usb-cable' />
+    </Button>
   );
 }
 
-function mapStateToProps() {
-  return {
-    user: getMyUser(),
-  };
-}
-
-export default connect(mapStateToProps)(Toolbar);
+export default Toolbar;

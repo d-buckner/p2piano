@@ -1,10 +1,8 @@
 import React from 'react';
-import { Button, Flex, Link } from '@chakra-ui/react';
+import { Flex, Link } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
-import UserItems from './UserItems';
-import Icon from './Icon';
-import HuMIDI from 'humidi';
+import Toolbar from './Toolbar';
 
 import type { Workspace } from '../slices/workspaceSlice';
 
@@ -37,27 +35,17 @@ function RoomNav({ workspace }: Props) {
     <Flex
       w='full'
       boxShadow='2xl'
-      justifyContent='space-between'
       padding='4px 16px'
       backgroundColor='#424242'
+      justifyContent='space-between'
       color='white'
       as='nav'
     >
       <Link onClick={navigateHome}>p2piano</Link>
-      <UserItems />
-      <Flex>
-        <Button
-          onClick={HuMIDI.requestAccess}
-          backgroundColor='unset'
-          height='24px'
-          mr='4px'
-        >
-          <Icon name='usb-cable' />
-        </Button>
-        <Link onClick={shareRoom} whiteSpace='nowrap'>
-          room: <b>{workspace.roomId}</b>
-        </Link>
-      </Flex>
+      <Toolbar />
+      <Link onClick={shareRoom} whiteSpace='nowrap'>
+        room: <b>{workspace.roomId}</b>
+      </Link>
     </Flex>
   );
 }
