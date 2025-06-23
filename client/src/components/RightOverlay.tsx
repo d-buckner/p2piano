@@ -1,6 +1,7 @@
 import {
   Box,
-  Flex,
+  List,
+  ListItem,
   Select,
 } from '@chakra-ui/react';
 import { connect } from 'react-redux';
@@ -76,14 +77,16 @@ function InstrumentSelect(props: InstrumentSelectProps) {
 
 function UsersList(props: UserListProps) {
   return (
-    <Box p='16px'>
+    <List p='16px'>
       {Object.values(props.users ?? {}).map((user, i) => (
-        <Flex
+        <ListItem
+          display='flex'
           justifyContent='end'
           alignItems='center'
           key={i}
         >
           <Box
+            as='span'
             backgroundColor={user.color}
             borderRadius='4px'
             height='8px'
@@ -91,9 +94,9 @@ function UsersList(props: UserListProps) {
             m='8px'
           />
           <span>{user.displayName}</span>
-        </Flex>
+        </ListItem>
       ))}
-    </Box>
+    </List>
   );
 }
 
