@@ -2,18 +2,15 @@ import {
   Routes,
   Route,
 } from 'react-router-dom';
-import Home from './pages/Home';
-import Room from './pages/Room';
-import { Box } from '@chakra-ui/react'
-import { useState } from 'react';
-import ClientPreferences from './lib/ClientPreferences';
-import DisplayNameModal from './components/DisplayNameModal';
-import Donate from './pages/Donate';
+import { lazy } from 'react';
 
 
-const App = () => {
-  const [displayName, setDisplayName] = useState<string | null>(ClientPreferences.getDisplayName());
+const RoomCheck = lazy(() => import('./pages/RoomCheck'))
+const Home = lazy(() => import('./pages/Home'));
+const Donate = lazy(() => import('./pages/Donate'));
 
+
+export default function App() {
   return (
     <Routes>
       <Route path='/' element={<Home />} />
@@ -22,25 +19,4 @@ const App = () => {
       <Route path='*' element={<RoomCheck />} />
     </Routes>
   );
-
-  function RoomCheck() {
-    if (displayName) {
-      return <Room />;
-    }
-
-    return (
-      <Box
-        bg='black'
-        h='full'
-      >
-        <DisplayNameModal
-          onSubmit={() => {
-            setDisplayName(ClientPreferences.getDisplayName());
-          }}
-        />
-      </Box>
-    );
-  }
 }
-
-export default App;

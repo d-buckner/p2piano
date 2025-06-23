@@ -72,6 +72,7 @@ const Room = React.memo(({ workspace, notesByMidi }: Props) => {
       templateAreas={`"header""visual"`}
       gridTemplateRows='32px minmax(0, 1fr)'
       height='100%'
+      className='fade-in'
     >
       <GridItem area='header' as='nav'>
         <RoomNav workspace={workspace} />

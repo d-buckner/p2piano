@@ -9,4 +9,11 @@ export default extendTheme({
     background: '#000',
     foreground: '#FFF',
   },
+  styles: {
+      global: () => ({
+        body: {
+          bg: 'background',
+        },
+      }),
+    }
 });
