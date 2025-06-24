@@ -11,29 +11,25 @@ import { AppService } from './app.service';
 import { RoomNotFoundError } from './errors';
 import { Throttle } from '@nestjs/throttler';
 
-import type { FastifyReply } from 'fastify';
 
-const ROOM_COOKIE_KEY = 'ROOM';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) { }
 
-  @Throttle(3, 15)
+  @Throttle({ default: { limit: 3, ttl: 15 } })
   @Post('/api/room')
-  async createRoom(@Res({ passthrough: true }) response: FastifyReply) {
+  async createRoom() {
     const room = await this.appService.createRoom();
-    AppController.setRoomIdCookie(response, room.roomId);
     return room;
   }
 
-  @Throttle(10, 15)
+  @Throttle({ default: { limit: 10, ttl: 15 } })
   @Get('/api/room/:id')
-  async getRoom(@Param() param, @Res({ passthrough: true }) response: FastifyReply) {
+  async getRoom(@Param() param) {
     const roomId = param.id;
     try {
       const room = await this.appService.getRoom(roomId);
-      AppController.setRoomIdCookie(response, roomId);
       return room;
     } catch (err) {
       if (err instanceof RoomNotFoundError) {
@@ -42,19 +38,9 @@ export class AppController {
     }
   }
 
-  @Throttle(4, 60)
+  @Throttle({ default: { limit: 4, ttl: 60 } })
   @Post('/api/session')
   async createSession() {
     return this.appService.createSession();
-  }
-
-  private static setRoomIdCookie(response: FastifyReply, roomId: string) {
-    AppController.setCookie(response, ROOM_COOKIE_KEY, roomId);
-  }
-
-  private static setCookie(response: FastifyReply, name: string, value: string) {
-    response.setCookie(name, value, {
-      path: '/',
-    });
   }
 }

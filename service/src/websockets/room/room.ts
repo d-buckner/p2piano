@@ -32,7 +32,7 @@ export class Room {
     this.destroyConnection = this.destroyConnection.bind(this);
   }
 
-  @Throttle(10, 30)
+  @Throttle({ default: { limit: 10, ttl: 30 } })
   @UseGuards(WsThrottlerGuard)
   @SubscribeMessage(RoomEvents.USER_UPDATE)
   async onUserUpdate(@MessageBody() payload: UserUpdatePayload, @ConnectedSocket() socket: Socket) {

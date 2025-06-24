@@ -9,7 +9,7 @@ import { broadcastToSubset, defaultWebSocketGatewayOptions } from '../utils';
 
 @WebSocketGateway(defaultWebSocketGatewayOptions)
 export class Notes {
-    @Throttle(100, 10)
+    @Throttle({ default: { limit: 100, ttl: 10000 } })
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(NoteEvents.KEY_DOWN)
     onKeyDown(@MessageBody() payload: NoteOnPayload, @ConnectedSocket() socket: Socket) {
@@ -19,7 +19,7 @@ export class Notes {
         });
     }
 
-    @Throttle(150, 10)
+    @Throttle({ default: { limit: 150, ttl: 10000 } })
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(NoteEvents.KEY_UP)
     onKeyUp(@MessageBody() payload: NoteOffPayload, @ConnectedSocket() socket: Socket) {

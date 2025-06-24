@@ -1,4 +1,4 @@
-FROM node:20-alpine AS build-stage
+FROM node:24-alpine AS build-stage
 
 WORKDIR /app
 
@@ -15,6 +15,6 @@ ADD src ./src
 
 RUN npm run build
 
-FROM caddy:2.8.4-alpine
+FROM caddy:2.10.0-alpine
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=build-stage /app/dist /www

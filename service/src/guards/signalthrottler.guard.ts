@@ -1,8 +1,12 @@
 import { Injectable, ExecutionContext, Logger } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModuleOptions, ThrottlerStorage } from '@nestjs/throttler';
+import { Reflector } from '@nestjs/core';
 
 @Injectable()
 export class SignalThrottlerGuard extends ThrottlerGuard {
+  private readonly logger = new Logger(SignalThrottlerGuard.name);
+
   private readonly WEBRTC_LIMITS = {
     'ice-candidate': { limit: 600, ttl: 60000, burst: 100, burstTtl: 10000 },
     'offer': { limit: 120, ttl: 60000, burst: 20, burstTtl: 10000 },
@@ -10,7 +14,15 @@ export class SignalThrottlerGuard extends ThrottlerGuard {
     'default': { limit: 60, ttl: 60000, burst: 10, burstTtl: 10000 }
   };
 
-  async handleRequest(context: ExecutionContext): Promise<boolean> {
+  constructor(
+    protected readonly throttlerModuleOptions: ThrottlerModuleOptions,
+    protected readonly storageService: ThrottlerStorage,
+    protected readonly reflector: Reflector,
+  ) {
+    super(throttlerModuleOptions, storageService, reflector);
+  }
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const wsContext = context.switchToWs();
     const client = wsContext.getClient();
     const ip = client.conn.remoteAddress;
@@ -18,32 +30,70 @@ export class SignalThrottlerGuard extends ThrottlerGuard {
     const signalType = data?.signalData?.type || 'default';
     const config = this.WEBRTC_LIMITS[signalType] || this.WEBRTC_LIMITS.default;
 
-    // Check burst limit first
-    const burstKey = this.generateKey(context, `${ip}:${signalType}:burst`);
-    const { totalHits: burstHits } = await this.storageService.increment(burstKey, config.burstTtl);
+    // Check burst limit
+    const burstResult = await this.checkLimit(
+      context,
+      ip,
+      `${signalType}:burst`,
+      config.burst,
+      config.burstTtl,
+    );
 
-    Logger.debug(`🔍 ${signalType} burst: ${burstHits}/${config.burst} for ${ip}`);
-
-    if (burstHits > config.burst) {
-      Logger.warn(`🚫 Signal BURST limit exceeded: ${burstHits}/${config.burst} for ${signalType} from ${ip}`);
+    if (!burstResult) {
+      this.logger.warn(
+        `🚫 Signal BURST limit exceeded for ${signalType} from ${ip}`,
+      );
       return false;
     }
 
     // Check main limit
-    const mainKey = this.generateKey(context, `${ip}:${signalType}:main`);
-    const { totalHits: mainHits } = await this.storageService.increment(mainKey, config.ttl);
+    const mainResult = await this.checkLimit(
+      context,
+      ip,
+      `${signalType}:main`,
+      config.limit,
+      config.ttl,
+    );
 
-    Logger.debug(`🔍 ${signalType} main: ${mainHits}/${config.limit} for ${ip}`);
-
-    if (mainHits > config.limit) {
-      Logger.warn(`🚫 Signal MAIN limit exceeded: ${mainHits}/${config.limit} for ${signalType} from ${ip}`);
+    if (!mainResult) {
+      this.logger.warn(
+        `🚫 Signal MAIN limit exceeded for ${signalType} from ${ip}`,
+      );
       return false;
     }
 
     return true;
   }
 
-  protected generateKey(context: ExecutionContext, suffix: string): string {
-    return `signal-${context.getClass().name}-${context.getHandler().name}-${suffix}`;
+  private async checkLimit(
+    context: ExecutionContext,
+    ip: string,
+    type: string,
+    limit: number,
+    ttl: number,
+  ): Promise<boolean> {
+    const key = `signal:${context.getClass().name}:${context.getHandler().name}:${ip}:${type}`;
+
+    const { totalHits, timeToExpire } = await this.storageService.increment(
+      key,
+      ttl,
+      limit,
+      0,
+      type,
+    );
+
+    this.logger.debug(
+      `🔍 ${type}: ${totalHits}/${limit} for ${ip} (expires in: ${timeToExpire}ms)`,
+    );
+
+    return totalHits <= limit;
+  }
+
+  protected async getTracker(context: ExecutionContext): Promise<string> {
+    const wsContext = context.switchToWs();
+    const client = wsContext.getClient();
+    const data = wsContext.getData();
+    const signalType = data?.signalData?.type || 'default';
+    return `${client.conn.remoteAddress}:${signalType}`;
   }
 }

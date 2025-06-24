@@ -1,7 +1,8 @@
 {
   "name": "p2piano-client",
-  "version": "0.1.0",
-  "private": true,
+  "version": "1.0.0",
+  "license": "AGPL-3.0-only",
+  "private": false,
   "dependencies": {
     "@chakra-ui/icons": "^2.0.2",
     "@chakra-ui/react": "^2.2.1",
