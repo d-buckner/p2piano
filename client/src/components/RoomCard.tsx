@@ -15,6 +15,7 @@ import { dispatch } from '../app/store';
 import { setRoom } from '../slices/workspaceSlice';
 
 import type { ChangeEvent } from 'react';
+import AudioManager from '../audio/AudioManager';
 
 
 export default function RoomCard() {
@@ -25,6 +26,7 @@ export default function RoomCard() {
   const navigateToRoom = useCallback((roomId: string) => navigate(`/${roomId}`), [navigate]);
 
   const createRoom = useCallback(async () => {
+    AudioManager.activate();
     setRoomCreating(true);
     const room = await createNewRoom();
     dispatch(setRoom({ room }));

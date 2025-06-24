@@ -26,8 +26,9 @@ const MIDI_HANDLERS = {
   noteoff: RoomHandlers.keyUpHandler,
 } as const;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Subscribable = any & {
-  on: (action: string, handler: Function) => void;
+  on: (action: string, handler: () => void) => void;
 };
 
 export function register() {

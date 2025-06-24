@@ -7,7 +7,7 @@ export type User = {
 
 export type Room = {
   roomId: string,
-  users: {
+  users?: {
     [userId: string]: User,
   },
 };

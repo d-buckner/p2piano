@@ -80,6 +80,7 @@ function UsersList(props: UserListProps) {
     <List p='16px'>
       {Object.values(props.users ?? {}).map((user, i) => (
         <ListItem
+          className='fade-in'
           display='flex'
           justifyContent='end'
           alignItems='center'

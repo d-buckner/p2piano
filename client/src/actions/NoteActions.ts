@@ -4,8 +4,9 @@ import { addNote, removeNote } from '../slices/notesSlice';
 import PianoClient from '../clients/PianoClient';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import { getAudioDelay } from '../audio/syncronization/utils';
+import { DEFAULT_VELOCITY } from '../constants';
 
-export function keyDown(midi: number, velocity = 100, peerId?: string) {
+export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: string) {
   if (!peerId) {
     PianoClient.keyDown(midi, velocity);
   }

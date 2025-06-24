@@ -21,7 +21,7 @@ function RoomNav({ workspace }: Props) {
         text: 'Play piano with me on p2piano!',
         url: window.location.href,
       });
-    } catch (e) {
+    } catch {
       await navigator.clipboard.writeText(window.location.href);
     }
   }
@@ -36,7 +36,7 @@ function RoomNav({ workspace }: Props) {
       w='full'
       boxShadow='2xl'
       padding='4px 16px'
-      backgroundColor='#424242'
+      backgroundColor='secondary'
       justifyContent='space-between'
       color='white'
       as='nav'

@@ -10,7 +10,6 @@ type Props = {
 }
 
 const GeneralPage = ({ children }: Props) => (
-    // @ts-ignore type union too complex
     <Grid
         templateAreas={`"header""main""footer"`}
         gridTemplateRows='32px minmax(0, 1fr) 32px'

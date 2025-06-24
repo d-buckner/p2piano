@@ -3,6 +3,7 @@ import { toFrequency } from '../../lib/NoteHelpers';
 import getDelayTime from './getDelayTime';
 
 import type { Instrument } from './Instrument';
+import { DEFAULT_VELOCITY } from '../../constants';
 
 
 export default class Synth implements Instrument {
@@ -22,7 +23,7 @@ export default class Synth implements Instrument {
     this.instrument.toDestination();
   }
 
-  keyDown(midi: number, delay?: number, velocity = 100) {
+  keyDown(midi: number, delay?: number, velocity = DEFAULT_VELOCITY) {
     this.instrument.triggerAttack(
       toFrequency(midi),
       getDelayTime(delay),
