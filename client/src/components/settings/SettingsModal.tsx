@@ -21,8 +21,6 @@ import { useNavigate } from 'react-router-dom';
 import HuMIDI from 'humidi';
 import DisplayName from './DisplayName';
 
-import type { KeyboardEvent } from 'react';
-
 
 interface Props {
   onSubmit: () => void,

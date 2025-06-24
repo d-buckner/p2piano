@@ -1,5 +1,4 @@
 const SESSION_ID_KEY = 'sessionId';
-const AUDIO_ACCEPT = 'audioAccept';
 
 export default class Session {
   private constructor() { }
