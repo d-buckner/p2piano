@@ -22,6 +22,9 @@ import HuMIDI from 'humidi';
 import DisplayName from './DisplayName';
 
 
+const noop = () => { };
+
+
 interface Props {
   onSubmit: () => void,
 };
@@ -34,15 +37,16 @@ function SettingsModal(props: Props) {
   const navigate = useNavigate();
   const { onCopy, hasCopied } = useClipboard(location.href);
   const [displayName, setDisplayName] = useState<string>(ClientPreferences.getDisplayName() ?? '');
-  const [hasDisplayNameError, setDisplayNameError] = useState<boolean>(false);
+  const [hasDisplayNameError, setDisplayNameError] = useState<boolean>(!isDisplayNameValid(displayName));
 
-  const onDisplayNameChange = (displayName: string) => {
-    const isValid = !!displayName && (
-      displayName.length >= 3 ||
-      displayName.length <= 12
-    );
-    setDisplayNameError(!isValid);
-    setDisplayName(displayName);
+  function isDisplayNameValid(name: string) {
+    return !!name &&
+      name.length >= 3 &&
+      name.length <= 12;
+  }
+  const onDisplayNameChange = (name: string) => {
+    setDisplayName(name);
+    setDisplayNameError(!isDisplayNameValid(name));
   }
 
   const { onClose } = useDisclosure();
@@ -84,7 +88,8 @@ function SettingsModal(props: Props) {
             bg='#151f21'
             color='white'
             rounded='md'
-            onClick={onSubmit}
+            onClick={hasDisplayNameError ? noop : onSubmit}
+            disabled={hasDisplayNameError}
           >
             let's go
           </Button>

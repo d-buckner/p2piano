@@ -3,10 +3,13 @@ import SettingsModal from '../components/settings/SettingsModal';
 import Room from './Room';
 import { useState } from 'react';
 import AudioManager from '../audio/AudioManager';
+import ClientPreferences from '../lib/ClientPreferences';
 
 
 export default function RoomCheck() {
-  const [accepted, setAccepted] = useState<boolean>(AudioManager.active);
+  const [accepted, setAccepted] = useState<boolean>(
+    AudioManager.active && !!ClientPreferences.getDisplayName()
+  );
   if (accepted) {
     return <Room />;
   }
