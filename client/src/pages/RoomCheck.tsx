@@ -1,13 +1,13 @@
 import { Box } from '@chakra-ui/react';
-import ClientPreferences from '../lib/ClientPreferences';
-import DisplayNameModal from '../components/DisplayNameModal';
+import SettingsModal from '../components/settings/SettingsModal';
 import Room from './Room';
 import { useState } from 'react';
+import AudioManager from '../audio/AudioManager';
 
 
 export default function RoomCheck() {
-  const [displayName, setDisplayName] = useState<string | null>(ClientPreferences.getDisplayName());
-  if (displayName) {
+  const [accepted, setAccepted] = useState<boolean>(AudioManager.active);
+  if (accepted) {
     return <Room />;
   }
 
@@ -16,9 +16,9 @@ export default function RoomCheck() {
       bg='black'
       h='full'
     >
-      <DisplayNameModal
+      <SettingsModal
         onSubmit={() => {
-          setDisplayName(ClientPreferences.getDisplayName());
+          setAccepted(true);
         }}
       />
     </Box>

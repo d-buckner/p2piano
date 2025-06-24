@@ -55,7 +55,7 @@ export const workspaceSlice = createSlice({
     },
     reset: (state) => {
       Object.entries(initialState).forEach(([key, val]) => {
-        // @ts-ignore
+        // @ts-expect-error object.entries removes key/value type constraints
         state[key] = val;
       });
     },
@@ -76,7 +76,7 @@ export const selectMyUser = (state: RootState) => {
   const workspace = selectWorkspace(state);
   const { userId, room } = workspace;
   if (userId) {
-    return room?.users[userId];
+    return room?.users?.[userId];
   }
 }
 export const selectUsers = (state: RootState) => selectWorkspace(state).room?.users ?? {};

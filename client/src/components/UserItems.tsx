@@ -28,7 +28,6 @@ interface PropsFromState {
 }
 
 const UserItems = (props: PropsFromState) => (
-  // @ts-ignore
   <Flex>
     {Object.values(props.users).map((user, i) => {
       const iconName = props.peerIcons[user.userId];

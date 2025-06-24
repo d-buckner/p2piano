@@ -87,12 +87,16 @@ class AudioSyncCoordinator {
   }
 
   public start() {
+    if (this.isRunning) {
+      return;
+    }
+
     this.isRunning = true;
     const realTimeController = RealTimeController.getInstance();
     realTimeController.on(SYNC_EVENT.LATENCY_PING, this.onPing);
     realTimeController.on(SYNC_EVENT.LATENCY_PONG, this.onPong);
     realTimeController.on(ACTION.USER_DISCONNECT, this.onPeerLeft)
-    this.tick();
+    realTimeController.once(ACTION.SIGNAL, this.tick);
   }
 
   public stop() {
@@ -123,8 +127,9 @@ class AudioSyncCoordinator {
           {
             pingTime,
             peerId: this.myUserId!,
-          });
-      } catch (err) {
+          }
+        );
+      } catch {
         // gracefully handle sample failure, we'll keep trying at the sample rate
         return;
       }
@@ -160,7 +165,7 @@ class AudioSyncCoordinator {
           pingTime: response.pingTime,
           peerId: this.myUserId!,
         });
-    } catch (err) {
+    } catch {
       return;
     }
   }
@@ -171,7 +176,7 @@ class AudioSyncCoordinator {
     const peerLatencyWindow = this.peerLatencyWindows[peerId];
     peerLatencyWindow.add(latency);
 
-    // @ts-ignore
+    // @ts-expect-error LATENCY_DEBUG not on window, but it's nice to be able to enable in console
     if (window.LATENCY_DEBUG) {
       Logger.INFO(`Peer ${peerId} latency: ${peerLatencyWindow.avg}`);
     }

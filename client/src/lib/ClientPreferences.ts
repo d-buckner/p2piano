@@ -2,7 +2,7 @@ const DISPLAY_NAME = 'displayName';
 
 const ClientPreferences = {
   getDisplayName() {
-    return localStorage.getItem(DISPLAY_NAME);
+    return localStorage.getItem(DISPLAY_NAME) ?? undefined;
   },
 
   setDisplayName(displayName: string) {

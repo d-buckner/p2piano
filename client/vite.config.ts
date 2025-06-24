@@ -45,11 +45,6 @@ export default defineConfig(({ mode }) => {
       sourcemap: 'hidden',
       rollupOptions: {
         output: {
-          manualChunks(id) {
-            if (isGlobalVendorId(id)) {
-              return 'vendor';
-            }
-          },
           entryFileNames: `assets/[name].js`,
           chunkFileNames: `assets/[name].js`,
           assetFileNames: `assets/[name].[ext]`
@@ -65,16 +60,3 @@ export default defineConfig(({ mode }) => {
     }
   }
 });
-
-function isGlobalVendorId(id: string) {
-  const globalPackages = [
-    'react',
-    '@chakra',
-    '@reduxjs',
-  ];
-
-  return globalPackages.some(pkg => {
-    const regExp = new RegExp(`/node_modules/${pkg}`);
-   return regExp.test(id);
-  });
-}

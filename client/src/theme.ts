@@ -7,6 +7,7 @@ export default extendTheme({
   },
   colors: {
     background: '#000',
+    secondary: '#424242',
     foreground: '#FFF',
   },
   styles: {

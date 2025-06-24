@@ -1,8 +1,4 @@
 import store, { dispatch } from '../app/store';
-import {
-  setContext as setToneContext,
-  Context as ToneContext,
-} from 'tone';
 import * as NoteActions from '../actions/NoteActions';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import {
@@ -59,11 +55,6 @@ export default class RoomHandlers {
   }
 
   static roomJoinHandler(payload: RoomJoinPayload) {
-    // configure our audiocontext for minimal latency
-    setToneContext(new ToneContext({
-      latencyHint: 'interactive',
-      lookAhead: 0,
-    }));
     const { room, userId } = payload;
     Object.values(room.users).forEach(u => {
       InstrumentRegistry.register(u.userId, u.instrument as InstrumentType);
@@ -81,7 +72,7 @@ export default class RoomHandlers {
 
   static userConnectHandler(payload: UserConnectPayload) {
     const { userId, room } = payload;
-    const instrument = room.users[userId].instrument as InstrumentType;
+    const instrument = room.users?.[userId].instrument as InstrumentType;
     InstrumentRegistry.register(userId, instrument);
 
     dispatch(setRoom({ room }));
@@ -90,8 +81,11 @@ export default class RoomHandlers {
   static userUpdateHandler(payload: UserUpdatePayload) {
     const { room: oldRoom } = getWorkspace();
     const { userId, room } = payload;
-    const oldUser = oldRoom?.users[userId];
-    const newUser = room?.users[userId];
+    const oldUser = oldRoom?.users?.[userId];
+    const newUser = room?.users?.[userId];
+    if (!newUser) {
+      return;
+    }
     const newInstrument = newUser.instrument as InstrumentType;
 
     if (oldUser?.instrument !== newInstrument) {

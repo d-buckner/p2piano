@@ -4,6 +4,10 @@ export interface Instrument {
     releaseAll(): void;
 }
 
+export interface ConcreteInstrument {
+    new(): Instrument
+}
+
 export enum InstrumentType {
     PIANO = 'PIANO',
     SYNTH = 'SYNTH',

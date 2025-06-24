@@ -40,7 +40,7 @@ export default class Room {
 
   async join(userId: string, displayName: string) {
     const room = await this.get();
-    const { users } = room;
+    const { users = {} } = room;
 
     if (users[userId]) {
       return room;
@@ -84,7 +84,7 @@ export default class Room {
 
   async leave(userId: string) {
     const room = await this.get();
-    delete room.users[userId];
+    delete room.users?.[userId];
     await RoomCollection.updateOne(
       { roomId: this.roomId },
       {

@@ -1,4 +1,8 @@
-export type Message = Record<string, any>;
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// TODO: need to move to better types for messages in general
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Message<T = any> = Record<string, T>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type MessageHandler<T extends Message = any> = (event: T) => void;
 
 export default abstract class AbstractNetworkController {
@@ -14,6 +18,14 @@ export default abstract class AbstractNetworkController {
     }
 
     this.messageHandlers.get(eventType)!.add(handler)
+  }
+
+  public once<T extends MessageHandler>(eventType: string, handler: T) {
+    const wrapper: MessageHandler = (event) => {
+      handler(event);
+      this.off(eventType, wrapper);
+    }
+    this.on(eventType, wrapper);
   }
 
   public off<T extends MessageHandler>(eventType: string, handler: T) {

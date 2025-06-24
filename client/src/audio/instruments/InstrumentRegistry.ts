@@ -1,16 +1,23 @@
-import ElectricBass from './ElectricBass';
-import { type Instrument, InstrumentType } from './Instrument';
-import Piano from './Piano';
-import Synth from './Synth';
+import AudioManager from '../AudioManager';
+import { type ConcreteInstrument, type Instrument, InstrumentType } from './Instrument';
 
+interface InstrumentModule {
+  default: ConcreteInstrument
+}
 
 export default class InstrumentRegistry {
   private static userInstruments: Map<string, Instrument> = new Map();
   private constructor() { }
 
   static register(userId: string, instrumentType: InstrumentType) {
-    InstrumentRegistry.get(userId)?.releaseAll();
-    InstrumentRegistry.userInstruments.set(userId, createInstrument(instrumentType))
+    AudioManager.whenActive(async () => {
+      const IR = InstrumentRegistry;
+      const instrument = await IR.loadInstrument(instrumentType);
+      if (instrument) {
+        IR.get(userId)?.releaseAll();
+        IR.userInstruments.set(userId, instrument);
+      }
+    })
   }
 
   static get(userId: string): Instrument | null {
@@ -25,19 +32,25 @@ export default class InstrumentRegistry {
   static empty() {
     InstrumentRegistry.userInstruments = new Map();
   }
-}
 
-const concreteInstruments = {
-  [InstrumentType.PIANO]: Piano,
-  [InstrumentType.SYNTH]: Synth,
-  [InstrumentType.ELECTRIC_BASS]: ElectricBass,
-} as const;
+  private static async loadInstrument(instrumentType: InstrumentType): Promise<Instrument | undefined> {
+      let module: InstrumentModule | undefined;
+      switch (instrumentType) {
+        case InstrumentType.PIANO:
+          module = await import('./Piano');
+          break;
+        case InstrumentType.SYNTH:
+          module = await import('./Synth');
+          break;
+        case InstrumentType.ELECTRIC_BASS:
+          module = await import('./ElectricBass');
+          break;
+      }
 
-function createInstrument(type: InstrumentType): Instrument {
-  const ConcreteInstrument = concreteInstruments[type];
-  if (!ConcreteInstrument) {
-    throw new Error('Unknown instrument type');
+      if (!module) {
+        return;
+      }
+
+      return new module.default();
   }
-
-  return new ConcreteInstrument();
 }

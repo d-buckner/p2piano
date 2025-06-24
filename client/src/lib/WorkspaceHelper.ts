@@ -1,5 +1,4 @@
 import store from '../app/store';
-import { Transport } from '../constants';
 import { selectWorkspace } from '../slices/workspaceSlice';
 
 export function getUsers() {
@@ -25,7 +24,7 @@ export function getMyUser() {
     return;
   }
 
-  return room?.users[userId];
+  return room?.users?.[userId];
 }
 
 export function getMyUserId() {

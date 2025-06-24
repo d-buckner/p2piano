@@ -6,8 +6,11 @@ const LOG_LEVEL = {
   NONE: 'none',
 } as const;
 
+
+type LogMethod = Parameters<typeof console.log>[0];
+
 const searchParams = new URLSearchParams(location.search);
-// @ts-ignore
+// @ts-expect-error LOG_LEVEL isn't on window, this gets replaced at build time
 const logLevel = searchParams.get('log') || window.LOG_LEVEL;
 const infoLevels = new Set([LOG_LEVEL.DEBUG, LOG_LEVEL.INFO]);
 const noop = () => { };
@@ -27,7 +30,9 @@ const Logger = {
   }
 };
 
-function getLogMethod(method: Function, enabled: boolean = true) {
+function getLogMethod(
+  method: LogMethod,
+  enabled: boolean = true) {
   return enabled && logLevel !== LOG_LEVEL.NONE
     ? method
     : noop;
