@@ -7,10 +7,10 @@
     "@chakra-ui/icons": "^2.0.2",
     "@chakra-ui/react": "^2.2.1",
     "@reduxjs/toolkit": "^2.8.2",
-    "d-piano": "^0.2.1",
     "axios": "^1.2.3",
+    "d-piano": "^0.2.1",
     "humidi": "^0.1.5",
-    "piano-visualizer": "^1.0.14",
+    "piano-visualizer": "^1.0.16",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-redux": "^9.2.0",
@@ -22,7 +22,8 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run lint && vite build",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "analyze": "vite-bundle-visualizer"
   },
   "eslintConfig": {
     "extends": [
@@ -54,12 +55,14 @@
     "@vitejs/plugin-react": "^4.4.1",
     "dotenv-webpack": "^8.0.1",
     "eslint": "^9.25.0",
+    "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
     "vite": "^6.3.5",
+    "vite-bundle-visualizer": "^1.2.1",
     "vite-plugin-node-polyfills": "^0.23.0"
   },
   "jest": {

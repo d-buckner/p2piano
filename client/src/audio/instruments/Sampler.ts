@@ -1,9 +1,8 @@
 import { Sampler as ToneSampler } from 'tone';
+import { DEFAULT_VELOCITY } from '../../constants';
 import { toFrequency } from '../../lib/NoteHelpers';
 import getDelayTime from './getDelayTime';
-
 import type { Instrument } from './Instrument';
-import { DEFAULT_VELOCITY } from '../../constants';
 
 
 const BASE_PATH = '/assets/samples/';

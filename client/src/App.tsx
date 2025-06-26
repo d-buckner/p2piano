@@ -1,8 +1,8 @@
+import { lazy } from 'react';
 import {
   Routes,
   Route,
 } from 'react-router-dom';
-import { lazy } from 'react';
 
 
 const RoomCheck = lazy(() => import('./pages/RoomCheck'))

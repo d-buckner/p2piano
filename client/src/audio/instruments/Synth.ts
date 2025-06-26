@@ -1,9 +1,8 @@
 import { PolySynth, Synth as ToneSynth } from 'tone';
+import { DEFAULT_VELOCITY } from '../../constants';
 import { toFrequency } from '../../lib/NoteHelpers';
 import getDelayTime from './getDelayTime';
-
 import type { Instrument } from './Instrument';
-import { DEFAULT_VELOCITY } from '../../constants';
 
 
 export default class Synth implements Instrument {

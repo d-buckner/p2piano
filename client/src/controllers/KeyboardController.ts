@@ -36,7 +36,7 @@ const KEY_MAP: Record<string, number> = {
   L: 74,
   P: 75,
   ':': 76,
-  "\"": 77,
+  '"': 77,
 };
 
 export default class KeyboardController {

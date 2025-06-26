@@ -1,8 +1,12 @@
 import { dispatch } from '../app/store';
 import { ensureSession, getRoom } from '../clients/RoomClient';
+import { Transport } from '../constants';
+import ClientPreferences from '../lib/ClientPreferences';
+import * as RoomActionBridge from '../lib/RoomActionBridge';
+import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
 import WebRtcController from '../networking/transports/WebRtcController';
 import WebsocketController from '../networking/transports/WebsocketController';
-import ClientPreferences from '../lib/ClientPreferences';
+import { connectionActions } from '../slices/connectionSlice';
 import {
   setRoomId,
   setValidity,
@@ -10,11 +14,8 @@ import {
   setIsLoading,
   setRoom,
 } from '../slices/workspaceSlice';
-import * as RoomActionBridge from '../lib/RoomActionBridge';
-import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
-import { InstrumentType } from '../audio/instruments/Instrument';
-import { connectionActions } from '../slices/connectionSlice';
-import { Transport } from '../constants';
+import type { InstrumentType } from '../audio/instruments/Instrument';
+
 
 export async function joinRoom(roomId: string) {
   dispatch(setRoomId({ roomId }));

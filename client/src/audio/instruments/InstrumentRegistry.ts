@@ -1,6 +1,7 @@
 import AudioManager from '../AudioManager';
 import { type ConcreteInstrument, type Instrument, InstrumentType } from './Instrument';
 
+
 interface InstrumentModule {
   default: ConcreteInstrument
 }

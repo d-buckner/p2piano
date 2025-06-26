@@ -1,12 +1,13 @@
-import { Transport } from "../constants";
-import { getConnectedPeerIds, getPeerConnection } from "../lib/ConnectionUtils";
-import Logger from "../lib/Logger";
+import { Transport } from '../constants';
+import { getConnectedPeerIds, getPeerConnection } from '../lib/ConnectionUtils';
+import Logger from '../lib/Logger';
 import AbstractNetworkController, {
   type Message,
   type MessageHandler,
-} from "./AbstractNetworkController";
-import WebRtcController from "./transports/WebRtcController";
-import WebsocketController from "./transports/WebsocketController";
+} from './AbstractNetworkController';
+import WebRtcController from './transports/WebRtcController';
+import WebsocketController from './transports/WebsocketController';
+
 
 export default class RealTimeController extends AbstractNetworkController {
   private static instance?: RealTimeController;
@@ -92,7 +93,7 @@ export default class RealTimeController extends AbstractNetworkController {
       } catch (err) {
         // swallow to move to fallback
         Logger.ERROR(err);
-        Logger.WARN("webrtc message failed to send. invoking fallback");
+        Logger.WARN('webrtc message failed to send. invoking fallback');
       }
     }
 

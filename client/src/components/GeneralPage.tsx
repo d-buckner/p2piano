@@ -1,7 +1,6 @@
 import { Grid, GridItem } from '@chakra-ui/react'
 import Navbar from '../components/Navbar';
 import Footer from './Footer';
-
 import type { ReactNode } from 'react';
 
 
@@ -11,7 +10,7 @@ type Props = {
 
 const GeneralPage = ({ children }: Props) => (
     <Grid
-        templateAreas={`"header""main""footer"`}
+        templateAreas={'"header""main""footer"'}
         gridTemplateRows='32px minmax(0, 1fr) 32px'
         height='100%'
         backgroundColor='background'

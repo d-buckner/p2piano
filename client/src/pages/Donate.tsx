@@ -1,6 +1,7 @@
 import { Box, Flex, Heading, Link, Text } from '@chakra-ui/react';
 import GeneralPage from '../components/GeneralPage';
 
+
 const Donate = () => (
   <GeneralPage>
     <Flex

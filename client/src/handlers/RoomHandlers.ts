@@ -1,15 +1,15 @@
-import store, { dispatch } from '../app/store';
 import * as NoteActions from '../actions/NoteActions';
+import store, { dispatch } from '../app/store';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
+import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
+import { removeNotesFromPeer, selectNotes } from '../slices/notesSlice';
 import {
   setRoom,
   initializeRoom,
 } from '../slices/workspaceSlice';
-import { InstrumentType } from '../audio/instruments/Instrument';
-import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
-import { removeNotesFromPeer, selectNotes } from '../slices/notesSlice';
-
+import type { InstrumentType } from '../audio/instruments/Instrument';
 import type { Room } from '../lib/workspaceTypes';
+
 
 
 type KeyDownPayload = {

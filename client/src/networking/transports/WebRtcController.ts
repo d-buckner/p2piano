@@ -1,9 +1,10 @@
+import SimplePeer from 'simple-peer';
 import { dispatch } from '../../app/store';
 import { Transport } from '../../constants';
 import { connectionActions } from '../../slices/connectionSlice';
 import AbstractNetworkController, { type Message } from '../AbstractNetworkController';
 import WebsocketController from './WebsocketController';
-import SimplePeer from 'simple-peer';
+
 
 type UserPayload = {
   userId: string;

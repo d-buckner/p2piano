@@ -1,5 +1,6 @@
-import RoomCard from '../components/RoomCard';
 import GeneralPage from '../components/GeneralPage';
+import RoomCard from '../components/RoomCard';
+
 
 const Home = () => (
   <GeneralPage>

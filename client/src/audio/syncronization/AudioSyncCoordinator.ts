@@ -1,12 +1,14 @@
+import { dispatch } from '../../app/store';
+import { getConnectedPeerIds } from '../../lib/ConnectionUtils';
+import Logger from '../../lib/Logger';
 import RollingAvg from '../../lib/RollingAvg';
 import { getMyUserId } from '../../lib/WorkspaceHelper';
-import { dispatch } from '../../app/store';
-import { connectionActions } from '../../slices/connectionSlice';
-import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from './constants';
-import { getConnectedPeerIds } from '../../lib/ConnectionUtils';
 import RealTimeController from '../../networking/RealTimeController';
 import { ACTION } from '../../networking/transports/WebRtcController';
-import Logger from '../../lib/Logger';
+import { connectionActions } from '../../slices/connectionSlice';
+import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from './constants';
+
+
 
 
 /**

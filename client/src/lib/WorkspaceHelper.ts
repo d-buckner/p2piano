@@ -1,10 +1,12 @@
 import store from '../app/store';
 import { selectWorkspace } from '../slices/workspaceSlice';
 
+
 export function getUsers() {
   const { room } = getWorkspace();
   return room?.users || {};
 }
+
 export function getUser(userId: string) {
   return getUsers()[userId];
 }

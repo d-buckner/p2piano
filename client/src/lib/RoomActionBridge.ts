@@ -1,13 +1,13 @@
 import HuMIDI from 'humidi';
 import * as NoteActions from '../actions/NoteActions';
-import RoomHandlers from '../handlers/RoomHandlers';
-import KeyboardController from '../controllers/KeyboardController';
-import WebsocketController from '../networking/transports/WebsocketController';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import AudioSyncCoordinator from '../audio/syncronization/AudioSyncCoordinator';
+import KeyboardController from '../controllers/KeyboardController';
+import RoomHandlers from '../handlers/RoomHandlers';
 import RealTimeController from '../networking/RealTimeController';
-
+import WebsocketController from '../networking/transports/WebsocketController';
 import type { MessageHandler } from '../networking/AbstractNetworkController';
+
 
 
 const RTC_HANDLERS = {

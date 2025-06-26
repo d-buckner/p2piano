@@ -1,4 +1,3 @@
-import React, { useEffect } from 'react';
 import {
   Flex,
   Grid,
@@ -6,17 +5,18 @@ import {
   Heading,
   Spinner,
 } from '@chakra-ui/react'
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
-import { getNotes } from '../lib/NoteHelpers';
-import { selectWorkspace, type Workspace } from '../slices/workspaceSlice';
-import { selectNotes } from '../slices/notesSlice';
-import Visualization from '../components/Visualization';
-import RoomNav from '../components/RoomNav';
+import { Link } from 'react-router-dom';
 import { joinRoom } from '../actions/WorkspaceActions';
-
+import RoomNav from '../components/RoomNav';
+import Visualization from '../components/Visualization';
+import { getNotes } from '../lib/NoteHelpers';
+import { selectNotes } from '../slices/notesSlice';
+import { selectWorkspace, type Workspace } from '../slices/workspaceSlice';
 import type { RootState } from '../app/store';
 import type { NotesByMidi } from '../constants';
+
 
 
 type Props = {
@@ -69,7 +69,7 @@ const Room = React.memo(({ workspace, notesByMidi }: Props) => {
 
   return (
     <Grid
-      templateAreas={`"header""visual"`}
+      templateAreas={'"header""visual"'}
       gridTemplateRows='32px minmax(0, 1fr)'
       height='100%'
       className='fade-in'

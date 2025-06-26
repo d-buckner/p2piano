@@ -1,9 +1,9 @@
 import { Box } from '@chakra-ui/react';
-import SettingsModal from '../components/settings/SettingsModal';
-import Room from './Room';
 import { useState } from 'react';
 import AudioManager from '../audio/AudioManager';
+import SettingsModal from '../components/settings/SettingsModal';
 import ClientPreferences from '../lib/ClientPreferences';
+import Room from './Room';
 
 
 export default function RoomCheck() {

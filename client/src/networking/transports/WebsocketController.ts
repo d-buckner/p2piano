@@ -1,14 +1,13 @@
 import { io } from 'socket.io-client';
-import AbstractNetworkController from "../AbstractNetworkController";
+import { dispatch } from '../../app/store';
+import { Transport, type Payload } from '../../constants';
 import ClientPreferences from '../../lib/ClientPreferences';
 import ConfigProvider from '../../lib/ConfigProvider';
+import Logger from '../../lib/Logger';
 import Session from '../../lib/Session';
 import { getWorkspace } from '../../lib/WorkspaceHelper';
-import { Transport, type Payload } from '../../constants';
 import { connectionActions } from '../../slices/connectionSlice';
-import { dispatch } from '../../app/store';
-import Logger from '../../lib/Logger';
-
+import AbstractNetworkController from '../AbstractNetworkController';
 import type { Socket } from 'socket.io-client';
 
 

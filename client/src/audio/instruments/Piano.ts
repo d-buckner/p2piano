@@ -1,7 +1,6 @@
-import getDelayTime from './getDelayTime';
 import { Piano as TonePiano } from 'd-piano';
 import { DEFAULT_VELOCITY } from '../../constants';
-
+import getDelayTime from './getDelayTime';
 import type { Instrument } from './Instrument';
 
 

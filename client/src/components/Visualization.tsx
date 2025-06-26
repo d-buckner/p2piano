@@ -1,10 +1,10 @@
-import React, { PureComponent } from 'react';
-import PianoVisualizer from 'piano-visualizer';
 import { Box } from '@chakra-ui/react';
-import RightOverlay from './RightOverlay';
+import PianoVisualizer from 'piano-visualizer';
+import React, { PureComponent } from 'react';
 import * as NoteActions from '../actions/NoteActions';
-
+import RightOverlay from './RightOverlay';
 import type { Note } from '../constants';
+
 
 type Props = {
     notes: Note[],

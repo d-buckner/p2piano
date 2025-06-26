@@ -1,10 +1,11 @@
 import { dispatch } from '../app/store';
-import { getUser, getWorkspace } from '../lib/WorkspaceHelper';
-import { addNote, removeNote } from '../slices/notesSlice';
-import PianoClient from '../clients/PianoClient';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import { getAudioDelay } from '../audio/syncronization/utils';
+import PianoClient from '../clients/PianoClient';
 import { DEFAULT_VELOCITY } from '../constants';
+import { getUser, getWorkspace } from '../lib/WorkspaceHelper';
+import { addNote, removeNote } from '../slices/notesSlice';
+
 
 export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: string) {
   if (!peerId) {

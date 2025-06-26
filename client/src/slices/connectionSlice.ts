@@ -1,7 +1,7 @@
-import Logger from '../lib/Logger';
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { type Connection, Transport } from '../constants';
-import type { RootState } from "../app/store";
+import Logger from '../lib/Logger';
+import type { RootState } from '../app/store';
+import type { Connection, Transport } from '../constants';
 
 
 interface PeerLatencyPayload {

@@ -8,14 +8,13 @@ import {
   Button,
   Spinner,
 } from '@chakra-ui/react';
-import { useNavigate } from "react-router-dom";
-import { createNewRoom, getRoom } from '../clients/RoomClient';
 import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { dispatch } from '../app/store';
-import { setRoom } from '../slices/workspaceSlice';
-
-import type { ChangeEvent } from 'react';
 import AudioManager from '../audio/AudioManager';
+import { createNewRoom, getRoom } from '../clients/RoomClient';
+import { setRoom } from '../slices/workspaceSlice';
+import type { ChangeEvent } from 'react';
 
 
 export default function RoomCard() {
@@ -74,7 +73,7 @@ export default function RoomCard() {
           <Button
             bg='background'
             h="47px"
-            _hover={{ bg: "gray" }}
+            _hover={{ bg: 'gray' }}
             border="1px solid white"
             rounded='md'
             onClick={createRoom}

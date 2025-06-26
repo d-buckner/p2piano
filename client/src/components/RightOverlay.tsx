@@ -8,9 +8,8 @@ import { connect } from 'react-redux';
 import { updateInstrument } from '../actions/WorkspaceActions';
 import { InstrumentType } from '../audio/instruments/Instrument';
 import { selectMyUser, selectUsers } from '../slices/workspaceSlice';
-
-import type { User } from '../lib/workspaceTypes';
 import type { RootState } from '../app/store';
+import type { User } from '../lib/workspaceTypes';
 
 
 const INSTRUMENTS: Record<InstrumentType, string> = {

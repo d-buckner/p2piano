@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   Modal,
   ModalOverlay,
@@ -15,11 +14,13 @@ import {
   Checkbox,
   useClipboard,
 } from '@chakra-ui/react'
-import ClientPreferences from '../../lib/ClientPreferences';
-import AudioManager from '../../audio/AudioManager';
-import { useNavigate } from 'react-router-dom';
 import HuMIDI from 'humidi';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AudioManager from '../../audio/AudioManager';
+import ClientPreferences from '../../lib/ClientPreferences';
 import DisplayName from './DisplayName';
+
 
 
 const noop = () => { };
