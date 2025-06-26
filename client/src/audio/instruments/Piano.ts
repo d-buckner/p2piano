@@ -20,7 +20,7 @@ export default class Piano implements Instrument {
     this.instrument.keyDown({
       note: midi.toString(),
       time: getDelayTime(delay),
-      velocity: Math.floor(velocity / 127),
+      velocity: velocity / 127,
     });
   }
 

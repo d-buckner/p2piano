@@ -1,4 +1,4 @@
-import { FormControl, Input } from '@chakra-ui/react';
+import * as styles from './DisplayName.css';
 import Label from './Label';
 import type { ChangeEvent } from 'react';
 
@@ -17,18 +17,13 @@ export default function DisplayName(props: Props) {
   };
 
   return (
-    <FormControl
-      as='fieldset'
-      display='flex'
-      flexDir='column'
-      isInvalid={props.hasError}
-      mb='1em'
-    >
+    <fieldset className={styles.fieldset}>
       <Label label='display name' />
-      <Input
+      <input
+        className={`${styles.input} ${props.hasError ? styles.inputError : ''}`}
         value={props.name}
         onChange={onChange}
       />
-    </FormControl>
+    </fieldset>
   );
 }

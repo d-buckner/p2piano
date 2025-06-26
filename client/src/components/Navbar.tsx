@@ -1,23 +1,16 @@
-import { Flex } from '@chakra-ui/react';
 import { Link} from 'react-router-dom';
+import * as styles from './Navbar.css';
 
 
 export default function Navbar() {
   return (
-    <Flex 
-      justifyContent='space-between'
-      alignItems='center'
-      height='2em'
-      padding='0 1em'
-    >
-      <Link to='/'>
+    <nav className={styles.navbar}>
+      <Link to='/' className={styles.link}>
         p2piano
       </Link>
-      <Link
-        to='/donate'
-      >
+      <Link to='/donate' className={styles.link}>
         donate
       </Link>
-    </Flex>
+    </nav>
   );
 }

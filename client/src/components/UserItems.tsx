@@ -1,10 +1,10 @@
-import { Flex } from '@chakra-ui/react';
 import { connect } from 'react-redux';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
 import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from '../audio/syncronization/constants';
 import { selectMaxLatency, selectPeerConnections } from '../slices/connectionSlice';
 import { selectUsers } from '../slices/workspaceSlice';
 import Icon from './Icon';
+import * as styles from './UserItems.css';
 import type { RootState } from '../app/store';
 import type { Room } from '../lib/workspaceTypes';
 
@@ -29,34 +29,27 @@ interface PropsFromState {
 }
 
 const UserItems = (props: PropsFromState) => (
-  <Flex>
+  <div className={styles.userItemsContainer}>
     {Object.values(props.users).map((user, i) => {
       const iconName = props.peerIcons[user.userId];
       return (
-        <div style={{ display: 'flex', alignItems: 'center' }} key={i}>
+        <div className={styles.userItem} key={i}>
           <div
-            style={{
-              borderRadius: '50%',
-              width: '8px',
-              height: '8px',
-              backgroundColor: user.color,
-            }}
+            className={styles.userColorDot}
+            style={{ backgroundColor: user.color }}
           />
           <span
             onClick={updateDisplayName}
-            style={{
-              cursor: 'pointer',
-              margin: '0 4px',
-            }}
+            className={styles.userName}
           >
             {user.displayName}
           </span>
           {iconName && <Icon name={iconName} />}
-          <span style={{ margin: '0 4px' }} />
+          <span className={styles.spacer} />
         </div>
       )
     })}
-  </Flex >
+  </div>
 );
 
 function updateDisplayName() {

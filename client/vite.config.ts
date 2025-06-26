@@ -1,5 +1,6 @@
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import replace from '@rollup/plugin-replace';
+import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
@@ -23,6 +24,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [
+      vanillaExtractPlugin(),
       react(),
       // for simple-peer
       nodePolyfills({

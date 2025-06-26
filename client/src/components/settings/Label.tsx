@@ -1,4 +1,4 @@
-import { FormLabel } from '@chakra-ui/react'
+import * as styles from './Label.css';
 
 
 interface Props {
@@ -7,8 +7,8 @@ interface Props {
 
 export default function Label(props: Props) {
   return (
-    <FormLabel fontFamily= 'heading' fontWeight = 'bold' >
-      { props.label }
-      </FormLabel>
-    );
+    <label className={styles.label}>
+      {props.label}
+    </label>
+  );
 }

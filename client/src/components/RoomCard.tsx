@@ -1,19 +1,10 @@
-import {
-  Text,
-  Heading,
-  Center,
-  Input,
-  Stack,
-  HStack,
-  Button,
-  Spinner,
-} from '@chakra-ui/react';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dispatch } from '../app/store';
 import AudioManager from '../audio/AudioManager';
 import { createNewRoom, getRoom } from '../clients/RoomClient';
 import { setRoom } from '../slices/workspaceSlice';
+import * as styles from './RoomCard.css';
 import type { ChangeEvent } from 'react';
 
 
@@ -52,53 +43,35 @@ export default function RoomCard() {
   }
 
   return (
-    <Center py={6} height='70%'>
-      <Stack>
-        <Heading
-          pt={8}
-          mb={4}
-          fontSize='8xl'
-          textAlign='center'
-
-        >
+    <div className={styles.container}>
+      <div className={styles.content}>
+        <h2 className={styles.mainHeading}>
           p2piano
-        </Heading>
-        <Heading
-          fontSize='xl'
-          textAlign='center'
-        >
+        </h2>
+        <h3 className={styles.subHeading}>
           a collaboration space for the musically inclined
-        </Heading>
-        <HStack p={6} alignSelf='center'>
-          <Button
-            bg='background'
-            h="47px"
-            _hover={{ bg: 'gray' }}
-            border="1px solid white"
-            rounded='md'
+        </h3>
+        <div className={styles.actions}>
+          <button
+            className={styles.button}
             onClick={createRoom}
             disabled={isRoomCreating}
           >
             {
               isRoomCreating
-                ? <Spinner />
+                ? <div className={styles.spinner} />
                 : 'create room'
             }
-          </Button>
-          <Text>or</Text>
-          <Input
+          </button>
+          <span className={styles.orText}>or</span>
+          <input
             placeholder='join room code'
-            size='lg'
             maxLength={5}
-            width='10rem'
-            textAlign='center'
+            className={`${styles.input} ${isRoomError ? styles.inputError : ''}`}
             onChange={onRoomCodeChange}
-            isInvalid={isRoomError}
-            errorBorderColor='red.300'
-            textTransform='lowercase'
           />
-        </HStack>
-      </Stack>
-    </Center>
+        </div>
+      </div>
+    </div>
   );
 }

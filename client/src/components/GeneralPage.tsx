@@ -1,6 +1,6 @@
-import { Grid, GridItem } from '@chakra-ui/react'
 import Navbar from '../components/Navbar';
 import Footer from './Footer';
+import * as styles from './GeneralPage.css';
 import type { ReactNode } from 'react';
 
 
@@ -9,23 +9,17 @@ type Props = {
 }
 
 const GeneralPage = ({ children }: Props) => (
-    <Grid
-        templateAreas={'"header""main""footer"'}
-        gridTemplateRows='32px minmax(0, 1fr) 32px'
-        height='100%'
-        backgroundColor='background'
-        color='foreground'
-    >
-        <GridItem area='header' as='nav'>
+    <div className={styles.page}>
+        <nav className={styles.header}>
             <Navbar />
-        </GridItem>
-        <GridItem area='main' as='main'>
+        </nav>
+        <main className={styles.main}>
             {children}
-        </GridItem>
-        <GridItem area='footer' as='footer'>
+        </main>
+        <footer className={styles.footer}>
             <Footer />
-        </GridItem>
-    </Grid>
+        </footer>
+    </div>
 );
 
 export default GeneralPage;
