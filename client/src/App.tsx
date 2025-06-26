@@ -1,22 +1,18 @@
-import { lazy } from 'react';
-import {
-  Routes,
-  Route,
-} from 'react-router-dom';
+import { Route } from '@solidjs/router';
+import { lazy } from 'solid-js';
 
 
 const RoomCheck = lazy(() => import('./pages/RoomCheck'))
 const Home = lazy(() => import('./pages/Home'));
 const Donate = lazy(() => import('./pages/Donate'));
 
-
 export default function App() {
   return (
-    <Routes>
-      <Route path='/' element={<Home />} />
-      <Route path='donate' element={<Donate />} />
-      <Route path='assets' element={null} />
-      <Route path='*' element={<RoomCheck />} />
-    </Routes>
+    <>
+      <Route path='/' component={Home} />
+      <Route path='/donate' component={Donate} />
+      <Route path='/assets' component={null} />
+      <Route path='/*' component={RoomCheck} />
+    </>
   );
 }

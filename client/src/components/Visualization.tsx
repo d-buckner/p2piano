@@ -1,5 +1,5 @@
 import PianoVisualizer from 'piano-visualizer';
-import React, { PureComponent } from 'react';
+import { createSignal, createEffect } from 'solid-js';
 import * as NoteActions from '../actions/NoteActions';
 import RightOverlay from './RightOverlay';
 import * as styles from './Visualization.css';
@@ -10,52 +10,51 @@ type Props = {
     notes: Note[],
 };
 
-export default class Visualization extends PureComponent<Props> {
-    private containerRef = React.createRef<HTMLDivElement>();
-    private renderer?: PianoVisualizer;
-    private activeNotes = new Map<number, Note>();
+export default function Visualization(props: Props) {
+    const [containerRef, setContainerRef] = createSignal<HTMLDivElement>();
+    let renderer: PianoVisualizer | undefined;
+    const activeNotes = new Map<number, Note>();
 
-    componentDidMount() {
-        const container = this.containerRef.current;
-        if (container && !this.renderer) {
-            this.renderer = new PianoVisualizer({
+    // Initialize renderer when container is available
+    createEffect(() => {
+        const container = containerRef();
+        if (container && !renderer) {
+            renderer = new PianoVisualizer({
                 container,
                 onKeyDown: NoteActions.keyDown,
                 onKeyUp: NoteActions.keyUp,
             });
         }
-    }
+    });
 
-    componentDidUpdate() {
-        const currentNotes = this.props.notes.reduce((arr, note) => arr.set(note.midi, note),
+    createEffect(() => {
+        const currentNotes = props.notes.reduce((arr, note) => arr.set(note.midi, note),
             new Map<number, Note>()
         );
 
-        this.activeNotes.forEach(note => {
+        activeNotes.forEach(note => {
             const currentEntry = currentNotes.get(note.midi);
             if (!currentEntry || currentEntry.peerId !== note.peerId) {
-                this.activeNotes.delete(note.midi);
-                this.renderer?.endNote(note.midi);
+                activeNotes.delete(note.midi);
+                renderer?.endNote(note.midi);
             }
         });
 
         currentNotes.forEach(note => {
-            const prevEntry = this.activeNotes.get(note.midi);
+            const prevEntry = activeNotes.get(note.midi);
             if (!prevEntry) {
-                this.activeNotes.set(note.midi, note);
-                this.renderer?.startNote(note.midi, note.color || 'blue');
+                activeNotes.set(note.midi, note);
+                renderer?.startNote(note.midi, note.color || 'blue');
             }
         });
-    }
+    });
 
-    render() {
-        return (
-            <div
-                className={styles.visualizationContainer}
-                ref={this.containerRef}
-            >
-                <RightOverlay />
-            </div>
-        );
-    }
+    return (
+        <div
+            class={styles.visualizationContainer}
+            ref={setContainerRef}
+        >
+            <RightOverlay />
+        </div>
+    );
 }

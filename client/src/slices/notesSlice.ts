@@ -7,11 +7,11 @@ type RemoveNotesFromAuthorPayload = {
   peerId: string,
 };
 
-const initialState: NotesByMidi = {};
+export const initialNotesState: NotesByMidi = {};
 
 export const notesSlice = createSlice({
   name: 'notes',
-  initialState,
+  initialState: initialNotesState,
   reducers: {
     addNote: (state, action: PayloadAction<Note>) => {
       const note = action.payload;

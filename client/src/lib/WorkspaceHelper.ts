@@ -1,4 +1,4 @@
-import store from '../app/store';
+import { store } from '../app/store';
 import { selectWorkspace } from '../slices/workspaceSlice';
 
 
@@ -34,5 +34,5 @@ export function getMyUserId() {
 }
 
 export function getWorkspace() {
-  return selectWorkspace(store.getState());
+  return selectWorkspace(store);
 }

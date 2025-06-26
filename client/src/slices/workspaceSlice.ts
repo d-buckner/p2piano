@@ -13,7 +13,7 @@ export type Workspace = {
   room?: Room,
 };
 
-const initialState: Workspace = {
+export const initialWorkspaceState: Workspace = {
   roomId: undefined,
   userId: undefined,
   isValid: undefined,
@@ -32,7 +32,7 @@ type SetRoomPayload = { room: Room };
 
 export const workspaceSlice = createSlice({
   name: 'workspace',
-  initialState,
+  initialState: initialWorkspaceState,
   reducers: {
     setRoomId: (state, action: PayloadAction<SetRoomIdPayload>) => {
       state.roomId = action.payload.roomId;
@@ -53,7 +53,7 @@ export const workspaceSlice = createSlice({
       state.room = room;
     },
     reset: (state) => {
-      Object.entries(initialState).forEach(([key, val]) => {
+      Object.entries(initialWorkspaceState).forEach(([key, val]) => {
         // @ts-expect-error object.entries removes key/value type constraints
         state[key] = val;
       });

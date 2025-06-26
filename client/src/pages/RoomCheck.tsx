@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { createSignal, Show } from 'solid-js';
 import AudioManager from '../audio/AudioManager';
 import SettingsModal from '../components/settings/SettingsModal';
 import ClientPreferences from '../lib/ClientPreferences';
@@ -7,20 +7,24 @@ import * as styles from './RoomCheck.css';
 
 
 export default function RoomCheck() {
-  const [accepted, setAccepted] = useState<boolean>(
+  const [accepted, setAccepted] = createSignal<boolean>(
     AudioManager.active && !!ClientPreferences.getDisplayName()
   );
-  if (accepted) {
-    return <Room />;
-  }
 
   return (
-    <div className={styles.roomCheckContainer}>
-      <SettingsModal
-        onSubmit={() => {
-          setAccepted(true);
-        }}
-      />
-    </div>
+    <Show
+      when={accepted()}
+      fallback={
+        <div class={styles.roomCheckContainer}>
+          <SettingsModal
+            onSubmit={() => {
+              setAccepted(true);
+            }}
+          />
+        </div>
+      }
+    >
+      <Room />
+    </Show>
   );
 }

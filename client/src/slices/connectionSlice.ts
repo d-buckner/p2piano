@@ -14,14 +14,14 @@ interface PeerTransportPayload {
   transport: Transport;
 }
 
-const initialState: Connection = {
+export const initialConnectionState: Connection = {
   maxLatency: 0,
   peerConnections: {},
 };
 
 export const connectionSlice = createSlice({
   name: 'connection',
-  initialState,
+  initialState: initialConnectionState,
   reducers: {
     setPeerLatency: (state, action: PayloadAction<PeerLatencyPayload>) => {
       const { peerId, latency } = action.payload;

@@ -7,7 +7,7 @@ interface Props {
 
 export default function Label(props: Props) {
   return (
-    <label className={styles.label}>
+    <label class={styles.label}>
       {props.label}
     </label>
   );

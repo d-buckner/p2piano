@@ -1,10 +1,9 @@
-import store from '../app/store';
+import { store } from '../app/store';
 import { selectPeerConnections } from '../slices/connectionSlice';
 
 
 export function getPeerConnections() {
-  const state = store.getState();
-  return selectPeerConnections(state);
+  return selectPeerConnections(store);
 }
 
 export function getConnectedPeerIds(): string[] {

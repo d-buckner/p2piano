@@ -1,12 +1,7 @@
 import * as NoteActions from '../actions/NoteActions';
-import store, { dispatch } from '../app/store';
+import { store, setStore } from '../app/store';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
-import { removeNotesFromPeer, selectNotes } from '../slices/notesSlice';
-import {
-  setRoom,
-  initializeRoom,
-} from '../slices/workspaceSlice';
 import type { InstrumentType } from '../audio/instruments/Instrument';
 import type { Room } from '../lib/workspaceTypes';
 
@@ -60,10 +55,8 @@ export default class RoomHandlers {
       InstrumentRegistry.register(u.userId, u.instrument as InstrumentType);
     });
 
-    dispatch(initializeRoom({
-      userId,
-      room,
-    }));
+    setStore('workspace', 'userId', userId);
+    setStore('workspace', 'room', room);
   }
 
   static roomDisconnectHandler() {
@@ -75,7 +68,7 @@ export default class RoomHandlers {
     const instrument = room.users?.[userId].instrument as InstrumentType;
     InstrumentRegistry.register(userId, instrument);
 
-    dispatch(setRoom({ room }));
+    setStore('workspace', 'room', room);
   }
 
   static userUpdateHandler(payload: UserUpdatePayload) {
@@ -92,19 +85,20 @@ export default class RoomHandlers {
       InstrumentRegistry.register(userId, newInstrument);
     }
 
-    dispatch(setRoom({ room }));
+    setStore('workspace', 'room', room);
   }
 
   static userDisconnectHandler(payload: UserDisconnectPayload) {
     const { userId, room } = payload;
     InstrumentRegistry.unregister(userId);
-    dispatch(removeNotesFromPeer({ peerId: userId }));
-    dispatch(setRoom({ room }));
+    // TODO: Implement removeNotesFromPeer in SolidJS store
+    // setStore('notesByMidi', ...);
+    setStore('workspace', 'room', room);
   }
 
   static blurHandler() {
     const userId = getMyUser()?.userId;
-    const notes = selectNotes(store.getState());
+    const notes = store.notesByMidi;
     Object.values(notes).forEach(noteEntries => {
       noteEntries.forEach(note => {
         if (note.peerId === userId) {

@@ -1,22 +1,29 @@
-import { configureStore } from '@reduxjs/toolkit';
-import { connectionReducer } from '../slices/connectionSlice';
-import { notesReducer } from '../slices/notesSlice';
-import { workspaceReducer } from '../slices/workspaceSlice';
+import { createStore } from 'solid-js/store';
+import { initialConnectionState } from '../slices/connectionSlice';
+import { initialNotesState } from '../slices/notesSlice';
+import { initialWorkspaceState } from '../slices/workspaceSlice';
 
+// Define the combined state type
+export type RootState = {
+  workspace: typeof initialWorkspaceState;
+  notesByMidi: typeof initialNotesState;
+  connection: typeof initialConnectionState;
+};
 
-const store = configureStore({
-  reducer: {
-    workspace: workspaceReducer,
-    notesByMidi: notesReducer,
-    connection: connectionReducer,
-  },
-  devTools: process.env.NODE_ENV !== 'production',
-});
+// Create the initial state
+const initialState: RootState = {
+  workspace: initialWorkspaceState,
+  notesByMidi: initialNotesState,
+  connection: initialConnectionState,
+};
 
-export const dispatch = store.dispatch;
+// Create a global store
+export const [store, setStore] = createStore<RootState>(initialState);
 
-export default store;
+// Export store provider that will be added later
+export { StoreProvider } from './storeProvider';
 
-export type AppDispatch = typeof store.dispatch;
-
-export type RootState = ReturnType<typeof store.getState>;
+// Simple hook to access the store
+export function useStore() {
+  return { state: store, setState: setStore };
+}

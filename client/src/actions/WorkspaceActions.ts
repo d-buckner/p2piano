@@ -1,4 +1,4 @@
-import { dispatch } from '../app/store';
+import { setStore } from '../app/store';
 import { ensureSession, getRoom } from '../clients/RoomClient';
 import { Transport } from '../constants';
 import ClientPreferences from '../lib/ClientPreferences';
@@ -6,32 +6,24 @@ import * as RoomActionBridge from '../lib/RoomActionBridge';
 import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
 import WebRtcController from '../networking/transports/WebRtcController';
 import WebsocketController from '../networking/transports/WebsocketController';
-import { connectionActions } from '../slices/connectionSlice';
-import {
-  setRoomId,
-  setValidity,
-  reset,
-  setIsLoading,
-  setRoom,
-} from '../slices/workspaceSlice';
 import type { InstrumentType } from '../audio/instruments/Instrument';
 
 
 export async function joinRoom(roomId: string) {
-  dispatch(setRoomId({ roomId }));
-  dispatch(setIsLoading({ isLoading: true }));
+  setStore('workspace', 'roomId', roomId);
+  setStore('workspace', 'isLoading', true);
 
   let isValid = true;
   try {
     const { room } = getWorkspace();
     if (!room) {
       const room = await getRoom(roomId);
-      dispatch(setRoom({ room }));
+      setStore('workspace', 'room', room);
       Object.values(room.users).forEach(user => {
-        dispatch(connectionActions.addPeerConnection({
-          peerId: user.userId,
+        setStore('connection', 'peerConnections', user.userId, {
+          latency: 0,
           transport: Transport.WEBSOCKET,
-        }));
+        });
       });
     }
 
@@ -40,8 +32,8 @@ export async function joinRoom(roomId: string) {
     isValid = false;
   }
 
-  dispatch(setValidity({ isValid }));
-  dispatch(setIsLoading({ isLoading: false }));
+  setStore('workspace', 'isValid', isValid);
+  setStore('workspace', 'isLoading', false);
 
   if (isValid) {
     RoomActionBridge.register();
@@ -77,5 +69,12 @@ export function destroyRoom() {
   RoomActionBridge.destroy();
   WebRtcController.destroy();
   WebsocketController.destroy();
-  dispatch(reset());
+  // Reset workspace state
+  setStore('workspace', {
+    roomId: undefined,
+    userId: undefined,
+    isValid: undefined,
+    isLoading: undefined,
+    room: undefined,
+  });
 }

@@ -1,6 +1,6 @@
+import { useNavigate } from '@solidjs/router';
 import HuMIDI from 'humidi';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { createSignal } from 'solid-js';
 import AudioManager from '../../audio/AudioManager';
 import ClientPreferences from '../../lib/ClientPreferences';
 import DisplayName from './DisplayName';
@@ -21,9 +21,9 @@ interface LabelProps {
 
 function SettingsModal(props: Props) {
   const navigate = useNavigate();
-  const [hasCopied, setHasCopied] = useState(false);
-  const [displayName, setDisplayName] = useState<string>(ClientPreferences.getDisplayName() ?? '');
-  const [hasDisplayNameError, setDisplayNameError] = useState<boolean>(!isDisplayNameValid(displayName));
+  const [hasCopied, setHasCopied] = createSignal(false);
+  const [displayName, setDisplayName] = createSignal<string>(ClientPreferences.getDisplayName() ?? '');
+  const [hasDisplayNameError, setDisplayNameError] = createSignal<boolean>(!isDisplayNameValid(displayName()));
 
   const onCopy = async (text: string) => {
     try {
@@ -43,56 +43,62 @@ function SettingsModal(props: Props) {
   const onDisplayNameChange = (name: string) => {
     setDisplayName(name);
     setDisplayNameError(!isDisplayNameValid(name));
-  }
+  };
+
+  const onSubmit = () => {
+    AudioManager.activate();
+    ClientPreferences.setDisplayName(displayName());
+    props.onSubmit();
+  };
 
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modalContent}>
+    <div class={styles.modalOverlay}>
+      <div class={styles.modalContent}>
         <button 
-          className={styles.modalCloseButton}
+          class={styles.modalCloseButton}
           onClick={() => navigate('/')}
         >
           ×
         </button>
-        <div className={styles.modalHeader}>Settings</div>
+        <div class={styles.modalHeader}>Settings</div>
 
-        <div className={styles.modalBody}>
+        <div class={styles.modalBody}>
           <DisplayName
-            name={displayName}
-            hasError={hasDisplayNameError}
+            name={displayName()}
+            hasError={hasDisplayNameError()}
             onChange={onDisplayNameChange}
           />
-          <fieldset className={styles.fieldset}>
+          <fieldset class={styles.fieldset}>
             <Label label='midi' />
-            <div className={styles.checkboxContainer}>
+            <div class={styles.checkboxContainer}>
               <input
                 type="checkbox"
-                className={styles.checkbox}
+                class={styles.checkbox}
                 onChange={HuMIDI.requestAccess}
               />
               <span>enable usb midi (browser will ask for permissions)</span>
             </div>
           </fieldset>
-          <fieldset className={styles.fieldset}>
+          <fieldset class={styles.fieldset}>
             <Label label='sharable room code' />
-            <div className={styles.hstack}>
+            <div class={styles.hstack}>
               <input 
-                className={styles.input}
+                class={styles.input}
                 value={location.href} 
                 readOnly 
               />
               <button 
-                className={styles.copyButton}
+                class={styles.copyButton}
                 onClick={() => onCopy(location.href)}
               >
-                {hasCopied ? 'copied!' : 'copy'}
+                {hasCopied() ? 'copied!' : 'copy'}
               </button>
             </div>
           </fieldset>
           <button
-            className={styles.primaryButton}
-            onClick={hasDisplayNameError ? noop : onSubmit}
-            disabled={hasDisplayNameError}
+            class={styles.primaryButton}
+            onClick={hasDisplayNameError() ? noop : onSubmit}
+            disabled={hasDisplayNameError()}
           >
             let's go
           </button>
@@ -109,12 +115,6 @@ function SettingsModal(props: Props) {
         {props.label}
       </label>
     );
-  }
-
-  function onSubmit() {
-    AudioManager.activate();
-    ClientPreferences.setDisplayName(displayName);
-    props.onSubmit();
   }
 }
 

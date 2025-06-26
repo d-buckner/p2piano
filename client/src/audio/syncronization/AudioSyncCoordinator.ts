@@ -1,11 +1,10 @@
-import { dispatch } from '../../app/store';
+import { setStore } from '../../app/store';
 import { getConnectedPeerIds } from '../../lib/ConnectionUtils';
 import Logger from '../../lib/Logger';
 import RollingAvg from '../../lib/RollingAvg';
 import { getMyUserId } from '../../lib/WorkspaceHelper';
 import RealTimeController from '../../networking/RealTimeController';
 import { ACTION } from '../../networking/transports/WebRtcController';
-import { connectionActions } from '../../slices/connectionSlice';
 import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from './constants';
 
 
@@ -111,7 +110,11 @@ class AudioSyncCoordinator {
 
   public removePeer(peerId: string) {
     delete this.peerLatencyWindows[peerId];
-    dispatch(connectionActions.removePeerConnection(peerId));
+    setStore('connection', 'peerConnections', (connections) => {
+      const newConnections = { ...connections };
+      delete newConnections[peerId];
+      return newConnections;
+    });
   }
 
   private tick() {
@@ -152,7 +155,7 @@ class AudioSyncCoordinator {
         return truncate(Math.max(currentMax, window.avg));
       }, 0);
 
-    dispatch(connectionActions.setMaxLatency(maxLatency));
+    setStore('connection', 'maxLatency', maxLatency);
 
     setTimeout(this.tick, 60_000 / SAMPLES_PER_MINUTE);
   }
@@ -183,10 +186,7 @@ class AudioSyncCoordinator {
       Logger.INFO(`Peer ${peerId} latency: ${peerLatencyWindow.avg}`);
     }
 
-    dispatch(connectionActions.setPeerLatency({
-      peerId,
-      latency: truncate(peerLatencyWindow.avg),
-    }));
+    setStore('connection', 'peerConnections', peerId, 'latency', truncate(peerLatencyWindow.avg));
   }
 
   private onPeerLeft(message: PeerLeftMessage) {

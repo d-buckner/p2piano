@@ -37,5 +37,5 @@ export const userColorIndicator = style({
   borderRadius: '4px',
   height: '8px',
   width: '8px',
-  margin: '8px',
+  margin: '4px 4px 0 0',
 });

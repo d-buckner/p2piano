@@ -1,16 +1,16 @@
-import { Link} from 'react-router-dom';
+import { A } from '@solidjs/router';
 import * as styles from './Navbar.css';
 
 
 export default function Navbar() {
   return (
-    <nav className={styles.navbar}>
-      <Link to='/' className={styles.link}>
+    <nav class={styles.navbar}>
+      <A href='/' class={styles.link}>
         p2piano
-      </Link>
-      <Link to='/donate' className={styles.link}>
+      </A>
+      <A href='/donate' class={styles.link}>
         donate
-      </Link>
+      </A>
     </nav>
   );
 }

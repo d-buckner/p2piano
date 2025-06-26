@@ -1,22 +1,22 @@
 import Navbar from '../components/Navbar';
 import Footer from './Footer';
 import * as styles from './GeneralPage.css';
-import type { ReactNode } from 'react';
+import type { JSX } from 'solid-js';
 
 
 type Props = {
-    children: ReactNode,
+    children: JSX.Element,
 }
 
 const GeneralPage = ({ children }: Props) => (
-    <div className={styles.page}>
-        <nav className={styles.header}>
+    <div class={styles.page}>
+        <nav class={styles.header}>
             <Navbar />
         </nav>
-        <main className={styles.main}>
+        <main class={styles.main}>
             {children}
         </main>
-        <footer className={styles.footer}>
+        <footer class={styles.footer}>
             <Footer />
         </footer>
     </div>
