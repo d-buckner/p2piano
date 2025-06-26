@@ -1,7 +1,7 @@
-import { Flex, Link } from '@chakra-ui/react';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
+import * as styles from './RoomNav.css';
 import Toolbar from './Toolbar';
 import type { Workspace } from '../slices/workspaceSlice';
 
@@ -33,21 +33,13 @@ function RoomNav({ workspace }: Props) {
   }
 
   return (
-    <Flex
-      w='full'
-      boxShadow='2xl'
-      padding='4px 16px'
-      backgroundColor='secondary'
-      justifyContent='space-between'
-      color='white'
-      as='nav'
-    >
-      <Link onClick={navigateHome}>p2piano</Link>
+    <nav className={styles.roomNav}>
+      <a onClick={navigateHome} className={styles.navLink}>p2piano</a>
       <Toolbar />
-      <Link onClick={shareRoom} whiteSpace='nowrap'>
-        room: <b>{workspace.roomId}</b>
-      </Link>
-    </Flex>
+      <a onClick={shareRoom} className={styles.navLink}>
+        room: <span className={styles.roomId}>{workspace.roomId}</span>
+      </a>
+    </nav>
   );
 }
 

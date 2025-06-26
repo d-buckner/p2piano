@@ -9,7 +9,7 @@ export default class Piano implements Instrument {
 
   constructor() {
     this.instrument = new TonePiano({
-      velocities: 2,
+      velocities: 16,
       url: '/assets/samples/piano/'
     });
     this.instrument.load();
@@ -20,7 +20,7 @@ export default class Piano implements Instrument {
     this.instrument.keyDown({
       note: midi.toString(),
       time: getDelayTime(delay),
-      velocity: Math.floor(velocity / 127),
+      velocity: velocity / 127,
     });
   }
 

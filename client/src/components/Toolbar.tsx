@@ -1,20 +1,16 @@
-import { Button } from '@chakra-ui/react';
 import HuMIDI from 'humidi';
 import Icon from './Icon';
+import * as styles from './Toolbar.css';
 
 
 function Toolbar() {
   return (
-    <Button
-      color='foreground'
+    <button
+      className={styles.toolbarButton}
       onClick={HuMIDI.requestAccess}
-      backgroundColor='unset'
-      height='24px'
-      mr='4px'
-      _hover={{ bg: 'gray' }}
     >
       <Icon name='usb-cable' />
-    </Button>
+    </button>
   );
 }
 

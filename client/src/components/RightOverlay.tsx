@@ -1,13 +1,8 @@
-import {
-  Box,
-  List,
-  ListItem,
-  Select,
-} from '@chakra-ui/react';
 import { connect } from 'react-redux';
 import { updateInstrument } from '../actions/WorkspaceActions';
 import { InstrumentType } from '../audio/instruments/Instrument';
 import { selectMyUser, selectUsers } from '../slices/workspaceSlice';
+import * as styles from './RightOverlay.css';
 import type { RootState } from '../app/store';
 import type { User } from '../lib/workspaceTypes';
 
@@ -38,25 +33,17 @@ function RightOverlay(props: Props) {
   const { instrument } = user || {};
 
   return (
-    <Box
-      zIndex={1}
-      color='foreground'
-      backgroundColor='background'
-      pos='absolute'
-      right='0'
-      h='14px'
-    >
+    <div className={styles.rightOverlay}>
       <InstrumentSelect instrument={instrument} />
       <UsersList users={users} />
-    </Box >
+    </div>
   );
 }
 
 function InstrumentSelect(props: InstrumentSelectProps) {
   return (
-    <Select
-      zIndex="1"
-      size='sm'
+    <select
+      className={styles.instrumentSelect}
       value={props.instrument ?? InstrumentType.PIANO}
       onChange={e => {
         updateInstrument(e.target.value as InstrumentType)
@@ -70,33 +57,26 @@ function InstrumentSelect(props: InstrumentSelectProps) {
           {title}
         </option>
       ))}
-    </Select>
+    </select>
   );
 }
 
 function UsersList(props: UserListProps) {
   return (
-    <List p='16px'>
+    <ul className={styles.usersList}>
       {Object.values(props.users ?? {}).map((user, i) => (
-        <ListItem
-          className='fade-in'
-          display='flex'
-          justifyContent='end'
-          alignItems='center'
+        <li
+          className={`fade-in ${styles.userItem}`}
           key={i}
         >
-          <Box
-            as='span'
-            backgroundColor={user.color}
-            borderRadius='4px'
-            height='8px'
-            width='8px'
-            m='8px'
+          <span
+            className={styles.userColorIndicator}
+            style={{ backgroundColor: user.color }}
           />
           <span>{user.displayName}</span>
-        </ListItem>
+        </li>
       ))}
-    </List>
+    </ul>
   );
 }
 

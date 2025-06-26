@@ -1,9 +1,9 @@
-import { Box } from '@chakra-ui/react';
 import { useState } from 'react';
 import AudioManager from '../audio/AudioManager';
 import SettingsModal from '../components/settings/SettingsModal';
 import ClientPreferences from '../lib/ClientPreferences';
 import Room from './Room';
+import * as styles from './RoomCheck.css';
 
 
 export default function RoomCheck() {
@@ -15,15 +15,12 @@ export default function RoomCheck() {
   }
 
   return (
-    <Box
-      bg='black'
-      h='full'
-    >
+    <div className={styles.roomCheckContainer}>
       <SettingsModal
         onSubmit={() => {
           setAccepted(true);
         }}
       />
-    </Box>
+    </div>
   );
 }

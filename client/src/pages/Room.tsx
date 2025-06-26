@@ -1,10 +1,3 @@
-import {
-  Flex,
-  Grid,
-  GridItem,
-  Heading,
-  Spinner,
-} from '@chakra-ui/react'
 import React, { useEffect } from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -14,6 +7,7 @@ import Visualization from '../components/Visualization';
 import { getNotes } from '../lib/NoteHelpers';
 import { selectNotes } from '../slices/notesSlice';
 import { selectWorkspace, type Workspace } from '../slices/workspaceSlice';
+import * as styles from './Room.css';
 import type { RootState } from '../app/store';
 import type { NotesByMidi } from '../constants';
 
@@ -36,51 +30,33 @@ const Room = React.memo(({ workspace, notesByMidi }: Props) => {
 
   if (workspace.isLoading !== false) {
     return (
-      <Flex
-        justifyContent='center'
-        alignItems='center'
-        h='full'
-        backgroundColor='black'
-        color='white'
-      >
-        <Spinner />
-      </Flex>
+      <div className={styles.loadingContainer}>
+        <div className={styles.spinner}></div>
+      </div>
     );
   }
 
 
   if (workspace.isValid === false) {
     return (
-      <Flex
-        justifyContent='center'
-        alignItems='center'
-        flexDirection='column'
-        h='full'
-        backgroundColor='black'
-        color='white'
-      >
-        <Heading textAlign='center'>Room not found</Heading>
-        <Link to='/'>Go back home</Link>
-      </Flex>
+      <div className={styles.errorContainer}>
+        <h1 className={styles.errorHeading}>Room not found</h1>
+        <Link to='/' className={styles.errorLink}>Go back home</Link>
+      </div>
     );
   }
 
   const notes = getNotes(notesByMidi);
 
   return (
-    <Grid
-      templateAreas={'"header""visual"'}
-      gridTemplateRows='32px minmax(0, 1fr)'
-      height='100%'
-      className='fade-in'
-    >
-      <GridItem area='header' as='nav'>
+    <div className={`${styles.roomGrid} fade-in`}>
+      <nav className={styles.headerArea}>
         <RoomNav workspace={workspace} />
-      </GridItem>
-      <GridItem area='visual' as='main'>
+      </nav>
+      <main className={styles.visualArea}>
         <Visualization notes={notes} />
-      </GridItem>
-    </Grid>
+      </main>
+    </div>
   );
 });
 

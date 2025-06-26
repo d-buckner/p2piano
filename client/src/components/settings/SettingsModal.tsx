@@ -1,25 +1,10 @@
-import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
-  Button,
-  useDisclosure,
-  Input,
-  FormControl,
-  FormLabel,
-  HStack,
-  Checkbox,
-  useClipboard,
-} from '@chakra-ui/react'
 import HuMIDI from 'humidi';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AudioManager from '../../audio/AudioManager';
 import ClientPreferences from '../../lib/ClientPreferences';
 import DisplayName from './DisplayName';
+import * as styles from './SettingsModal.css';
 
 
 
@@ -36,9 +21,19 @@ interface LabelProps {
 
 function SettingsModal(props: Props) {
   const navigate = useNavigate();
-  const { onCopy, hasCopied } = useClipboard(location.href);
+  const [hasCopied, setHasCopied] = useState(false);
   const [displayName, setDisplayName] = useState<string>(ClientPreferences.getDisplayName() ?? '');
   const [hasDisplayNameError, setDisplayNameError] = useState<boolean>(!isDisplayNameValid(displayName));
+
+  const onCopy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setHasCopied(true);
+      setTimeout(() => setHasCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
 
   function isDisplayNameValid(name: string) {
     return !!name &&
@@ -50,69 +45,75 @@ function SettingsModal(props: Props) {
     setDisplayNameError(!isDisplayNameValid(name));
   }
 
-  const { onClose } = useDisclosure();
   return (
-    <Modal
-      isOpen={true}
-      onClose={onClose}
-    >
-      <ModalOverlay />
-      <ModalContent>
-        <ModalCloseButton onClick={() => navigate('/')} />
-        <ModalHeader>Settings</ModalHeader>
+    <div className={styles.modalOverlay}>
+      <div className={styles.modalContent}>
+        <button 
+          className={styles.modalCloseButton}
+          onClick={() => navigate('/')}
+        >
+          ×
+        </button>
+        <div className={styles.modalHeader}>Settings</div>
 
-        <ModalBody display='flex' flexDir='column'>
+        <div className={styles.modalBody}>
           <DisplayName
             name={displayName}
             hasError={hasDisplayNameError}
             onChange={onDisplayNameChange}
           />
-          <FormControl as='fieldset' display='flex' flexDir='column'>
+          <fieldset className={styles.fieldset}>
             <Label label='midi' />
-            <Checkbox
-              onChange={HuMIDI.requestAccess}
-              mb='1em'
-            >
-              enable usb midi (browser will ask for permissions)
-            </Checkbox>
-          </FormControl>
-          <FormControl as='fieldset' display='flex' flexDir='column'>
+            <div className={styles.checkboxContainer}>
+              <input
+                type="checkbox"
+                className={styles.checkbox}
+                onChange={HuMIDI.requestAccess}
+              />
+              <span>enable usb midi (browser will ask for permissions)</span>
+            </div>
+          </fieldset>
+          <fieldset className={styles.fieldset}>
             <Label label='sharable room code' />
-            <HStack>
-              <Input value={location.href} readOnly />
-              <Button onClick={() => onCopy(location.href)}>{hasCopied ? 'copied!' : 'copy'}</Button>
-            </HStack>
-          </FormControl>
-          <Button
-            justifySelf='end'
-            mt={4}
-            bg='#151f21'
-            color='white'
-            rounded='md'
+            <div className={styles.hstack}>
+              <input 
+                className={styles.input}
+                value={location.href} 
+                readOnly 
+              />
+              <button 
+                className={styles.copyButton}
+                onClick={() => onCopy(location.href)}
+              >
+                {hasCopied ? 'copied!' : 'copy'}
+              </button>
+            </div>
+          </fieldset>
+          <button
+            className={styles.primaryButton}
             onClick={hasDisplayNameError ? noop : onSubmit}
             disabled={hasDisplayNameError}
           >
             let's go
-          </Button>
+          </button>
 
           {/* {!isIOS() && <p>UNMUTE YOUR PHONE</p>} */}
-        </ModalBody>
-      </ModalContent>
-    </Modal>
+        </div>
+      </div>
+    </div>
   )
 
   function Label(props: LabelProps) {
     return (
-      <FormLabel fontFamily='heading' fontWeight='bold'>
+      <label style={{ fontFamily: 'Ysabeau Office, sans-serif', fontWeight: 'bold', marginBottom: '0.5rem' }}>
         {props.label}
-      </FormLabel>
+      </label>
     );
   }
 
   function onSubmit() {
     AudioManager.activate();
     ClientPreferences.setDisplayName(displayName);
-    onClose();
     props.onSubmit();
   }
 }

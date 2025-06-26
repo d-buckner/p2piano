@@ -1,8 +1,8 @@
-import { Box } from '@chakra-ui/react';
 import PianoVisualizer from 'piano-visualizer';
 import React, { PureComponent } from 'react';
 import * as NoteActions from '../actions/NoteActions';
 import RightOverlay from './RightOverlay';
+import * as styles from './Visualization.css';
 import type { Note } from '../constants';
 
 
@@ -50,14 +50,12 @@ export default class Visualization extends PureComponent<Props> {
 
     render() {
         return (
-            <Box
-                w='100%'
-                h='100%'
-                pos='relative'
+            <div
+                className={styles.visualizationContainer}
                 ref={this.containerRef}
             >
                 <RightOverlay />
-            </Box>
+            </div>
         );
     }
 }

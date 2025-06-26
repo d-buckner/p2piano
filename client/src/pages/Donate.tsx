@@ -1,29 +1,21 @@
-import { Box, Flex, Heading, Link, Text } from '@chakra-ui/react';
 import GeneralPage from '../components/GeneralPage';
+import * as styles from './Donate.css';
 
 
 const Donate = () => (
   <GeneralPage>
-    <Flex
-      direction='column'
-      alignItems='center'
-      justifyContent='center'
-      margin='32px'
-    >
-      <Box maxWidth='768px'>
-        <Heading
-          padding='16px 0'
-          textAlign='center'
-        >
+    <div className={styles.donateContainer}>
+      <div className={styles.donateContent}>
+        <h1 className={styles.donateHeading}>
           donate
-        </Heading>
-        <Text fontSize='l'>
-          this project is provided free of charge without advertisements or tracking. if you like this project, please consider making music more accessible by donating to <Link textDecoration='underline' href='https://www.seattlejazzed.org/donate'>Seattle JazzED</Link>
-          {' '}or a music education non-profit working in your community. you can also donate your time by contributing code/issues to <Link textDecoration='underline' href='https://github.com/d-buckner/p2piano'>the github repository</Link>
+        </h1>
+        <p className={styles.donateText}>
+          this project is provided free of charge without advertisements or tracking. if you like this project, please consider making music more accessible by donating to <a className={styles.donateLink} href='https://www.seattlejazzed.org/donate'>Seattle JazzED</a>
+          {' '}or a music education non-profit working in your community. you can also donate your time by contributing code/issues to <a className={styles.donateLink} href='https://github.com/d-buckner/p2piano'>the github repository</a>
           {' '}if there's things you'd like to change.
-        </Text>
-      </Box>
-    </Flex>
+        </p>
+      </div>
+    </div>
   </GeneralPage>
 );
 
