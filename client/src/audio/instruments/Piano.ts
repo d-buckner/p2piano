@@ -48,14 +48,6 @@ export default class Piano implements Instrument {
   // everything below here is for the progressive sample streaming
   // TODO: generalize this implementation so it can be used by any old sampler
 
-  private next(callback: () => void) {
-    if (!this.activeKeys.size) {
-      callback();
-      return;
-    }
-
-    this.onIdle = callback;
-  }
 
   private async load(): Promise<void> {
     this.onIdle = null;
@@ -72,7 +64,7 @@ export default class Piano implements Instrument {
 
     if (this.activeKeys.size) {
       // active note(s), queue the swap for when there's nothing playing to avoid impacting current audio
-      this.next(() => this.swap(instrument));
+      this.onIdle = () => this.swap(instrument);
       return;
     }
 
