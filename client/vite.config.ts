@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
 
   if (!isProduction) {
     // for simple-peer's reliance on node polyfills (browserify)
-    define.global = 'window';
+    define.global = 'self';
   }
 
   return {
@@ -43,13 +43,34 @@ export default defineConfig(({ mode }) => {
       }
     },
     define,
+    worker: {
+      format: 'es',
+      plugins: () => ([
+        vanillaExtractPlugin(),
+      ]),
+    },
     build: {
       sourcemap: 'hidden',
       rollupOptions: {
+        input: {
+          main: './index.html',
+          sw: './src/workers/sw.ts', // Add service worker as entry point
+        },
         output: {
-          entryFileNames: 'assets/[name].js',
+          entryFileNames: (chunkInfo) => {
+            if (chunkInfo.name === 'sw') {
+              return 'assets/sw.js';
+            }
+            return 'assets/[name].js';
+          },
           chunkFileNames: 'assets/[name].js',
-          assetFileNames: 'assets/[name].[ext]'
+          assetFileNames: (assetInfo) => {
+            // Keep original names for audio samples to maintain cache
+            if (assetInfo.name && assetInfo.name.endsWith('.mp3')) {
+              return 'assets/samples/piano/[name][extname]';
+            }
+            return 'assets/[name].[ext]';
+          }
         },
         // DANGER: this is simple string replacement in build, use with extreme caution
         plugins: replace({
@@ -59,6 +80,8 @@ export default defineConfig(({ mode }) => {
         }),
       },
       outDir: 'dist',
+      // Ensure audio files are treated as assets
+      assetsInclude: ['**/*.mp3', '**/*.wav', '**/*.ogg'],
     }
   }
 });

@@ -1,15 +1,17 @@
 import { Piano as DPiano } from 'd-piano';
 import { DEFAULT_VELOCITY } from '../../constants';
+import Logger from '../../lib/Logger';
+import { audioCacheManager } from '../AudioCacheManager';
 import getDelayTime from './getDelayTime';
 import type { Instrument } from './Instrument';
 
 
 const URL = '/assets/samples/piano/'
 
-
 export default class Piano implements Instrument {
   private static MIN_VELOCITIES = 2;
   private static MAX_VELOCITIES = 16;
+  private loadStart = Date.now();
   private instrument?: DPiano;
   private velocities: number = Piano.MIN_VELOCITIES;
   private onIdle: (() => void) | null = null;
@@ -52,6 +54,11 @@ export default class Piano implements Instrument {
   private async load(): Promise<void> {
     this.onIdle = null;
     if (this.velocities > Piano.MAX_VELOCITIES) {
+      Logger.DEBUG(
+        'audio: full piano samples loaded in',
+        this.getSecondsFromLoad(),
+        'seconds'
+      );
       return;
     }
 
@@ -59,24 +66,55 @@ export default class Piano implements Instrument {
       url: URL,
       velocities: this.velocities,
     });
+    
+    Logger.DEBUG(`Piano: Loading velocity layer ${this.velocities}`);
     await instrument.load();
+    Logger.DEBUG(`Piano: Loaded velocity layer ${this.velocities}`);
+    if (this.velocities === Piano.MIN_VELOCITIES) {
+      Logger.DEBUG(
+        'audio: initial piano samples loaded in',
+        this.getSecondsFromLoad(),
+        'seconds'
+      );
+    }
+    
+    // After loading current layer, prefetch the NEXT layer in background
     this.velocities *= 2;
-
+    this.prefetchNextLayer();
+    
     if (this.activeKeys.size) {
       // active note(s), queue the swap for when there's nothing playing to avoid impacting current audio
-      this.onIdle = () => this.swap(instrument);
+      this.onIdle = () => this.swapInstrument(instrument);
       return;
     }
 
     // piano isn't active, time to swap it some sweet new velocity samples
-    this.swap(instrument);
+    this.swapInstrument(instrument);
   }
 
-  private swap(instrument: DPiano) {
+  private async prefetchNextLayer(): Promise<void> {
+    try {
+      if (audioCacheManager.isReady()) {
+        // Prefetch the NEXT layer (which will be this.velocities * 2)
+        if (this.velocities <= Piano.MAX_VELOCITIES) {
+          Logger.DEBUG(`Piano: Prefetching velocity layer ${this.velocities} in background`);
+          await audioCacheManager.prefetchNextVelocityLayer(URL, this.velocities);
+        }
+      }
+    } catch (error) {
+      Logger.WARN('Piano: Failed to prefetch next velocity layer:', error);
+    }
+  }
+
+  private swapInstrument(instrument: DPiano) {
     // stop any ringing in the existing piano
     this.instrument?.stopAll();
     // make the swap, let the old instrument be garbage collected
     this.instrument = instrument.toDestination();
     this.load();
+  }
+
+  private getSecondsFromLoad(): number {
+    return (Date.now() - this.loadStart) / 1000;
   }
 }

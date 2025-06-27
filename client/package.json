@@ -16,7 +16,7 @@
     "tone": "^15.1.22"
   },
   "scripts": {
-    "dev": "NODE_OPTIONS='--disable-warning=DEP0190' vite",
+    "dev": "vite build && vite",
     "build": "npm run lint && vite build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
