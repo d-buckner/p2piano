@@ -68,7 +68,7 @@ export default class Piano implements Instrument {
       velocities: this.velocities,
     });
     await instrument.load();
-    this.velocities *= 4;
+    this.velocities *= 2;
 
     if (this.activeKeys.size) {
       // active note(s), queue the swap for when there's nothing playing to avoid impacting current audio
