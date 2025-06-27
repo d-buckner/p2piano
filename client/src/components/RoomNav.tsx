@@ -2,7 +2,7 @@ import { useNavigate } from '@solidjs/router';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
 import * as styles from './RoomNav.css';
 import Toolbar from './Toolbar';
-import type { Workspace } from '../slices/workspaceSlice';
+import type { Workspace } from '../app/store';
 
 
 type Props = {

@@ -1,8 +1,8 @@
 import * as WorkspaceActions from '../actions/WorkspaceActions';
 import { useAppSelector } from '../app/hooks';
 import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from '../audio/syncronization/constants';
-import { selectPeerConnections } from '../slices/connectionSlice';
-import { selectUsers } from '../slices/workspaceSlice';
+import { selectPeerConnections } from '../selectors/connectionSelectors';
+import { selectUsers } from '../selectors/workspaceSelectors';
 import Icon from './Icon';
 import * as styles from './UserItems.css';
 

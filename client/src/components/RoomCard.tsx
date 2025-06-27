@@ -1,6 +1,6 @@
 import { useNavigate } from '@solidjs/router';
 import { createSignal } from 'solid-js';
-import { setStore } from '../app/store';
+import { setRoom } from '../actions/RoomActions';
 import AudioManager from '../audio/AudioManager';
 import { createNewRoom, getRoom } from '../clients/RoomClient';
 import * as styles from './RoomCard.css';
@@ -17,7 +17,7 @@ export default function RoomCard() {
     AudioManager.activate();
     setRoomCreating(true);
     const room = await createNewRoom();
-    setStore('workspace', 'room', room);
+    setRoom(room);
     navigateToRoom(room.roomId);
   };
 
@@ -31,7 +31,7 @@ export default function RoomCard() {
 
     try {
       const room = await getRoom(roomId);
-      setStore('workspace', 'room', room);
+      setRoom(room);
     } catch {
       setRoomError(true);
       return;

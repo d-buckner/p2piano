@@ -1,11 +1,11 @@
-import { setStore } from '../app/store';
+import { setStore, store } from '../app/store';
 import { ensureSession, getRoom } from '../clients/RoomClient';
 import { Transport } from '../constants';
 import ClientPreferences from '../lib/ClientPreferences';
 import * as RoomActionBridge from '../lib/RoomActionBridge';
-import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
 import WebRtcController from '../networking/transports/WebRtcController';
 import WebsocketController from '../networking/transports/WebsocketController';
+import { selectMyUser, selectWorkspace } from '../selectors/workspaceSelectors';
 import type { InstrumentType } from '../audio/instruments/Instrument';
 
 
@@ -15,7 +15,7 @@ export async function joinRoom(roomId: string) {
 
   let isValid = true;
   try {
-    const { room } = getWorkspace();
+    const { room } = selectWorkspace(store);
     if (!room) {
       const room = await getRoom(roomId);
       setStore('workspace', 'room', room);
@@ -42,7 +42,7 @@ export async function joinRoom(roomId: string) {
 
 export function updateDisplayName(displayName: string) {
   // TODO: update optimistically
-  const user = getMyUser();
+  const user = selectMyUser(store);
   if (!user) {
     return;
   }
@@ -55,7 +55,7 @@ export function updateDisplayName(displayName: string) {
 
 export function updateInstrument(instrument: InstrumentType) {
   // TODO: update optimistically
-  const user = getMyUser();
+  const user = selectMyUser(store);
   if (!user) {
     return;
   }

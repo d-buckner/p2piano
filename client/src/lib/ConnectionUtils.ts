@@ -1,5 +1,5 @@
 import { store } from '../app/store';
-import { selectPeerConnections } from '../slices/connectionSlice';
+import { selectPeerConnections } from '../selectors/connectionSelectors';
 
 
 export function getPeerConnections() {

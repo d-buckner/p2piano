@@ -1,11 +1,12 @@
 import { io } from 'socket.io-client';
-import { setStore } from '../../app/store';
+import { addPeerConnection, removePeerConnection } from '../../actions/ConnectionActions';
+import { store } from '../../app/store';
 import { Transport, type Payload } from '../../constants';
 import ClientPreferences from '../../lib/ClientPreferences';
 import ConfigProvider from '../../lib/ConfigProvider';
 import Logger from '../../lib/Logger';
 import Session from '../../lib/Session';
-import { getWorkspace } from '../../lib/WorkspaceHelper';
+import { selectRoomId } from '../../selectors/workspaceSelectors';
 import AbstractNetworkController from '../AbstractNetworkController';
 import type { Socket } from 'socket.io-client';
 
@@ -29,7 +30,7 @@ export default class WebsocketController extends AbstractNetworkController {
       query: {
         displayName: ClientPreferences.getDisplayName(),
         sessionId: Session.getSessionId(),
-        roomId: getWorkspace().roomId
+        roomId: selectRoomId(store)
       },
     });
     this.on(WEBSOCKET_ACTIONS.USER_CONNECT, this.onUserConnect);
@@ -72,18 +73,11 @@ export default class WebsocketController extends AbstractNetworkController {
   }
 
   private onUserConnect(message: UserConnectionMessage) {
-    setStore('connection', 'peerConnections', message.userId, {
-      latency: 0,
-      transport: Transport.WEBSOCKET,
-    });
+    addPeerConnection(message.userId, Transport.WEBSOCKET, 0);
   }
 
   private onUserDisconnect(message: UserConnectionMessage) {
-    setStore('connection', 'peerConnections', (connections) => {
-      const newConnections = { ...connections };
-      delete newConnections[message.userId];
-      return newConnections;
-    });
+    removePeerConnection(message.userId);
   }
 
   static destroy(): void {

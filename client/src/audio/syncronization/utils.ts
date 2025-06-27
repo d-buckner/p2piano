@@ -1,6 +1,6 @@
 import { store } from '../../app/store';
-import { selectMaxLatency, selectPeerConnections } from '../../slices/connectionSlice';
-import { selectWorkspace } from '../../slices/workspaceSlice';
+import { selectMaxLatency, selectPeerConnections } from '../../selectors/connectionSelectors';
+import { selectWorkspace } from '../../selectors/workspaceSelectors';
 import { MIN_LATENCY_CUTOFF_MS } from './constants';
 
 

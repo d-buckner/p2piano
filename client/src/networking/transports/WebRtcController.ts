@@ -1,5 +1,5 @@
 import SimplePeer from 'simple-peer';
-import { setStore } from '../../app/store';
+import { updatePeerTransport } from '../../actions/ConnectionActions';
 import { Transport } from '../../constants';
 import AbstractNetworkController, { type Message } from '../AbstractNetworkController';
 import WebsocketController from './WebsocketController';
@@ -110,7 +110,7 @@ export default class WebRtcController extends AbstractNetworkController {
 
     p.on(PEER_EVENT.CONNECT, () => {
       this.activePeerIds.add(userId);
-      setStore('connection', 'peerConnections', userId, 'transport', Transport.WEBRTC);
+      updatePeerTransport(userId, Transport.WEBRTC);
     });
 
     p.on(PEER_EVENT.SIGNAL, signalData => {
@@ -123,7 +123,7 @@ export default class WebRtcController extends AbstractNetworkController {
     p.on(PEER_EVENT.CLOSE, () => {
       this.peers.delete(userId);
       this.activePeerIds.delete(userId);
-      setStore('connection', 'peerConnections', userId, 'transport', Transport.WEBSOCKET);
+      updatePeerTransport(userId, Transport.WEBSOCKET);
     });
 
     p.on(PEER_EVENT.DATA, data => {

@@ -1,7 +1,7 @@
 import { updateInstrument } from '../actions/WorkspaceActions';
 import { useAppSelector } from '../app/hooks';
 import { InstrumentType } from '../audio/instruments/Instrument';
-import { selectMyUser, selectUsers } from '../slices/workspaceSlice';
+import { selectMyUser, selectUsers } from '../selectors/workspaceSelectors';
 import * as styles from './RightOverlay.css';
 import type { User } from '../lib/workspaceTypes';
 

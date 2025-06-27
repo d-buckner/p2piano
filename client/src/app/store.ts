@@ -1,13 +1,37 @@
 import { createStore } from 'solid-js/store';
-import { initialConnectionState } from '../slices/connectionSlice';
-import { initialNotesState } from '../slices/notesSlice';
-import { initialWorkspaceState } from '../slices/workspaceSlice';
+import type { Connection, NotesByMidi } from '../constants';
+import type { Room } from '../lib/workspaceTypes';
+
+// Workspace state types
+export type Workspace = {
+  roomId?: string,
+  userId?: string,
+  isValid?: boolean,
+  isLoading?: boolean,
+  room?: Room,
+};
+
+// Initial states
+const initialWorkspaceState: Workspace = {
+  roomId: undefined,
+  userId: undefined,
+  isValid: undefined,
+  isLoading: undefined,
+  room: undefined,
+};
+
+const initialNotesState: NotesByMidi = {};
+
+const initialConnectionState: Connection = {
+  maxLatency: 0,
+  peerConnections: {},
+};
 
 // Define the combined state type
 export type RootState = {
-  workspace: typeof initialWorkspaceState;
-  notesByMidi: typeof initialNotesState;
-  connection: typeof initialConnectionState;
+  workspace: Workspace;
+  notesByMidi: NotesByMidi;
+  connection: Connection;
 };
 
 // Create the initial state
