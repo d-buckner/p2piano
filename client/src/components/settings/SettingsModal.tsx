@@ -22,8 +22,9 @@ interface LabelProps {
 function SettingsModal(props: Props) {
   const navigate = useNavigate();
   const [hasCopied, setHasCopied] = createSignal(false);
-  const [displayName, setDisplayName] = createSignal<string>(ClientPreferences.getDisplayName() ?? '');
-  const [hasDisplayNameError, setDisplayNameError] = createSignal<boolean>(!isDisplayNameValid(displayName()));
+  const initialDisplayName = ClientPreferences.getDisplayName() ?? '';
+  const [displayName, setDisplayName] = createSignal<string>(initialDisplayName);
+  const [hasDisplayNameError, setDisplayNameError] = createSignal<boolean>(!isDisplayNameValid(initialDisplayName));
 
   const onCopy = async (text: string) => {
     try {
@@ -97,7 +98,7 @@ function SettingsModal(props: Props) {
           </fieldset>
           <button
             class={styles.primaryButton}
-            onClick={hasDisplayNameError() ? noop : onSubmit}
+            onClick={() => hasDisplayNameError() ? noop() : onSubmit()}
             disabled={hasDisplayNameError()}
           >
             let's go

@@ -1,3 +1,4 @@
+import { For } from 'solid-js';
 import { updateInstrument } from '../actions/WorkspaceActions';
 import { useAppSelector } from '../app/hooks';
 import { InstrumentType } from '../audio/instruments/Instrument';
@@ -44,14 +45,13 @@ function InstrumentSelect(props: InstrumentSelectProps) {
         updateInstrument(e.target.value as InstrumentType)
       }}
     >
-      {Object.entries(INSTRUMENTS).map(([type, title], i) => (
-        <option
-          value={type}
-          key={i}
-        >
-          {title}
-        </option>
-      ))}
+      <For each={Object.entries(INSTRUMENTS)}>
+        {([type, title]) => (
+          <option value={type}>
+            {title}
+          </option>
+        )}
+      </For>
     </select>
   );
 }
@@ -59,15 +59,17 @@ function InstrumentSelect(props: InstrumentSelectProps) {
 function UsersList(props: UserListProps) {
   return (
     <ul class={styles.usersList}>
-      {Object.values(props.users ?? {}).map(user => (
-        <li class={`fade-in ${styles.userItem}`} key={user.userId}>
-          <span
-            class={styles.userColorIndicator}
-            style={{ 'background-color': user.color }}
-          />
-          <span>{user.displayName}</span>
-        </li>
-      ))}
+      <For each={Object.values(props.users ?? {})}>
+        {(user) => (
+          <li class={`fade-in ${styles.userItem}`}>
+            <span
+              class={styles.userColorIndicator}
+              style={{ 'background-color': user.color }}
+            />
+            <span>{user.displayName}</span>
+          </li>
+        )}
+      </For>
     </ul>
   );
 }
