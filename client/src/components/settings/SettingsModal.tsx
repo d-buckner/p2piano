@@ -102,8 +102,6 @@ function SettingsModal(props: Props) {
           >
             let's go
           </button>
-
-          {/* {!isIOS() && <p>UNMUTE YOUR PHONE</p>} */}
         </div>
       </div>
     </div>
@@ -111,7 +109,7 @@ function SettingsModal(props: Props) {
 
   function Label(props: LabelProps) {
     return (
-      <label style={{ fontFamily: 'Ysabeau Office, sans-serif', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+      <label class={styles.label}>
         {props.label}
       </label>
     );

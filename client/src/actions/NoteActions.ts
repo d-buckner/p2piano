@@ -23,7 +23,8 @@ export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: stri
     velocity,
   );
 
-  const {color} = selectUser(resolvedUserId)(store) ?? {};
+  const user = selectUser(resolvedUserId)(store);
+  const color = user?.color;
   const note: Note = {
     midi,
     peerId: resolvedUserId,
