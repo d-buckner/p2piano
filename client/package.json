@@ -17,7 +17,8 @@
   },
   "scripts": {
     "dev": "vite build && vite",
-    "build": "npm run lint && vite build",
+    "build": "npm run lint && npm run typecheck && vite build",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "analyze": "vite-bundle-visualizer"

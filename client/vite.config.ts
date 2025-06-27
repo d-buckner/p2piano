@@ -43,23 +43,17 @@ export default defineConfig(({ mode }) => {
       }
     },
     define,
-    worker: {
-      format: 'es',
-      plugins: () => ([
-        vanillaExtractPlugin(),
-      ]),
-    },
     build: {
       sourcemap: 'hidden',
       rollupOptions: {
         input: {
           main: './index.html',
-          sw: './src/workers/sw.ts', // Add service worker as entry point
+          serviceWorker: './src/workers/serviceWorker.ts',
         },
         output: {
           entryFileNames: (chunkInfo) => {
-            if (chunkInfo.name === 'sw') {
-              return 'assets/sw.js';
+            if (chunkInfo.name === 'serviceWorker') {
+              return 'assets/serviceWorker.js';
             }
             return 'assets/[name].js';
           },
