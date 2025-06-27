@@ -6,7 +6,7 @@ import * as styles from './Toolbar.css';
 function Toolbar() {
   return (
     <button
-      className={styles.toolbarButton}
+      class={styles.toolbarButton}
       onClick={HuMIDI.requestAccess}
     >
       <Icon name='usb-cable' />

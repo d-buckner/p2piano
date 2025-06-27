@@ -1,11 +1,11 @@
-import { dispatch } from '../../app/store';
+import { removePeerConnection, setMaxLatency, updatePeerLatency } from '../../actions/ConnectionActions';
+import { store } from '../../app/store';
 import { getConnectedPeerIds } from '../../lib/ConnectionUtils';
 import Logger from '../../lib/Logger';
 import RollingAvg from '../../lib/RollingAvg';
-import { getMyUserId } from '../../lib/WorkspaceHelper';
 import RealTimeController from '../../networking/RealTimeController';
 import { ACTION } from '../../networking/transports/WebRtcController';
-import { connectionActions } from '../../slices/connectionSlice';
+import { selectUserId } from '../../selectors/workspaceSelectors';
 import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from './constants';
 
 
@@ -111,7 +111,7 @@ class AudioSyncCoordinator {
 
   public removePeer(peerId: string) {
     delete this.peerLatencyWindows[peerId];
-    dispatch(connectionActions.removePeerConnection(peerId));
+    removePeerConnection(peerId);
   }
 
   private tick() {
@@ -152,7 +152,7 @@ class AudioSyncCoordinator {
         return truncate(Math.max(currentMax, window.avg));
       }, 0);
 
-    dispatch(connectionActions.setMaxLatency(maxLatency));
+    setMaxLatency(maxLatency);
 
     setTimeout(this.tick, 60_000 / SAMPLES_PER_MINUTE);
   }
@@ -183,10 +183,7 @@ class AudioSyncCoordinator {
       Logger.INFO(`Peer ${peerId} latency: ${peerLatencyWindow.avg}`);
     }
 
-    dispatch(connectionActions.setPeerLatency({
-      peerId,
-      latency: truncate(peerLatencyWindow.avg),
-    }));
+    updatePeerLatency(peerId, truncate(peerLatencyWindow.avg));
   }
 
   private onPeerLeft(message: PeerLeftMessage) {
@@ -195,7 +192,7 @@ class AudioSyncCoordinator {
 
   private verifyMyUserId() {
     if (!this.myUserId) {
-      this.myUserId = getMyUserId();
+      this.myUserId = selectUserId(store);
       throw new Error('User id not yet retrieved'); // TODO: ensure room bootstrap is complete before initializing
     }
   }

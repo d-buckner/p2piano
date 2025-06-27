@@ -1,9 +1,8 @@
-import { connect } from 'react-redux';
 import { updateInstrument } from '../actions/WorkspaceActions';
+import { useAppSelector } from '../app/hooks';
 import { InstrumentType } from '../audio/instruments/Instrument';
-import { selectMyUser, selectUsers } from '../slices/workspaceSlice';
+import { selectMyUser, selectUsers } from '../selectors/workspaceSelectors';
 import * as styles from './RightOverlay.css';
-import type { RootState } from '../app/store';
 import type { User } from '../lib/workspaceTypes';
 
 
@@ -15,11 +14,6 @@ const INSTRUMENTS: Record<InstrumentType, string> = {
 
 type Users = Record<string, User>;
 
-type Props = {
-  user?: User,
-  users?: Users,
-};
-
 interface InstrumentSelectProps {
   instrument?: string,
 }
@@ -28,14 +22,15 @@ interface UserListProps {
   users?: Users,
 }
 
-function RightOverlay(props: Props) {
-  const { user, users } = props;
-  const { instrument } = user || {};
+export default function RightOverlay() {
+  const user = useAppSelector(selectMyUser);
+  const users = useAppSelector(selectUsers);
+  const { instrument } = user() || {};
 
   return (
-    <div className={styles.rightOverlay}>
+    <div class={styles.rightOverlay}>
       <InstrumentSelect instrument={instrument} />
-      <UsersList users={users} />
+      <UsersList users={users()} />
     </div>
   );
 }
@@ -43,7 +38,7 @@ function RightOverlay(props: Props) {
 function InstrumentSelect(props: InstrumentSelectProps) {
   return (
     <select
-      className={styles.instrumentSelect}
+      class={styles.instrumentSelect}
       value={props.instrument ?? InstrumentType.PIANO}
       onChange={e => {
         updateInstrument(e.target.value as InstrumentType)
@@ -63,15 +58,12 @@ function InstrumentSelect(props: InstrumentSelectProps) {
 
 function UsersList(props: UserListProps) {
   return (
-    <ul className={styles.usersList}>
-      {Object.values(props.users ?? {}).map((user, i) => (
-        <li
-          className={`fade-in ${styles.userItem}`}
-          key={i}
-        >
+    <ul class={styles.usersList}>
+      {Object.values(props.users ?? {}).map(user => (
+        <li class={`fade-in ${styles.userItem}`} key={user.userId}>
           <span
-            className={styles.userColorIndicator}
-            style={{ backgroundColor: user.color }}
+            class={styles.userColorIndicator}
+            style={{ 'background-color': user.color }}
           />
           <span>{user.displayName}</span>
         </li>
@@ -79,12 +71,3 @@ function UsersList(props: UserListProps) {
     </ul>
   );
 }
-
-function mapStateToProps(state: RootState) {
-  return {
-    user: selectMyUser(state),
-    users: selectUsers(state),
-  };
-}
-
-export default connect(mapStateToProps)(RightOverlay);

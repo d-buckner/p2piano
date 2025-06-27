@@ -1,37 +1,29 @@
-import { dispatch } from '../app/store';
+import { setStore, store } from '../app/store';
 import { ensureSession, getRoom } from '../clients/RoomClient';
 import { Transport } from '../constants';
 import ClientPreferences from '../lib/ClientPreferences';
 import * as RoomActionBridge from '../lib/RoomActionBridge';
-import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
 import WebRtcController from '../networking/transports/WebRtcController';
 import WebsocketController from '../networking/transports/WebsocketController';
-import { connectionActions } from '../slices/connectionSlice';
-import {
-  setRoomId,
-  setValidity,
-  reset,
-  setIsLoading,
-  setRoom,
-} from '../slices/workspaceSlice';
+import { selectMyUser, selectWorkspace } from '../selectors/workspaceSelectors';
 import type { InstrumentType } from '../audio/instruments/Instrument';
 
 
 export async function joinRoom(roomId: string) {
-  dispatch(setRoomId({ roomId }));
-  dispatch(setIsLoading({ isLoading: true }));
+  setStore('workspace', 'roomId', roomId);
+  setStore('workspace', 'isLoading', true);
 
   let isValid = true;
   try {
-    const { room } = getWorkspace();
+    const { room } = selectWorkspace(store);
     if (!room) {
       const room = await getRoom(roomId);
-      dispatch(setRoom({ room }));
+      setStore('workspace', 'room', room);
       Object.values(room.users).forEach(user => {
-        dispatch(connectionActions.addPeerConnection({
-          peerId: user.userId,
+        setStore('connection', 'peerConnections', user.userId, {
+          latency: 0,
           transport: Transport.WEBSOCKET,
-        }));
+        });
       });
     }
 
@@ -40,8 +32,8 @@ export async function joinRoom(roomId: string) {
     isValid = false;
   }
 
-  dispatch(setValidity({ isValid }));
-  dispatch(setIsLoading({ isLoading: false }));
+  setStore('workspace', 'isValid', isValid);
+  setStore('workspace', 'isLoading', false);
 
   if (isValid) {
     RoomActionBridge.register();
@@ -50,7 +42,7 @@ export async function joinRoom(roomId: string) {
 
 export function updateDisplayName(displayName: string) {
   // TODO: update optimistically
-  const user = getMyUser();
+  const user = selectMyUser(store);
   if (!user) {
     return;
   }
@@ -63,7 +55,7 @@ export function updateDisplayName(displayName: string) {
 
 export function updateInstrument(instrument: InstrumentType) {
   // TODO: update optimistically
-  const user = getMyUser();
+  const user = selectMyUser(store);
   if (!user) {
     return;
   }
@@ -77,5 +69,12 @@ export function destroyRoom() {
   RoomActionBridge.destroy();
   WebRtcController.destroy();
   WebsocketController.destroy();
-  dispatch(reset());
+  // Reset workspace state
+  setStore('workspace', {
+    roomId: undefined,
+    userId: undefined,
+    isValid: undefined,
+    isLoading: undefined,
+    room: undefined,
+  });
 }

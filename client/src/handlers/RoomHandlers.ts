@@ -1,12 +1,9 @@
 import * as NoteActions from '../actions/NoteActions';
-import store, { dispatch } from '../app/store';
+import { setRoom, setUserId } from '../actions/RoomActions';
+import { store } from '../app/store';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
-import { getMyUser, getWorkspace } from '../lib/WorkspaceHelper';
-import { removeNotesFromPeer, selectNotes } from '../slices/notesSlice';
-import {
-  setRoom,
-  initializeRoom,
-} from '../slices/workspaceSlice';
+import { selectNotesByMidi } from '../selectors/noteSelectors';
+import { selectMyUser, selectWorkspace } from '../selectors/workspaceSelectors';
 import type { InstrumentType } from '../audio/instruments/Instrument';
 import type { Room } from '../lib/workspaceTypes';
 
@@ -60,10 +57,8 @@ export default class RoomHandlers {
       InstrumentRegistry.register(u.userId, u.instrument as InstrumentType);
     });
 
-    dispatch(initializeRoom({
-      userId,
-      room,
-    }));
+    setUserId(userId);
+    setRoom(room);
   }
 
   static roomDisconnectHandler() {
@@ -75,11 +70,11 @@ export default class RoomHandlers {
     const instrument = room.users?.[userId].instrument as InstrumentType;
     InstrumentRegistry.register(userId, instrument);
 
-    dispatch(setRoom({ room }));
+    setRoom(room);
   }
 
   static userUpdateHandler(payload: UserUpdatePayload) {
-    const { room: oldRoom } = getWorkspace();
+    const { room: oldRoom } = selectWorkspace(store);
     const { userId, room } = payload;
     const oldUser = oldRoom?.users?.[userId];
     const newUser = room?.users?.[userId];
@@ -92,19 +87,18 @@ export default class RoomHandlers {
       InstrumentRegistry.register(userId, newInstrument);
     }
 
-    dispatch(setRoom({ room }));
+    setRoom(room);
   }
 
   static userDisconnectHandler(payload: UserDisconnectPayload) {
     const { userId, room } = payload;
     InstrumentRegistry.unregister(userId);
-    dispatch(removeNotesFromPeer({ peerId: userId }));
-    dispatch(setRoom({ room }));
+    setRoom(room);
   }
 
   static blurHandler() {
-    const userId = getMyUser()?.userId;
-    const notes = selectNotes(store.getState());
+    const userId = selectMyUser(store)?.userId;
+    const notes = selectNotesByMidi(store);
     Object.values(notes).forEach(noteEntries => {
       noteEntries.forEach(note => {
         if (note.peerId === userId) {

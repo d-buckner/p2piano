@@ -1,18 +1,15 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@solidjs/router';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
 import * as styles from './RoomNav.css';
 import Toolbar from './Toolbar';
-import type { Workspace } from '../slices/workspaceSlice';
-
-
+import type { Workspace } from '../app/store';
 
 
 type Props = {
   workspace: Workspace;
 };
 
-function RoomNav({ workspace }: Props) {
+function RoomNav(props: Props) {
   const navigate = useNavigate();
 
   async function shareRoom() {
@@ -33,14 +30,14 @@ function RoomNav({ workspace }: Props) {
   }
 
   return (
-    <nav className={styles.roomNav}>
-      <a onClick={navigateHome} className={styles.navLink}>p2piano</a>
+    <nav class={styles.roomNav}>
+      <a onClick={navigateHome} class={styles.navLink}>p2piano</a>
       <Toolbar />
-      <a onClick={shareRoom} className={styles.navLink}>
-        room: <span className={styles.roomId}>{workspace.roomId}</span>
+      <a onClick={shareRoom} class={styles.navLink}>
+        room: <span class={styles.roomId}>{props.workspace.roomId}</span>
       </a>
     </nav>
   );
 }
 
-export default React.memo(RoomNav);
+export default RoomNav;

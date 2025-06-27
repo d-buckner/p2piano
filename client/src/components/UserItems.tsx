@@ -1,12 +1,10 @@
-import { connect } from 'react-redux';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
+import { useAppSelector } from '../app/hooks';
 import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from '../audio/syncronization/constants';
-import { selectMaxLatency, selectPeerConnections } from '../slices/connectionSlice';
-import { selectUsers } from '../slices/workspaceSlice';
+import { selectPeerConnections } from '../selectors/connectionSelectors';
+import { selectUsers } from '../selectors/workspaceSelectors';
 import Icon from './Icon';
 import * as styles from './UserItems.css';
-import type { RootState } from '../app/store';
-import type { Room } from '../lib/workspaceTypes';
 
 
 
@@ -22,45 +20,11 @@ interface PeerIconMap {
   [peerId: string]: SpeedIcon,
 }
 
-interface PropsFromState {
-  peerIcons: PeerIconMap,
-  users: Room['users'],
-  maxLatency: number,
-}
+export default function UserItems() {
+  const peerConnections = useAppSelector(selectPeerConnections);
+  const users = useAppSelector(selectUsers);
 
-const UserItems = (props: PropsFromState) => (
-  <div className={styles.userItemsContainer}>
-    {Object.values(props.users).map((user, i) => {
-      const iconName = props.peerIcons[user.userId];
-      return (
-        <div className={styles.userItem} key={i}>
-          <div
-            className={styles.userColorDot}
-            style={{ backgroundColor: user.color }}
-          />
-          <span
-            onClick={updateDisplayName}
-            className={styles.userName}
-          >
-            {user.displayName}
-          </span>
-          {iconName && <Icon name={iconName} />}
-          <span className={styles.spacer} />
-        </div>
-      )
-    })}
-  </div>
-);
-
-function updateDisplayName() {
-  const displayName = prompt('update display name');
-  if (displayName) {
-    WorkspaceActions.updateDisplayName(displayName);
-  }
-}
-
-function mapStateToProps(state: RootState) {
-  const peerIcons = Object.entries(selectPeerConnections(state)).reduce((acc, [peerId, connection]) => {
+  const peerIcons = Object.entries(peerConnections()).reduce((acc, [peerId, connection]) => {
     if (connection.latency > MAX_LATENCY_CUTOFF_MS) {
       acc[peerId] = SpeedIcon.LOW;
       return acc;
@@ -73,11 +37,34 @@ function mapStateToProps(state: RootState) {
     return acc;
   }, {} as PeerIconMap);
 
-  return {
-    maxLatency: selectMaxLatency(state),
-    peerIcons,
-    users: selectUsers(state)
-  }
+  return (
+    <div class={styles.userItemsContainer}>
+      {Object.values(users()).map((user, i) => {
+        const iconName = peerIcons[user.userId];
+        return (
+          <div class={styles.userItem} key={i}>
+            <div
+              class={styles.userColorDot}
+              style={{ backgroundColor: user.color }}
+            />
+            <span
+              onClick={updateDisplayName}
+              class={styles.userName}
+            >
+              {user.displayName}
+            </span>
+            {iconName && <Icon name={iconName} />}
+            <span class={styles.spacer} />
+          </div>
+        )
+      })}
+    </div>
+  );
 }
 
-export default connect(mapStateToProps)(UserItems);
+function updateDisplayName() {
+  const displayName = prompt('update display name');
+  if (displayName) {
+    WorkspaceActions.updateDisplayName(displayName);
+  }
+}

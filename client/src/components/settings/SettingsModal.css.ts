@@ -38,15 +38,11 @@ export const modalCloseButton = style({
   right: vars.spacing.md,
   backgroundColor: 'transparent',
   border: 'none',
-  color: vars.colors.foreground,
+  color: vars.colors.background,
   fontSize: '1.5rem',
   cursor: 'pointer',
   padding: vars.spacing.xs,
   borderRadius: vars.radii.sm,
-  
-  ':hover': {
-    backgroundColor: vars.colors.secondary,
-  },
 });
 
 export const modalBody = style({
@@ -82,14 +78,15 @@ export const hstack = style({
 export const input = style({
   padding: vars.spacing.sm,
   borderRadius: vars.radii.md,
-  border: `1px solid ${vars.colors.secondary}`,
+  border: `1px solid ${vars.colors.muted}`,
   fontSize: '1rem',
   flex: 1,
-  
-  ':focus': {
-    outline: 'none',
-    borderColor: vars.colors.primary,
-  },
+});
+
+export const label = style({
+  fontFamily: vars.fonts.heading,
+  fontWeight: 'bold',
+  marginBottom: '0.5rem',
 });
 
 export const button = style({
@@ -109,11 +106,11 @@ export const primaryButton = style([
     marginTop: vars.spacing.md,
     alignSelf: 'flex-end',
     width: '100%',
-    
+
     ':hover': {
       backgroundColor: '#1a252a',
     },
-    
+
     ':disabled': {
       backgroundColor: vars.colors.secondary,
       cursor: 'not-allowed',
@@ -126,7 +123,7 @@ export const copyButton = style([
   {
     backgroundColor: vars.colors.secondary,
     color: vars.colors.foreground,
-    
+
     ':hover': {
       backgroundColor: vars.colors.muted,
     },

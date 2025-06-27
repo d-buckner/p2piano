@@ -13,12 +13,12 @@ export const fieldset = style({
 export const input = style({
   padding: vars.spacing.sm,
   borderRadius: vars.radii.md,
-  border: `1px solid ${vars.colors.secondary}`,
+  border: `1px solid ${vars.colors.muted}`,
   fontSize: '1rem',
   
   ':focus': {
     outline: 'none',
-    borderColor: vars.colors.primary,
+    borderColor: vars.colors.background,
   },
 });
 
