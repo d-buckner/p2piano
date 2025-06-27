@@ -5,7 +5,6 @@ import { Transport, type Payload } from '../../constants';
 import ClientPreferences from '../../lib/ClientPreferences';
 import ConfigProvider from '../../lib/ConfigProvider';
 import Logger from '../../lib/Logger';
-import Session from '../../lib/Session';
 import { selectRoomId } from '../../selectors/workspaceSelectors';
 import AbstractNetworkController from '../AbstractNetworkController';
 import type { Socket } from 'socket.io-client';
@@ -27,9 +26,9 @@ export default class WebsocketController extends AbstractNetworkController {
   private constructor() {
     super();
     this.socket = io(ConfigProvider.getServiceUrl(), {
+      withCredentials: true, // Include cookies for authentication
       query: {
         displayName: ClientPreferences.getDisplayName(),
-        sessionId: Session.getSessionId(),
         roomId: selectRoomId(store)
       },
     });

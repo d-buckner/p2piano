@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import SessionProvider from './entities/Session';
-
 import Room from './entities/Room';
 
 type RoomResponse = {
@@ -18,11 +16,4 @@ export class AppService {
     return room.get()
   }
 
-  createSession() {
-    return SessionProvider.create();
-  }
-
-  getSession(sessionId: string) {
-    return SessionProvider.get(sessionId);
-  }
 }

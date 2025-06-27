@@ -5,11 +5,15 @@ import {
   HttpStatus,
   Param,
   Post,
-  Res,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { AppService } from './app.service';
 import { RoomNotFoundError } from './errors';
 import { Throttle } from '@nestjs/throttler';
+import { RoomParamDto } from './dto/room-param.dto';
+import { AutoSessionGuard } from './auth/auto-session.guard';
 
 
 
@@ -17,16 +21,19 @@ import { Throttle } from '@nestjs/throttler';
 export class AppController {
   constructor(private readonly appService: AppService) { }
 
-  @Throttle({ default: { limit: 3, ttl: 15 } })
+  @Throttle({ default: { limit: 10, ttl: 60 } })
   @Post('/api/room')
+  @UseGuards(AutoSessionGuard)
   async createRoom() {
     const room = await this.appService.createRoom();
     return room;
   }
 
-  @Throttle({ default: { limit: 10, ttl: 15 } })
+  @Throttle({ default: { limit: 30, ttl: 60 } })
   @Get('/api/room/:id')
-  async getRoom(@Param() param) {
+  @UseGuards(AutoSessionGuard)
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async getRoom(@Param() param: RoomParamDto) {
     const roomId = param.id;
     try {
       const room = await this.appService.getRoom(roomId);
@@ -35,12 +42,10 @@ export class AppController {
       if (err instanceof RoomNotFoundError) {
         throw new HttpException('Room not found', HttpStatus.NOT_FOUND);
       }
+      throw err;
     }
   }
 
-  @Throttle({ default: { limit: 4, ttl: 60 } })
-  @Post('/api/session')
-  async createSession() {
-    return this.appService.createSession();
-  }
+
+
 }

@@ -18,6 +18,8 @@ services:
     environment:
       - NODE_ENV=production
       - MONGO_URI=mongodb://root:password@database:27017
+      - ALLOWED_WS_ORIGINS=https://p2piano.com,https://www.p2piano.com
+      - ALLOWED_ORIGINS=https://p2piano.com,https://www.p2piano.com
     depends_on:
       database:
         condition: service_started

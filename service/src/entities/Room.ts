@@ -5,7 +5,7 @@ import { RoomNotFoundError } from '../errors';
 
 import type { Room as IRoom, User } from '../utils/workspaceTypes';
 
-const generateRoomId = customAlphabet('abcdefghjkmnpqrstuvwxyz', 5);
+const generateRoomId = customAlphabet('abcdefghjkmnpqrstuvwxyz23456789', 5);
 const RoomCollection = Database.collection<IRoom>('room');
 RoomCollection.createIndex({ roomId: 1 });
 // Room lasts for 1.5 hours
