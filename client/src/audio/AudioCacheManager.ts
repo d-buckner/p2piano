@@ -267,6 +267,11 @@ export class AudioCacheManager {
       });
       
       results.push(...batchResults);
+      
+      // Small delay between batches
+      if (i + batchSize < urls.length) {
+        await new Promise(resolve => requestIdleCallback(resolve));
+      }
     }
     
     return results;

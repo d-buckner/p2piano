@@ -108,15 +108,6 @@ function generateCacheRecommendations(
   return recommendations;
 }
 
-function prioritizePrefetchUrls(urls: string[]): string[] {
-  // Sort URLs by priority (lower velocity numbers first)
-  return urls.sort((a, b) => {
-    const aVelocity = parseInt(a.match(/v(\d+)\.mp3$/)?.[1] || '99', 10);
-    const bVelocity = parseInt(b.match(/v(\d+)\.mp3$/)?.[1] || '99', 10);
-    return aVelocity - bVelocity;
-  });
-}
-
 async function batchCacheUrls(urls: string[], batchSize: number = 5) {
   const results = {
     cached: 0,
@@ -198,8 +189,7 @@ self.onmessage = async function(event: MessageEvent<CacheOperation>) {
         
       case 'PREFETCH_URLS': {
         if (!data.urls) throw new Error('Missing urls data');
-        const prioritizedUrls = prioritizePrefetchUrls(data.urls);
-        const batchResult = await batchCacheUrls(prioritizedUrls, data.batchSize || 5);
+        const batchResult = await batchCacheUrls(data.urls, data.batchSize || 5);
         result = batchResult;
         stats = {
           processed: data.urls.length,
