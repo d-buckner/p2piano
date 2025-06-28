@@ -67,7 +67,7 @@ export default function RoomCard() {
             placeholder='join room code'
             maxLength={5}
             class={`${styles.input} ${isRoomError() ? styles.inputError : ''}`}
-            onChange={onRoomCodeChange}
+            onInput={onRoomCodeChange}
           />
         </div>
       </div>

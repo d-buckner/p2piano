@@ -22,7 +22,7 @@ export default function DisplayName(props: Props) {
       <input
         class={`${styles.input} ${props.hasError ? styles.inputError : ''}`}
         value={props.name}
-        onChange={onChange}
+        onInput={onChange}
       />
     </fieldset>
   );
