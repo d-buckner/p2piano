@@ -6,6 +6,7 @@ services:
       service:
         condition: service_started
     environment:
+      - NODE_ENV=production
       - SERVICE_ENDPOINT=service:3001
     volumes:
       - caddy_data:/data
@@ -30,8 +31,6 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-mongouser}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-secure_mongo_pass_change_me}
-    ports:
-      - "27017:27017"
 
 volumes:
   caddy_data:

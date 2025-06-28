@@ -1,0 +1,10 @@
+services:
+  web:
+    environment:
+        - NODE_ENV=development
+  service:
+    environment:
+      - NODE_ENV=development
+  database:
+    ports:
+      - "27017:27017"
