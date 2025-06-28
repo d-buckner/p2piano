@@ -5,6 +5,10 @@ services:
   service:
     environment:
       - NODE_ENV=development
+      - MONGO_URI=mongodb://root:password@database:27017
   database:
+    environment:
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_ROOT_USERNAME: password
     ports:
       - "27017:27017"

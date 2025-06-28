@@ -18,8 +18,9 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-      - MONGO_URI=mongodb://${MONGO_USERNAME:-mongouser}:${MONGO_PASSWORD:-secure_mongo_pass_change_me}@database:27017
-      - COOKIE_SECRET=${COOKIE_SECRET:-secure_cookie_secret_change_me_at_least_32_chars}
+      - MONGO_URI=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@database:27017
+      - COOKIE_SECRET=${COOKIE_SECRET}
+      - MONGO_URI=${MONGO_URI}
     depends_on:
       database:
         condition: service_started
@@ -29,9 +30,8 @@ services:
     image: mongo
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-mongouser}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-secure_mongo_pass_change_me}
-
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
 volumes:
   caddy_data:
   caddy_config:

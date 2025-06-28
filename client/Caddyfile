@@ -22,7 +22,7 @@ http://:8345 {
 	}
 
 	@room {
-		path_regexp ^/\b[a-z]{5}\b$
+		path_regexp ^/[a-z0-9]{5}$
 	}
 
 	reverse_proxy /api/* {$SERVICE_ENDPOINT}
