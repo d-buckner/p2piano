@@ -5,8 +5,8 @@ type Props = {
   name: string,
 };
 
-export default function Icon({ name }: Props) {
-  return <img src={getIconPath(name)} alt={name} width="16" height="16" />;
+export default function Icon(props: Props) {
+  return <img src={getIconPath(props.name)} alt={props.name} width="16" height="16" />;
 }
 
 function getIconPath(iconName: string): string {

@@ -5,7 +5,8 @@ import type { RootState } from './store';
 // Custom hooks for accessing state
 export const useAppSelector = <T>(selector: (state: RootState) => T): () => T => {
   const { state } = useStore();
-  return createMemo(() => selector(state));
+  const memo = createMemo(() => selector(state));
+  return memo;
 };
 
 export const useAppDispatch = () => {

@@ -8,13 +8,13 @@ type Props = {
     children: JSX.Element,
 }
 
-const GeneralPage = ({ children }: Props) => (
+const GeneralPage = (props: Props) => (
     <div class={styles.page}>
         <nav class={styles.header}>
             <Navbar />
         </nav>
         <main class={styles.main}>
-            {children}
+            {props.children}
         </main>
         <footer class={styles.footer}>
             <Footer />

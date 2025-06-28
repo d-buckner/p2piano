@@ -1,7 +1,25 @@
 http://:8345 {
 	root * /www
 	encode zstd gzip
-	file_server
+
+	@audio_samples {
+		path /assets/samples/**/*.mp3
+	}
+
+	handle @audio_samples {
+		header {
+			# Cache audio samples for 1 year
+			Cache-Control "public, max-age=31536000, immutable"
+			# Enable CORS for audio loading
+			Access-Control-Allow-Methods "GET, HEAD, OPTIONS"
+			Access-Control-Allow-Headers "Range, Content-Range"
+			# Support range requests for large audio files
+			Accept-Ranges "bytes"
+			# Set proper MIME type
+			Content-Type "audio/mpeg"
+		}
+		file_server
+	}
 
 	@room {
 		path_regexp ^/\b[a-z]{5}\b$
@@ -17,4 +35,7 @@ http://:8345 {
 	handle /donate {
 		rewrite * /
 	}
+
+	# Default file server (moved to end to avoid conflicts)
+	file_server
 }

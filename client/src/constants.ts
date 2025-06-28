@@ -30,4 +30,4 @@ export enum Transport {
   WEBRTC = 'WEBRTC',
 };
 
-export const DEFAULT_VELOCITY = 100;
+export const DEFAULT_VELOCITY = 80;

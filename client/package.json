@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "license": "AGPL-3.0-only",
   "private": false,
+  "type": "module",
   "dependencies": {
     "@solidjs/router": "^0.15.3",
     "axios": "^1.2.3",
@@ -15,100 +16,31 @@
     "tone": "^15.1.22"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "npm run lint && vite build",
+    "dev": "vite build && vite",
+    "build": "npm run lint && npm run typecheck && vite build",
+    "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "analyze": "vite-bundle-visualizer"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@eslint/js": "^9.25.0",
     "@rollup/plugin-replace": "^6.0.2",
-    "@types/jest": "^27.5.2",
     "@types/node": "^24.0.4",
     "@types/simple-peer": "^9.11.5",
     "@types/webmidi": "^2.1.0",
     "@vanilla-extract/css": "^1.17.4",
     "@vanilla-extract/vite-plugin": "^5.0.7",
-    "dotenv-webpack": "^8.0.1",
+    "eslint": "^9.29.0",
     "eslint-plugin-import": "^2.32.0",
-    "eslint": "^9.25.0",
+    "eslint-plugin-solid": "^0.14.5",
     "globals": "^16.0.0",
-    "typescript-eslint": "^8.30.1",
     "typescript": "~5.8.3",
+    "typescript-eslint": "^8.30.1",
+    "vite": "^6.3.5",
     "vite-bundle-visualizer": "^1.2.1",
     "vite-plugin-node-polyfills": "^0.23.0",
-    "vite-plugin-solid": "^2.11.7",
-    "vite": "^6.3.5"
-  },
-  "jest": {
-    "roots": [
-      "<rootDir>/src"
-    ],
-    "collectCoverageFrom": [
-      "src/**/*.{js,jsx,ts,tsx}",
-      "!src/**/*.d.ts"
-    ],
-    "setupFiles": [
-      "react-app-polyfill/jsdom"
-    ],
-    "setupFilesAfterEnv": [
-      "<rootDir>/src/setupTests.ts"
-    ],
-    "testMatch": [
-      "<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}",
-      "<rootDir>/src/**/*.{spec,test}.{js,jsx,ts,tsx}"
-    ],
-    "testEnvironment": "jsdom",
-    "transform": {
-      "^.+\\.(js|jsx|mjs|cjs|ts|tsx)$": "<rootDir>/config/jest/babelTransform.js",
-      "^.+\\.css$": "<rootDir>/config/jest/cssTransform.js",
-      "^(?!.*\\.(js|jsx|mjs|cjs|ts|tsx|css|json)$)": "<rootDir>/config/jest/fileTransform.js"
-    },
-    "transformIgnorePatterns": [
-      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|mjs|cjs|ts|tsx)$",
-      "^.+\\.module\\.(css|sass|scss)$"
-    ],
-    "modulePaths": [],
-    "moduleNameMapper": {
-      "^react-native$": "react-native-web",
-      "^.+\\.module\\.(css|sass|scss)$": "identity-obj-proxy"
-    },
-    "moduleFileExtensions": [
-      "web.js",
-      "js",
-      "web.ts",
-      "ts",
-      "web.tsx",
-      "tsx",
-      "json",
-      "web.jsx",
-      "jsx",
-      "node"
-    ],
-    "watchPlugins": [
-      "jest-watch-typeahead/filename",
-      "jest-watch-typeahead/testname"
-    ],
-    "resetMocks": true
+    "vite-plugin-solid": "^2.11.7"
   }
 }

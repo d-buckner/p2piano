@@ -26,7 +26,7 @@ const Room = () => {
     <Switch>
       <Match when={workspace().isLoading !== false}>
         <div class={styles.loadingContainer}>
-          <div class={styles.spinner}></div>
+          <div class={styles.spinner} />
         </div>
       </Match>
       <Match when={workspace().isValid === false}>
