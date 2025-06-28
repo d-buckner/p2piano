@@ -52,9 +52,9 @@ export default class Piano implements Instrument {
   private async load(): Promise<void> {
     this.onIdle = null;
     const velocities = Piano.velocityOptions[this.velocityIndex];
-    if (velocities !== undefined) {
+    if (this.velocityIndex === Piano.velocityOptions.length) {
       Logger.DEBUG(
-        'audio: full piano samples loaded in',
+        'Piano: full samples loaded in',
         this.getSecondsFromLoad(),
         'seconds'
       );
@@ -63,7 +63,7 @@ export default class Piano implements Instrument {
 
     const instrument = new DPiano({
       url: URL,
-      velocities: Piano.velocityOptions[this.velocityIndex],
+      velocities,
     });
     
     Logger.DEBUG(`Piano: Loading velocity layer ${velocities}`);
@@ -71,7 +71,7 @@ export default class Piano implements Instrument {
     Logger.DEBUG(`Piano: Loaded velocity layer ${velocities}`);
     if (this.velocityIndex === 0) {
       Logger.DEBUG(
-        'audio: initial piano samples loaded in',
+        'Piano: initial samples loaded in',
         this.getSecondsFromLoad(),
         'seconds'
       );

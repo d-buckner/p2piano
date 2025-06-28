@@ -58,13 +58,7 @@ export default defineConfig(({ mode }) => {
             return 'assets/[name].js';
           },
           chunkFileNames: 'assets/[name].js',
-          assetFileNames: (assetInfo) => {
-            // Keep original names for audio samples to maintain cache
-            if (assetInfo.name && assetInfo.name.endsWith('.mp3')) {
-              return 'assets/samples/piano/[name][extname]';
-            }
-            return 'assets/[name].[ext]';
-          }
+          assetFileNames: 'assets/[name].[ext]'
         },
         // DANGER: this is simple string replacement in build, use with extreme caution
         plugins: replace({
@@ -74,8 +68,6 @@ export default defineConfig(({ mode }) => {
         }),
       },
       outDir: 'dist',
-      // Ensure audio files are treated as assets
-      assetsInclude: ['**/*.mp3', '**/*.wav', '**/*.ogg'],
     }
   }
 });
