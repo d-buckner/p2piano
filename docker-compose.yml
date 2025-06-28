@@ -6,6 +6,7 @@ services:
       service:
         condition: service_started
     environment:
+      - NODE_ENV=production
       - SERVICE_ENDPOINT=service:3001
     volumes:
       - caddy_data:/data
@@ -17,7 +18,7 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-      - MONGO_URI=mongodb://root:password@database:27017
+      - MONGO_URI=${MONGO_URI}
     depends_on:
       database:
         condition: service_started
@@ -27,10 +28,8 @@ services:
     image: mongo
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
-    ports:
-      - "27017:27017"
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
 
 volumes:
   caddy_data:
