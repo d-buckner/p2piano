@@ -1,17 +1,17 @@
 import { Piano as DPiano } from 'd-piano';
 import { DEFAULT_VELOCITY } from '../../constants';
+import Logger from '../../lib/Logger';
 import getDelayTime from './getDelayTime';
 import type { Instrument } from './Instrument';
 
 
 const URL = '/assets/samples/piano/'
 
-
 export default class Piano implements Instrument {
-  private static MIN_VELOCITIES = 2;
-  private static MAX_VELOCITIES = 16;
+  private static readonly velocityOptions: number[] = [2, 8, 16];
+  private loadStart = Date.now();
   private instrument?: DPiano;
-  private velocities: number = Piano.MIN_VELOCITIES;
+  private velocityIndex: number = 0;
   private onIdle: (() => void) | null = null;
   private activeKeys: Set<number> = new Set();
 
@@ -51,32 +51,52 @@ export default class Piano implements Instrument {
 
   private async load(): Promise<void> {
     this.onIdle = null;
-    if (this.velocities > Piano.MAX_VELOCITIES) {
+    const velocities = Piano.velocityOptions[this.velocityIndex];
+    if (this.velocityIndex === Piano.velocityOptions.length) {
+      Logger.DEBUG(
+        'Piano: full samples loaded in',
+        this.getSecondsFromLoad(),
+        'seconds'
+      );
       return;
     }
 
     const instrument = new DPiano({
       url: URL,
-      velocities: this.velocities,
+      velocities,
     });
+    
+    Logger.DEBUG(`Piano: Loading velocity layer ${velocities}`);
     await instrument.load();
-    this.velocities *= 2;
-
+    Logger.DEBUG(`Piano: Loaded velocity layer ${velocities}`);
+    if (this.velocityIndex === 0) {
+      Logger.DEBUG(
+        'Piano: initial samples loaded in',
+        this.getSecondsFromLoad(),
+        'seconds'
+      );
+    }
+    
     if (this.activeKeys.size) {
       // active note(s), queue the swap for when there's nothing playing to avoid impacting current audio
-      this.onIdle = () => this.swap(instrument);
+      this.onIdle = () => this.swapInstrument(instrument);
       return;
     }
-
+    
     // piano isn't active, time to swap it some sweet new velocity samples
-    this.swap(instrument);
+    this.swapInstrument(instrument);
   }
-
-  private swap(instrument: DPiano) {
+  
+  private swapInstrument(instrument: DPiano) {
     // stop any ringing in the existing piano
     this.instrument?.stopAll();
     // make the swap, let the old instrument be garbage collected
     this.instrument = instrument.toDestination();
+    this.velocityIndex++;
     this.load();
+  }
+
+  private getSecondsFromLoad(): number {
+    return (Date.now() - this.loadStart) / 1000;
   }
 }

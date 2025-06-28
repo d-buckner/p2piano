@@ -19,7 +19,7 @@ export default defineConfig(({ mode }) => {
 
   if (!isProduction) {
     // for simple-peer's reliance on node polyfills (browserify)
-    define.global = 'window';
+    define.global = 'self';
   }
 
   return {
@@ -46,8 +46,17 @@ export default defineConfig(({ mode }) => {
     build: {
       sourcemap: 'hidden',
       rollupOptions: {
+        input: {
+          main: './index.html',
+          serviceWorker: './src/workers/serviceWorker.ts',
+        },
         output: {
-          entryFileNames: 'assets/[name].js',
+          entryFileNames: (chunkInfo) => {
+            if (chunkInfo.name === 'serviceWorker') {
+              return 'assets/serviceWorker.js';
+            }
+            return 'assets/[name].js';
+          },
           chunkFileNames: 'assets/[name].js',
           assetFileNames: 'assets/[name].[ext]'
         },
