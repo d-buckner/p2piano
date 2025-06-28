@@ -2,16 +2,20 @@ import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import ConfigProvider from './config/ConfigProvider';
 
 const PORT = 3001;
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+  // Validate environment variables before starting the application
+  ConfigProvider.validateEnvironment();
   
+  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+ 
   // Cookie support for sessions
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   await app.register(require('@fastify/cookie'), {
-    secret: process.env.COOKIE_SECRET || 'p2piano-cookie-secret-change-in-production',
+    secret: ConfigProvider.getCookieSecret(),
   });
 
   // Security headers
@@ -46,13 +50,8 @@ async function bootstrap() {
     },
   });
 
-  if (process.env.NODE_ENV !== 'production') {
-    app.enableCors();
-  } else {
-    app.enableCors({
-      origin: process.env.ALLOWED_ORIGINS?.split(',') || false,
-      credentials: true,
-    });
+  if (!ConfigProvider.isProduction()) {
+    app.enableCors({ credentials: true });
   }
 
   await app.listen(PORT, '0.0.0.0');

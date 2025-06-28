@@ -61,4 +61,27 @@ export default class SessionProvider {
   static async revokeAll(ipAddress: string) {
     await SessionCollection.deleteMany({ ipAddress });
   }
+
+  static async rotate(sessionId: string, ipAddress?: string): Promise<Session> {
+    // Get the existing session to validate it exists and extract metadata
+    const existingSession = await SessionProvider.get(sessionId, ipAddress);
+    
+    // Create a new session ID while preserving other session data
+    const newSessionId = uuidv4();
+    const now = new Date();
+    
+    const newSession: Session = {
+      sessionId: newSessionId,
+      createdAt: existingSession.createdAt, // Preserve original creation time
+      lastActivity: now,
+      ipAddress: existingSession.ipAddress,
+      userAgent: existingSession.userAgent,
+    };
+    
+    // Insert the new session and delete the old one atomically
+    await SessionCollection.insertOne(newSession);
+    await SessionCollection.deleteOne({ sessionId });
+    
+    return newSession;
+  }
 }

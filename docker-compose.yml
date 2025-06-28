@@ -17,9 +17,8 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-      - MONGO_URI=mongodb://root:password@database:27017
-      - ALLOWED_WS_ORIGINS=https://p2piano.com,https://www.p2piano.com
-      - ALLOWED_ORIGINS=https://p2piano.com,https://www.p2piano.com
+      - MONGO_URI=mongodb://${MONGO_USERNAME:-mongouser}:${MONGO_PASSWORD:-secure_mongo_pass_change_me}@database:27017
+      - COOKIE_SECRET=${COOKIE_SECRET:-secure_cookie_secret_change_me_at_least_32_chars}
     depends_on:
       database:
         condition: service_started
@@ -29,8 +28,8 @@ services:
     image: mongo
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-mongouser}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-secure_mongo_pass_change_me}
     ports:
       - "27017:27017"
 

@@ -24,6 +24,7 @@ import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
 
 import type { Server, Socket } from 'socket.io';
 import type { Session } from '../../entities/Session';
+import * as cookie from 'cookie';
 
 // Extend Socket to include session property
 declare module 'socket.io' {
@@ -91,7 +92,7 @@ export class Room {
 
       // Attach session to socket for later use
       socket.session = session;
-      
+
       const prevSocket = SessionRegistry.getSocket(session.sessionId);
       SessionRegistry.registerSession(session.sessionId, socket);
       // Disconnect existing connection if exists
@@ -196,32 +197,25 @@ export class Room {
       }
     }
 
-    // Check cookies
-    const cookies = this.parseCookies(headers?.cookie);
-    if (cookies?.sessionId) {
-      return cookies.sessionId;
+    // Check cookies using secure cookie parser
+    const cookieHeader = headers?.cookie;
+    if (cookieHeader) {
+      try {
+        const cookies = cookie.parse(cookieHeader);
+        if (cookies.sessionId) {
+          return cookies.sessionId;
+        }
+      } catch (error) {
+        // Invalid cookie format, continue to other methods
+      }
     }
 
     return null;
   }
 
   private getClientIP(socket: Socket): string | undefined {
-    return socket.handshake?.address || 
-           socket.conn?.remoteAddress || 
-           socket.request?.connection?.remoteAddress;
+    return socket.handshake?.address ||
+      socket.conn?.remoteAddress;
   }
 
-  private parseCookies(cookieHeader: string): Record<string, string> | null {
-    if (!cookieHeader) return null;
-    
-    const cookies: Record<string, string> = {};
-    cookieHeader.split(';').forEach(cookie => {
-      const [name, value] = cookie.trim().split('=');
-      if (name && value) {
-        cookies[name] = decodeURIComponent(value);
-      }
-    });
-    
-    return cookies;
-  }
 }

@@ -1,6 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import SessionProvider from '../entities/Session';
+import ConfigProvider from '../config/ConfigProvider';
 
 @Injectable()
 export class AutoSessionGuard implements CanActivate {
@@ -37,7 +38,7 @@ export class AutoSessionGuard implements CanActivate {
     // Set the session cookie using Fastify's cookie API
     response.cookie('sessionId', newSession.sessionId, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: ConfigProvider.isProduction(),
       sameSite: 'strict',
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
       path: '/',

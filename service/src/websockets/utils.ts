@@ -1,4 +1,5 @@
 import SessionRegistry from './SessionRegistry';
+import ConfigProvider from '../config/ConfigProvider';
 
 import type { Socket } from 'socket.io';
 import type { Session } from '../entities/Session';
@@ -12,10 +13,9 @@ declare module 'socket.io' {
 
 export const defaultWebSocketGatewayOptions = {
   namespace: 'api',
-  cors: {
-    origin: process.env.ALLOWED_WS_ORIGINS?.split(',') || process.env.ALLOWED_ORIGINS?.split(',') || false,
+  cors: !ConfigProvider.isProduction() ? {
     credentials: true,
-  },
+  } : false,
 };
 
 export function getSocketSessionId(socket: Socket) {
