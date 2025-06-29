@@ -1,14 +1,26 @@
 import SessionRegistry from './SessionRegistry';
+import ConfigProvider from '../config/ConfigProvider';
 
 import type { Socket } from 'socket.io';
+import type { Session } from '../entities/Session';
+
+// Extend Socket to include session property
+declare module 'socket.io' {
+  interface Socket {
+    session?: Session;
+  }
+}
 
 export const defaultWebSocketGatewayOptions = {
   namespace: 'api',
-  cors: true,
+  cors: !ConfigProvider.isProduction() ? {
+    credentials: true,
+  } : false,
 };
 
 export function getSocketSessionId(socket: Socket) {
-  return getSocketHandshakeQuery(socket).sessionId as string;
+  // Get sessionId from the session attached by auth guard
+  return socket.session?.sessionId || null;
 }
 
 export function getSocketRoomId(socket: Socket) {

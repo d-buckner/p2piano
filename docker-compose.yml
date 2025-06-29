@@ -18,6 +18,8 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
+      - MONGO_URI=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@database:27017
+      - COOKIE_SECRET=${COOKIE_SECRET}
       - MONGO_URI=${MONGO_URI}
     depends_on:
       database:
@@ -30,7 +32,6 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
-
 volumes:
   caddy_data:
   caddy_config:

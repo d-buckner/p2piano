@@ -1,5 +1,5 @@
 import { setStore, store } from '../app/store';
-import { ensureSession, getRoom } from '../clients/RoomClient';
+import { getRoom } from '../clients/RoomClient';
 import { Transport } from '../constants';
 import ClientPreferences from '../lib/ClientPreferences';
 import * as RoomActionBridge from '../lib/RoomActionBridge';
@@ -26,8 +26,6 @@ export async function joinRoom(roomId: string) {
         });
       });
     }
-
-    await ensureSession();
   } catch {
     isValid = false;
   }

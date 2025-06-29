@@ -1,13 +1,57 @@
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import ConfigProvider from './config/ConfigProvider';
 
 const PORT = 3001;
 
 async function bootstrap() {
+  // Validate environment variables before starting the application
+  ConfigProvider.validateEnvironment();
+  
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
-  if (process.env.NODE_ENV !== 'production') {
-    app.enableCors();
+ 
+  // Cookie support for sessions
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  await app.register(require('@fastify/cookie'), {
+    secret: ConfigProvider.getCookieSecret(),
+  });
+
+  // Security headers
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  await app.register(require('@fastify/helmet'), {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "ws:", "wss:"],
+      },
+    },
+  });
+
+  // Global validation pipe
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transformOptions: {
+      enableImplicitConversion: true,
+    },
+  }));
+
+  // Body size limit
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  app.register(require('@fastify/multipart'), {
+    limits: {
+      fileSize: 1024 * 1024, // 1MB
+    },
+  });
+
+  if (!ConfigProvider.isProduction()) {
+    app.enableCors({ credentials: true });
   }
 
   await app.listen(PORT, '0.0.0.0');

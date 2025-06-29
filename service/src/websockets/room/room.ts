@@ -8,6 +8,7 @@ import {
 import { Logger, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { WsThrottlerGuard } from '../../guards/throttler.guard';
+import { WsAuthGuard } from '../../auth/ws-auth.guard';
 import {
   broadcast,
   defaultWebSocketGatewayOptions,
@@ -17,10 +18,20 @@ import {
 import { RoomEvents, SocketEvents } from './events';
 import RoomEntity from '../../entities/Room';
 import SessionProvider from '../../entities/Session';
-import { UserUpdatePayload } from './payloads';
 import SessionRegistry from '../SessionRegistry';
+import { UserUpdateDto } from '../../dto/ws/user-update.dto';
+import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
 
 import type { Server, Socket } from 'socket.io';
+import type { Session } from '../../entities/Session';
+import * as cookie from 'cookie';
+
+// Extend Socket to include session property
+declare module 'socket.io' {
+  interface Socket {
+    session?: Session;
+  }
+}
 
 @WebSocketGateway(defaultWebSocketGatewayOptions)
 export class Room {
@@ -33,9 +44,9 @@ export class Room {
   }
 
   @Throttle({ default: { limit: 10, ttl: 30 } })
-  @UseGuards(WsThrottlerGuard)
+  @UseGuards(WsAuthGuard, WsThrottlerGuard)
   @SubscribeMessage(RoomEvents.USER_UPDATE)
-  async onUserUpdate(@MessageBody() payload: UserUpdatePayload, @ConnectedSocket() socket: Socket) {
+  async onUserUpdate(@MessageBody(new WsValidationPipe()) payload: UserUpdateDto, @ConnectedSocket() socket: Socket) {
     const roomId = getSocketRoomId(socket);
     const roomEntity = new RoomEntity(roomId);
     const roomData = await roomEntity.updateUser(payload);
@@ -54,60 +65,73 @@ export class Room {
   }
 
   async bootstrapConnection(socket: Socket) {
-    const {
-      displayName,
-      sessionId,
-      roomId,
-    } = getSocketMetadata(socket);
+    const { displayName, roomId } = getSocketMetadata(socket);
 
-    if (!roomId || !sessionId) {
-      Logger.warn(`User denied connection due to invalid metadata ${JSON.stringify({ roomId, userId: sessionId })}`);
+    if (!roomId) {
+      Logger.warn(`User denied connection due to missing roomId`);
       socket.disconnect();
       return;
     }
 
+    // Authenticate the WebSocket connection using the same logic as WsAuthGuard
     try {
-      await SessionProvider.get(sessionId);
-    } catch {
-      Logger.warn(`User denied connection due to invalid session ${sessionId}`);
-      socket.disconnect();
-      return;
-    }
-
-    const prevSocket = SessionRegistry.getSocket(sessionId);
-    SessionRegistry.registerSession(sessionId, socket);
-    // Disconnect existing connection if exists
-    prevSocket?.disconnect();
-
-    const roomEntity = new RoomEntity(roomId);
-
-    try {
-      // Retry logic for race condition handling in the case the room was just created
-      const roomData = await this.retryRoomJoin(roomEntity, sessionId, displayName as string, 5);
-
-      socket.join(roomId);
-      socket.on(SocketEvents.DISCONNECT, reason => this.destroyConnection(socket, reason));
-
-      if (prevSocket) {
-        // Client reconnect, no need to send connection events
+      const sessionId = this.extractSessionFromSocket(socket);
+      if (!sessionId) {
+        Logger.warn(`User denied connection - no sessionId found`);
+        socket.disconnect();
         return;
       }
 
-      broadcast(socket, RoomEvents.USER_CONNECT, {
-        userId: sessionId,
-        room: roomData,
-      });
+      const ipAddress = this.getClientIP(socket);
+      const session = await SessionProvider.get(sessionId, ipAddress);
+      if (!session) {
+        Logger.warn(`User denied connection due to invalid session ${sessionId}`);
+        socket.disconnect();
+        return;
+      }
 
-      socket.emit(RoomEvents.ROOM_JOIN, {
-        userId: sessionId,
-        room: roomData,
-      });
+      // Attach session to socket for later use
+      socket.session = session;
 
-      Logger.log(`Session ${sessionId} connected to room ${roomId}`);
-    } catch (err) {
-      console.error(err);
-      SessionRegistry.destroySession(sessionId);
+      const prevSocket = SessionRegistry.getSocket(session.sessionId);
+      SessionRegistry.registerSession(session.sessionId, socket);
+      // Disconnect existing connection if exists
+      prevSocket?.disconnect();
+
+      const roomEntity = new RoomEntity(roomId);
+
+      try {
+        // Retry logic for race condition handling in the case the room was just created
+        const roomData = await this.retryRoomJoin(roomEntity, session.sessionId, displayName as string, 5);
+
+        socket.join(roomId);
+        socket.on(SocketEvents.DISCONNECT, reason => this.destroyConnection(socket, reason));
+
+        if (prevSocket) {
+          // Client reconnect, no need to send connection events
+          return;
+        }
+
+        broadcast(socket, RoomEvents.USER_CONNECT, {
+          userId: session.sessionId,
+          room: roomData,
+        });
+
+        socket.emit(RoomEvents.ROOM_JOIN, {
+          userId: session.sessionId,
+          room: roomData,
+        });
+
+        Logger.log(`Session ${session.sessionId} connected to room ${roomId}`);
+      } catch (err) {
+        console.error(err);
+        SessionRegistry.destroySession(session.sessionId);
+        socket.disconnect();
+      }
+    } catch (error) {
+      Logger.warn(`User denied connection due to session error: ${error.message}`);
       socket.disconnect();
+      return;
     }
   }
 
@@ -156,4 +180,42 @@ export class Room {
 
     Logger.log(`Session ${sessionId} disconnected from room ${roomId} due to ${reason}`);
   }
+
+  private extractSessionFromSocket(socket: Socket): string | null {
+    // Check handshake auth
+    const auth = socket.handshake?.auth;
+    if (auth?.sessionId) {
+      return auth.sessionId;
+    }
+
+    // Check headers for Authorization
+    const headers = socket.handshake?.headers;
+    if (headers?.authorization) {
+      const authHeader = headers.authorization;
+      if (authHeader.startsWith('Bearer ')) {
+        return authHeader.substring(7);
+      }
+    }
+
+    // Check cookies using secure cookie parser
+    const cookieHeader = headers?.cookie;
+    if (cookieHeader) {
+      try {
+        const cookies = cookie.parse(cookieHeader);
+        if (cookies.sessionId) {
+          return cookies.sessionId;
+        }
+      } catch (error) {
+        // Invalid cookie format, continue to other methods
+      }
+    }
+
+    return null;
+  }
+
+  private getClientIP(socket: Socket): string | undefined {
+    return socket.handshake?.address ||
+      socket.conn?.remoteAddress;
+  }
+
 }
