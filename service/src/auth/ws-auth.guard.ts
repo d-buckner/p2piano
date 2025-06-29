@@ -36,8 +36,6 @@ export class WsAuthGuard implements CanActivate {
       return auth.sessionId;
     }
 
-    // Query parameters removed for security - sessions should only come from auth or headers
-
     // Check headers
     const headers = client.handshake?.headers;
     if (headers?.authorization) {
