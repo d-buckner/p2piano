@@ -6,7 +6,7 @@ import { DEFAULT_VELOCITY, type Note } from '../constants';
 import { selectUser, selectWorkspace } from '../selectors/workspaceSelectors';
 
 
-export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: string) {
+export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: string): string | undefined {
   if (!peerId) {
     PianoClient.keyDown(midi, velocity);
   }
@@ -43,9 +43,12 @@ export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: stri
       return newNotes;
     }
   });
+
+  // Return color for piano visualizer
+  return color;
 }
 
-export function keyUp(midi: number, peerId?: string) {
+export function keyUp(midi: number, peerId?: string): string | undefined {
   if (!peerId) {
     PianoClient.keyUp(midi);
   }
@@ -65,6 +68,9 @@ export function keyUp(midi: number, peerId?: string) {
     const filteredNotes = existingNotes.filter(note => note.peerId !== resolvedUserId);
     return filteredNotes.length > 0 ? filteredNotes : undefined;
   });
+
+  // keyUp doesn't need to return a color for visualization
+  return undefined;
 }
 
 function getResolvedUserId(userId?: string): string | undefined {

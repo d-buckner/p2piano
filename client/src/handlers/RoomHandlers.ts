@@ -53,7 +53,7 @@ export default class RoomHandlers {
 
   static roomJoinHandler(payload: RoomJoinPayload) {
     const { room, userId } = payload;
-    Object.values(room.users).forEach(u => {
+    Object.values(room.users ?? {}).forEach(u => {
       InstrumentRegistry.register(u.userId, u.instrument as InstrumentType);
     });
 
