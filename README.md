@@ -21,7 +21,7 @@ P2Piano addresses the fundamental challenge of network latency in collaborative 
 ### Using Docker (Recommended)
 
 ```bash
-git clone https://github.com/your-username/p2piano.git
+git clone https://github.com/d-buckner/p2piano.git
 cd p2piano
 npm run container:dev
 ```
