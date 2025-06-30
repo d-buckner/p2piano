@@ -13,9 +13,12 @@ declare module 'socket.io' {
 
 export const defaultWebSocketGatewayOptions = {
   namespace: 'api',
-  cors: !ConfigProvider.isProduction() ? {
-    credentials: true,
-  } : false,
+  cors: ConfigProvider.isProduction()
+    ? false
+    : {
+      credentials: true,
+      origin: 'http://localhost:5173',
+    },
 };
 
 export function getSocketSessionId(socket: Socket) {

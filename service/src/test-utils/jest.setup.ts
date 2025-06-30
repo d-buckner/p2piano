@@ -15,10 +15,19 @@ jest.mock('../clients/Database', () => ({
   },
 }));
 
-// Mock UUID to make tests deterministic
-jest.mock('uuid', () => ({
-  v4: jest.fn().mockReturnValue('550e8400-e29b-41d4-a716-446655440000'),
+// Mock MongoDB ObjectId
+jest.mock('mongodb', () => ({
+  ...jest.requireActual('mongodb'),
+  ObjectId: jest.fn().mockImplementation(() => ({
+    toString: () => '507f1f77bcf86cd799439011',
+  })),
 }));
+
+// Mock crypto.randomUUID for deterministic tests
+Object.defineProperty(global.crypto, 'randomUUID', {
+  value: jest.fn().mockReturnValue('550e8400-e29b-41d4-a716-446655440000'),
+  writable: true,
+});
 
 // Mock nanoid for deterministic room ID generation
 jest.mock('nanoid', () => ({

@@ -1,17 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import ConfigProvider from './config/ConfigProvider';
-// Using require for Fastify plugins due to TypeScript compatibility issues
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fastifyCookie = require('@fastify/cookie');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fastifyHelmet = require('@fastify/helmet');
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fastifyMultipart = require('@fastify/multipart');
-
-const PORT = 3001;
 
 async function bootstrap() {
   // Validate environment variables before starting the application
@@ -20,12 +12,14 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
  
   // Cookie support for sessions
-  await app.register(fastifyCookie, {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  await app.register(require('@fastify/cookie'), {
     secret: ConfigProvider.getCookieSecret(),
   });
 
   // Security headers
-  await app.register(fastifyHelmet, {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  await app.register(require('@fastify/helmet'), {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
@@ -47,18 +41,47 @@ async function bootstrap() {
     },
   }));
 
-  // Body size limit
-  await app.register(fastifyMultipart, {
-    limits: {
-      fileSize: 1024 * 1024, // 1MB
+
+  if (!ConfigProvider.isProduction()) {
+    app.enableCors({ 
+      credentials: true,
+      origin: 'http://localhost:5173'
+    });
+  }
+
+  // Set up Swagger documentation
+  const config = new DocumentBuilder()
+    .setTitle('P2Piano API')
+    .setDescription('Real-time collaborative piano platform API')
+    .setVersion('1.0')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'Session',
+        description: 'Enter your session ID',
+      },
+      'session',
+    )
+    .addCookieAuth('sessionId', {
+      type: 'apiKey',
+      in: 'cookie',
+      name: 'sessionId',
+      description: 'Session ID stored in cookie',
+    })
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
     },
   });
 
-  if (!ConfigProvider.isProduction()) {
-    app.enableCors({ credentials: true });
-  }
-
-  await app.listen(PORT, '0.0.0.0');
+  const port = ConfigProvider.getPort();
+  await app.listen(port, '0.0.0.0');
+  console.log(`🚀 P2Piano service listening on port ${port}`);
+  console.log(`📚 API documentation available at http://localhost:${port}/api`);
 }
 
 bootstrap();

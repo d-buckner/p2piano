@@ -22,7 +22,6 @@ export const selectIsLoading = (state: RootState) => state.workspace.isLoading;
 
 export const selectIsValid = (state: RootState) => state.workspace.isValid;
 
-// Additional selector functions
 export const selectUser = (userId: string) => (state: RootState) => 
   selectUsers(state)[userId];
 

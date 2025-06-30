@@ -22,10 +22,10 @@ import SessionRegistry from '../SessionRegistry';
 import { UserUpdateDto } from '../../dto/ws/user-update.dto';
 import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
 import { SessionExtractor } from '../../utils/session-extractor';
+import { WebSocketError, RoomError } from '../../errors';
 
 import type { Server, Socket } from 'socket.io';
 import type { Session } from '../../entities/Session';
-import * as cookie from 'cookie';
 
 // Extend Socket to include session property
 declare module 'socket.io' {
@@ -34,6 +34,18 @@ declare module 'socket.io' {
   }
 }
 
+/**
+ * WebSocket gateway handling real-time room operations.
+ * 
+ * Manages user connections, room joining/leaving, and user updates
+ * with proper authentication, throttling, and error handling.
+ * 
+ * Features:
+ * - Session-based authentication for WebSocket connections
+ * - Rate limiting to prevent abuse
+ * - Automatic reconnection handling
+ * - Room state synchronization
+ */
 @WebSocketGateway(defaultWebSocketGatewayOptions)
 export class Room {
   @WebSocketServer()
@@ -123,14 +135,25 @@ export class Room {
           room: roomData,
         });
 
-        Logger.log(`Session ${session.sessionId} connected to room ${roomId}`);
+        Logger.log(`Session ${session.sessionId} connected to room ${roomId}`, 'RoomGateway');
+        Logger.debug(`Room ${roomId} now has ${Object.keys(roomData.users || {}).length} users`, 'RoomGateway');
       } catch (err) {
-        Logger.error(`Failed to join room ${roomId} for session ${session.sessionId}: ${err.message}`, err.stack);
+        const roomError = new RoomError(`Failed to join room ${roomId}`, {
+          sessionId: session.sessionId,
+          roomId,
+          originalError: err.message,
+        });
+        Logger.error(roomError);
         SessionRegistry.destroySession(session.sessionId);
         socket.disconnect();
       }
     } catch (error) {
-      Logger.warn(`User denied connection due to session error: ${error.message}`);
+      const wsError = new WebSocketError('Session authentication failed', {
+        roomId,
+        clientIP: this.getClientIP(socket),
+        originalError: error.message,
+      });
+      Logger.warn(wsError);
       socket.disconnect();
       return;
     }
@@ -179,7 +202,8 @@ export class Room {
       Logger.error(`Failed to leave room for session ${sessionId}:`, err);
     }
 
-    Logger.log(`Session ${sessionId} disconnected from room ${roomId} due to ${reason}`);
+    Logger.log(`Session ${sessionId} disconnected from room ${roomId} due to ${reason}`, 'RoomGateway');
+    Logger.debug(`Disconnect reason: ${reason}`, 'RoomGateway');
   }
 
   private getClientIP(socket: Socket): string | undefined {

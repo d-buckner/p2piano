@@ -4,6 +4,7 @@ import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
 import { defineConfig } from 'vite'
 import { nodePolyfills } from 'vite-plugin-node-polyfills'
 import solidPlugin from 'vite-plugin-solid'
+import { serviceWorkerDevPlugin } from './vite-plugins/serviceWorkerDev'
 
 
 export default defineConfig(({ mode }) => {
@@ -15,6 +16,7 @@ export default defineConfig(({ mode }) => {
     'window.LOG_LEVEL': JSON.stringify(isProduction ? 'error' : 'debug'),
     'process.env.NODE_ENV': JSON.stringify(mode),
     'process.env.API_URL': JSON.stringify(isProduction ? '/api' : 'http://localhost:3001/api'),
+    'process.env.SERVICE_WORKER_PATH': JSON.stringify('/assets/serviceWorker.js'),
   }
 
   if (!isProduction) {
@@ -32,8 +34,10 @@ export default defineConfig(({ mode }) => {
           process: true,
           global: true,
         }
-      })
-    ],
+      }),
+      // serve transpiled service worker during development
+      !isProduction && serviceWorkerDevPlugin()
+    ].filter(Boolean),
     optimizeDeps: {
       esbuildOptions: {
         plugins: [

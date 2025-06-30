@@ -4,7 +4,7 @@ import { Session } from '../entities/Session';
 import { Socket } from 'socket.io';
 import { Request } from '../types/request';
 
-interface MockSessionOptions extends Partial<Session> {}
+type MockSessionOptions = Partial<Session>
 
 interface MockWsClientOptions {
   handshake?: {
@@ -22,7 +22,7 @@ interface MockWsClientOptions {
   [key: string]: any;
 }
 
-interface MockHttpRequestOptions extends Partial<Request> {}
+type MockHttpRequestOptions = Partial<Request>
 
 /**
  * Helper function to test validation with clear assertions

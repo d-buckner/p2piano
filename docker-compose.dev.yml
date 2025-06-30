@@ -18,7 +18,7 @@ services:
     restart: always
     environment:
       - NODE_ENV=development
-      - MONGO_URI=mongodb://database:27017/p2piano
+      - MONGO_URI=mongodb://root:password@database:27017/p2piano?authSource=admin
     depends_on:
       database:
         condition: service_started
@@ -27,9 +27,11 @@ services:
   database:
     image: mongo
     restart: always
-    command: mongod --noauth
     ports:
       - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
 volumes:
   caddy_data:
   caddy_config:

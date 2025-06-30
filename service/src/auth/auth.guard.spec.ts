@@ -17,7 +17,6 @@ describe('AuthGuard', () => {
     mockRequest = {
       headers: {},
       cookies: {},
-      query: {},
     };
 
     mockExecutionContext = {
@@ -32,7 +31,12 @@ describe('AuthGuard', () => {
   describe('valid sessions', () => {
     it('should allow access with valid session in Authorization header', async () => {
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      const mockSession = { sessionId, createdAt: new Date(), lastActivity: new Date() };
+      const mockSession = { 
+        _id: '507f1f77bcf86cd799439011',
+        sessionId, 
+        createdAt: new Date(), 
+        lastActivity: new Date() 
+      };
       
       mockRequest.headers.authorization = `Bearer ${sessionId}`;
       mockSessionProvider.get.mockResolvedValue(mockSession);
@@ -46,7 +50,12 @@ describe('AuthGuard', () => {
 
     it('should allow access with valid session in cookie', async () => {
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      const mockSession = { sessionId, createdAt: new Date(), lastActivity: new Date() };
+      const mockSession = { 
+        _id: '507f1f77bcf86cd799439011',
+        sessionId, 
+        createdAt: new Date(), 
+        lastActivity: new Date() 
+      };
       
       mockRequest.cookies.sessionId = sessionId;
       mockSessionProvider.get.mockResolvedValue(mockSession);

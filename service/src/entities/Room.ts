@@ -68,31 +68,40 @@ export default class Room {
   }
 
   async updateUser(user: User) {
-    const room = await this.get();
-    room.users[user.userId] = user;
-    await RoomCollection.updateOne(
+    // Optimized: Use findOneAndUpdate to update and return the result in one operation
+    const updatedRoom = await RoomCollection.findOneAndUpdate(
       { roomId: this.roomId },
       {
         $set: {
-          users: room.users,
+          [`users.${user.userId}`]: user,
         },
-      }
+      },
+      { returnDocument: 'after' }
     );
 
-    return room;
+    if (!updatedRoom) {
+      throw new RoomNotFoundError(`Room ${this.roomId} does not exist`);
+    }
+
+    return updatedRoom;
   }
 
   async leave(userId: string) {
-    const room = await this.get();
-    delete room.users?.[userId];
-    await RoomCollection.updateOne(
+    // Optimized: Use findOneAndUpdate with $unset to remove user and return result in one operation
+    const updatedRoom = await RoomCollection.findOneAndUpdate(
       { roomId: this.roomId },
       {
-        $set: {
-          users: room.users,
+        $unset: {
+          [`users.${userId}`]: "",
         },
-      }
+      },
+      { returnDocument: 'after' }
     );
-    return room;
+
+    if (!updatedRoom) {
+      throw new RoomNotFoundError(`Room ${this.roomId} does not exist`);
+    }
+
+    return updatedRoom;
   }
 }

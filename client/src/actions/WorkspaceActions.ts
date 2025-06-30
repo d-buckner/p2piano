@@ -19,7 +19,7 @@ export async function joinRoom(roomId: string) {
     if (!room) {
       const room = await getRoom(roomId);
       setStore('workspace', 'room', room);
-      Object.values(room.users).forEach(user => {
+      Object.values(room.users ?? {}).forEach(user => {
         setStore('connection', 'peerConnections', user.userId, {
           latency: 0,
           transport: Transport.WEBSOCKET,

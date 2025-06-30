@@ -8,7 +8,7 @@ async function registerServiceWorker(): Promise<void> {
   }
 
   try {
-    await navigator.serviceWorker.register('/assets/serviceWorker.js');
+    await navigator.serviceWorker.register(process.env.SERVICE_WORKER_PATH ?? '');
     Logger.DEBUG('Service worker registered');
 
     // Wait for the service worker to be ready

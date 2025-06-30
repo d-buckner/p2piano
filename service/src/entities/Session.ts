@@ -1,5 +1,6 @@
 import { SessionNotFoundError } from '../errors';
 import Database from '../clients/Database';
+import ConfigProvider from '../config/ConfigProvider';
 
 export type Session = {
   sessionId: string,
@@ -39,8 +40,8 @@ export default class SessionProvider {
       throw new SessionNotFoundError(`Session ${sessionId} does not exist`);
     }
 
-    // Validate IP address if provided and stored
-    if (ipAddress && session.ipAddress && session.ipAddress !== ipAddress) {
+    // Validate IP address if provided and stored (only in production)
+    if (ipAddress && session.ipAddress && session.ipAddress !== ipAddress && ConfigProvider.isProduction()) {
       throw new SessionNotFoundError(`Session ${sessionId} IP mismatch`);
     }
 

@@ -18,7 +18,7 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-      - MONGO_URI=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@database:27017
+      - MONGO_URI=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@database:27017/p2piano
       - COOKIE_SECRET=${COOKIE_SECRET}
       - MONGO_URI=${MONGO_URI}
     depends_on:

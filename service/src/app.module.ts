@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { WebsocketsModule } from './websockets/websockets.module';
+import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { WebsocketsModule } from './websockets/websockets.module';
     ]),
     WebsocketsModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, HealthController],
   providers: [
     {
       provide: APP_GUARD,

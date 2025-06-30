@@ -9,14 +9,16 @@ jest.mock('../clients/Database', () => ({
   },
 }));
 
-// Mock UUID
-jest.mock('uuid', () => ({
-  v4: jest.fn(),
-}));
+// Mock crypto.randomUUID instead of uuid package
+Object.defineProperty(global, 'crypto', {
+  value: {
+    randomUUID: jest.fn().mockReturnValue('550e8400-e29b-41d4-a716-446655440000'),
+  },
+});
 
 describe('SessionProvider', () => {
   let mockCollection: any;
-  let mockUuid: jest.Mock;
+  let mockRandomUUID: jest.Mock;
 
   beforeEach(() => {
     mockCollection = {
@@ -29,8 +31,7 @@ describe('SessionProvider', () => {
     };
 
     (Database.collection as jest.Mock).mockReturnValue(mockCollection);
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    mockUuid = require('uuid').v4 as jest.Mock;
+    mockRandomUUID = global.crypto.randomUUID as jest.Mock;
     
     jest.clearAllMocks();
   });
@@ -41,7 +42,7 @@ describe('SessionProvider', () => {
       const ipAddress = '192.168.1.1';
       const userAgent = 'Mozilla/5.0 (Test Browser)';
       
-      mockUuid.mockReturnValue(sessionId);
+      mockRandomUUID.mockReturnValue(sessionId);
       mockCollection.insertOne.mockResolvedValue({ insertedId: 'some-id' });
 
       const result = await SessionProvider.create(ipAddress, userAgent);
@@ -66,7 +67,7 @@ describe('SessionProvider', () => {
     it('should create a session without optional metadata', async () => {
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
       
-      mockUuid.mockReturnValue(sessionId);
+      mockRandomUUID.mockReturnValue(sessionId);
       mockCollection.insertOne.mockResolvedValue({ insertedId: 'some-id' });
 
       const result = await SessionProvider.create();
@@ -91,7 +92,7 @@ describe('SessionProvider', () => {
     it('should set createdAt and lastActivity to the same time', async () => {
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
       
-      mockUuid.mockReturnValue(sessionId);
+      mockRandomUUID.mockReturnValue(sessionId);
       mockCollection.insertOne.mockResolvedValue({ insertedId: 'some-id' });
 
       const result = await SessionProvider.create();
@@ -102,7 +103,7 @@ describe('SessionProvider', () => {
     it('should handle database insertion errors', async () => {
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
       
-      mockUuid.mockReturnValue(sessionId);
+      mockRandomUUID.mockReturnValue(sessionId);
       mockCollection.insertOne.mockRejectedValue(new Error('Database error'));
 
       await expect(SessionProvider.create()).rejects.toThrow('Database error');
@@ -216,7 +217,7 @@ describe('SessionProvider', () => {
       const longIp = 'a'.repeat(1000);
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
       
-      mockUuid.mockReturnValue(sessionId);
+      mockRandomUUID.mockReturnValue(sessionId);
       mockCollection.insertOne.mockResolvedValue({ insertedId: 'some-id' });
 
       const result = await SessionProvider.create(longIp);
@@ -228,7 +229,7 @@ describe('SessionProvider', () => {
       const longUserAgent = 'Mozilla/5.0 ' + 'a'.repeat(1000);
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
       
-      mockUuid.mockReturnValue(sessionId);
+      mockRandomUUID.mockReturnValue(sessionId);
       mockCollection.insertOne.mockResolvedValue({ insertedId: 'some-id' });
 
       const result = await SessionProvider.create(undefined, longUserAgent);
