@@ -58,19 +58,6 @@ describe('AuthGuard', () => {
       expect(mockRequest.session).toBe(mockSession);
     });
 
-    it('should allow access with valid session in query parameter', async () => {
-      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      const mockSession = { sessionId, createdAt: new Date(), lastActivity: new Date() };
-      
-      mockRequest.query.sessionId = sessionId;
-      mockSessionProvider.get.mockResolvedValue(mockSession);
-
-      const result = await guard.canActivate(mockExecutionContext);
-
-      expect(result).toBe(true);
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId);
-      expect(mockRequest.session).toBe(mockSession);
-    });
 
     it('should prioritize Authorization header over other methods', async () => {
       const headerSessionId = '550e8400-e29b-41d4-a716-446655440000';
@@ -174,16 +161,5 @@ describe('AuthGuard', () => {
       expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId);
     });
 
-    it('should fallback to query parameter when Authorization header and cookie are missing', async () => {
-      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      const mockSession = { sessionId, createdAt: new Date(), lastActivity: new Date() };
-      
-      mockRequest.query.sessionId = sessionId;
-      mockSessionProvider.get.mockResolvedValue(mockSession);
-
-      await guard.canActivate(mockExecutionContext);
-
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId);
-    });
   });
 });

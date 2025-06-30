@@ -35,8 +35,7 @@
     "cookie": "^1.0.2",
     "fastify": "^5.4.0",
     "mongodb": "^6.17.0",
-    "nanoid": "^5.1.5",
-    "uuid": "^11.1.0"
+    "nanoid": "^5.1.5"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.7",

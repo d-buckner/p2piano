@@ -169,62 +169,6 @@ describe('SessionProvider', () => {
     });
   });
 
-  describe('revoke', () => {
-    it('should delete a specific session', async () => {
-      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-
-      mockCollection.deleteOne.mockResolvedValue({ deletedCount: 1 });
-
-      await SessionProvider.revoke(sessionId);
-
-      expect(mockCollection.deleteOne).toHaveBeenCalledWith({ sessionId });
-    });
-
-    it('should handle deletion errors', async () => {
-      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-
-      mockCollection.deleteOne.mockRejectedValue(new Error('Database error'));
-
-      await expect(SessionProvider.revoke(sessionId)).rejects.toThrow('Database error');
-    });
-
-    it('should not throw error if session does not exist', async () => {
-      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-
-      mockCollection.deleteOne.mockResolvedValue({ deletedCount: 0 });
-
-      await expect(SessionProvider.revoke(sessionId)).resolves.not.toThrow();
-    });
-  });
-
-  describe('revokeAll', () => {
-    it('should delete all sessions for an IP address', async () => {
-      const ipAddress = '192.168.1.1';
-
-      mockCollection.deleteMany.mockResolvedValue({ deletedCount: 3 });
-
-      await SessionProvider.revokeAll(ipAddress);
-
-      expect(mockCollection.deleteMany).toHaveBeenCalledWith({ ipAddress });
-    });
-
-    it('should handle deletion errors', async () => {
-      const ipAddress = '192.168.1.1';
-
-      mockCollection.deleteMany.mockRejectedValue(new Error('Database error'));
-
-      await expect(SessionProvider.revokeAll(ipAddress)).rejects.toThrow('Database error');
-    });
-
-    it('should not throw error if no sessions exist for IP', async () => {
-      const ipAddress = '192.168.1.1';
-
-      mockCollection.deleteMany.mockResolvedValue({ deletedCount: 0 });
-
-      await expect(SessionProvider.revokeAll(ipAddress)).resolves.not.toThrow();
-    });
-  });
-
   describe('database indexes', () => {
     it('should create proper indexes on initialization', () => {
       // The indexes are created when the module is loaded

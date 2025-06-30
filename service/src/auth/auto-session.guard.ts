@@ -1,7 +1,9 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Observable } from 'rxjs';
+import { Request, Reply } from '../types/request';
 import SessionProvider from '../entities/Session';
 import ConfigProvider from '../config/ConfigProvider';
+import { SessionExtractor } from '../utils/session-extractor';
 
 @Injectable()
 export class AutoSessionGuard implements CanActivate {
@@ -13,14 +15,13 @@ export class AutoSessionGuard implements CanActivate {
     return this.ensureSession(request, response);
   }
 
-  private async ensureSession(request: any, response: any): Promise<boolean> {
-    const sessionId = this.extractSessionFromRequest(request);
+  private async ensureSession(request: Request, response: Reply): Promise<boolean> {
+    const sessionId = SessionExtractor.extractSessionId(request);
     
     if (sessionId) {
       // Try to get existing session
       try {
-        const ipAddress = request.ip || request.connection?.remoteAddress;
-        const session = await SessionProvider.get(sessionId, ipAddress);
+        const session = await SessionProvider.get(sessionId, request.ip);
         if (session) {
           request.session = session;
           return true;
@@ -31,9 +32,8 @@ export class AutoSessionGuard implements CanActivate {
     }
 
     // Create a new session
-    const ipAddress = request.ip || request.connection?.remoteAddress;
     const userAgent = request.headers['user-agent'];
-    const newSession = await SessionProvider.create(ipAddress, userAgent);
+    const newSession = await SessionProvider.create(request.ip, userAgent);
     
     // Set the session cookie using Fastify's cookie API
     response.cookie('sessionId', newSession.sessionId, {
@@ -48,21 +48,4 @@ export class AutoSessionGuard implements CanActivate {
     return true;
   }
 
-  private extractSessionFromRequest(request: any): string | null {
-    // Check session cookie
-    const sessionCookie = request.cookies?.sessionId;
-    if (sessionCookie) {
-      return sessionCookie;
-    }
-
-    // Check Authorization header
-    const authHeader = request.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      return authHeader.substring(7);
-    }
-
-    // Query parameters removed for security - sessions should only come from cookies or headers
-
-    return null;
-  }
 }

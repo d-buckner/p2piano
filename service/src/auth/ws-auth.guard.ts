@@ -1,14 +1,16 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
+import { Socket } from 'socket.io';
 import SessionProvider from '../entities/Session';
+import { SessionExtractor } from '../utils/session-extractor';
 
 @Injectable()
 export class WsAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const client = context.switchToWs().getClient();
+    const client = context.switchToWs().getClient<Socket>();
     
     try {
-      const sessionId = this.extractSessionFromClient(client);
+      const sessionId = SessionExtractor.extractSessionIdFromSocket(client);
       
       if (!sessionId) {
         throw new WsException('Session required');
@@ -29,28 +31,9 @@ export class WsAuthGuard implements CanActivate {
     }
   }
 
-  private extractSessionFromClient(client: any): string | null {
-    // Check handshake auth
-    const auth = client.handshake?.auth;
-    if (auth?.sessionId) {
-      return auth.sessionId;
-    }
 
-    // Check headers
-    const headers = client.handshake?.headers;
-    if (headers?.authorization) {
-      const authHeader = headers.authorization;
-      if (authHeader.startsWith('Bearer ')) {
-        return authHeader.substring(7);
-      }
-    }
-
-    return null;
-  }
-
-  private getClientIP(client: any): string | undefined {
+  private getClientIP(client: Socket): string | undefined {
     return client.handshake?.address || 
-           client.conn?.remoteAddress || 
-           client.request?.connection?.remoteAddress;
+           client.conn?.remoteAddress;
   }
 }

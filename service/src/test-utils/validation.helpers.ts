@@ -1,10 +1,34 @@
 import { validate, ValidationError } from 'class-validator';
+import { ExecutionContext } from '@nestjs/common';
+import { Session } from '../entities/Session';
+import { Socket } from 'socket.io';
+import { Request } from '../types/request';
+
+interface MockSessionOptions extends Partial<Session> {}
+
+interface MockWsClientOptions {
+  handshake?: {
+    auth: Record<string, any>;
+    query: Record<string, any>;
+    headers: Record<string, any>;
+    time: string;
+    address: string;
+    xdomain: boolean;
+    secure: boolean;
+    issued: number;
+    url: string;
+  };
+  disconnect?: jest.Mock;
+  [key: string]: any;
+}
+
+interface MockHttpRequestOptions extends Partial<Request> {}
 
 /**
  * Helper function to test validation with clear assertions
  */
 export async function expectValidationErrors(
-  dto: any,
+  dto: object,
   expectedErrorCount: number,
   expectedConstraints?: string[]
 ): Promise<ValidationError[]> {
@@ -28,7 +52,7 @@ export async function expectValidationErrors(
 /**
  * Helper function to test successful validation
  */
-export async function expectValidationSuccess(dto: any): Promise<void> {
+export async function expectValidationSuccess(dto: object): Promise<void> {
   const errors = await validate(dto);
   expect(errors).toHaveLength(0);
 }
@@ -85,7 +109,7 @@ export function getConstraintMessages(errors: ValidationError[]): string[] {
 /**
  * Helper to create mock session data
  */
-export function createMockSession(overrides: Partial<any> = {}) {
+export function createMockSession(overrides: MockSessionOptions = {}): Session {
   return {
     sessionId: createValidUUID(),
     createdAt: new Date(),
@@ -99,12 +123,19 @@ export function createMockSession(overrides: Partial<any> = {}) {
 /**
  * Helper to create mock WebSocket client
  */
-export function createMockWsClient(overrides: Partial<any> = {}) {
+export function createMockWsClient(overrides: MockWsClientOptions = {}): Partial<Socket> {
   return {
     handshake: {
       auth: {},
       query: {},
       headers: {},
+      time: new Date().toISOString(),
+      address: '127.0.0.1',
+      xdomain: false,
+      secure: false,
+      issued: Date.now(),
+      url: '/',
+      ...overrides.handshake,
     },
     disconnect: jest.fn(),
     ...overrides,
@@ -114,13 +145,12 @@ export function createMockWsClient(overrides: Partial<any> = {}) {
 /**
  * Helper to create mock HTTP request
  */
-export function createMockHttpRequest(overrides: Partial<any> = {}) {
+export function createMockHttpRequest(overrides: MockHttpRequestOptions = {}): Partial<Request> {
   return {
     headers: {},
     cookies: {},
     query: {},
     ip: '192.168.1.1',
-    connection: { remoteAddress: '192.168.1.1' },
     ...overrides,
   };
 }
@@ -128,21 +158,21 @@ export function createMockHttpRequest(overrides: Partial<any> = {}) {
 /**
  * Helper to create mock execution context for HTTP
  */
-export function createMockHttpExecutionContext(request: any = {}) {
+export function createMockHttpExecutionContext(request: MockHttpRequestOptions = {}): Partial<ExecutionContext> {
   return {
     switchToHttp: jest.fn().mockReturnValue({
       getRequest: () => createMockHttpRequest(request),
     }),
-  } as any;
+  } as Partial<ExecutionContext>;
 }
 
 /**
  * Helper to create mock execution context for WebSocket
  */
-export function createMockWsExecutionContext(client: any = {}) {
+export function createMockWsExecutionContext(client: MockWsClientOptions = {}): Partial<ExecutionContext> {
   return {
     switchToWs: jest.fn().mockReturnValue({
       getClient: () => createMockWsClient(client),
     }),
-  } as any;
+  } as Partial<ExecutionContext>;
 }

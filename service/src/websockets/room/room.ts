@@ -21,6 +21,7 @@ import SessionProvider from '../../entities/Session';
 import SessionRegistry from '../SessionRegistry';
 import { UserUpdateDto } from '../../dto/ws/user-update.dto';
 import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
+import { SessionExtractor } from '../../utils/session-extractor';
 
 import type { Server, Socket } from 'socket.io';
 import type { Session } from '../../entities/Session';
@@ -64,7 +65,7 @@ export class Room {
     this.server.off(SocketEvents.CONNECTION, this.bootstrapConnection);
   }
 
-  async bootstrapConnection(socket: Socket) {
+  async bootstrapConnection(socket: Socket): Promise<void> {
     const { displayName, roomId } = getSocketMetadata(socket);
 
     if (!roomId) {
@@ -75,7 +76,7 @@ export class Room {
 
     // Authenticate the WebSocket connection using the same logic as WsAuthGuard
     try {
-      const sessionId = this.extractSessionFromSocket(socket);
+      const sessionId = SessionExtractor.extractSessionIdFromSocket(socket);
       if (!sessionId) {
         Logger.warn(`User denied connection - no sessionId found`);
         socket.disconnect();
@@ -124,7 +125,7 @@ export class Room {
 
         Logger.log(`Session ${session.sessionId} connected to room ${roomId}`);
       } catch (err) {
-        console.error(err);
+        Logger.error(`Failed to join room ${roomId} for session ${session.sessionId}: ${err.message}`, err.stack);
         SessionRegistry.destroySession(session.sessionId);
         socket.disconnect();
       }
@@ -151,7 +152,7 @@ export class Room {
     }
   }
 
-  async destroyConnection(socket: Socket, reason: string) {
+  async destroyConnection(socket: Socket, reason: string): Promise<void> {
     const {
       sessionId,
       roomId,
@@ -179,38 +180,6 @@ export class Room {
     }
 
     Logger.log(`Session ${sessionId} disconnected from room ${roomId} due to ${reason}`);
-  }
-
-  private extractSessionFromSocket(socket: Socket): string | null {
-    // Check handshake auth
-    const auth = socket.handshake?.auth;
-    if (auth?.sessionId) {
-      return auth.sessionId;
-    }
-
-    // Check headers for Authorization
-    const headers = socket.handshake?.headers;
-    if (headers?.authorization) {
-      const authHeader = headers.authorization;
-      if (authHeader.startsWith('Bearer ')) {
-        return authHeader.substring(7);
-      }
-    }
-
-    // Check cookies using secure cookie parser
-    const cookieHeader = headers?.cookie;
-    if (cookieHeader) {
-      try {
-        const cookies = cookie.parse(cookieHeader);
-        if (cookies.sessionId) {
-          return cookies.sessionId;
-        }
-      } catch (error) {
-        // Invalid cookie format, continue to other methods
-      }
-    }
-
-    return null;
   }
 
   private getClientIP(socket: Socket): string | undefined {

@@ -31,6 +31,7 @@ export default class ConfigProvider {
     
     // In development, provide a warning if using default secret
     if (!ConfigProvider.isProduction() && !secret) {
+      // Note: We can't use Logger here as it may not be initialized yet during bootstrap
       console.warn('WARNING: Using default COOKIE_SECRET. Set COOKIE_SECRET environment variable for security.');
     }
     

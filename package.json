@@ -5,7 +5,7 @@
     "client:dev": "cd client && npm run dev",
     "client:build": "cd client && npm run build",
     "service:dev": "cd service && npm run start:dev",
-    "container:dev": "docker-compose -f docker-compose.yml -f docker-compose.dev.yml up --build",
+    "container:dev": "docker-compose -f docker-compose.dev.yml up --build",
     "container": "docker-compose -f docker-compose.yml up --build",
     "dev": "concurrently \"npm run client:dev\" \"npm run service:dev\"",
     "bootstrap": "npm install && cd client && npm install && cd ../service && npm install"

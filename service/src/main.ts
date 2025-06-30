@@ -3,6 +3,13 @@ import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import ConfigProvider from './config/ConfigProvider';
+// Using require for Fastify plugins due to TypeScript compatibility issues
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fastifyCookie = require('@fastify/cookie');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fastifyHelmet = require('@fastify/helmet');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const fastifyMultipart = require('@fastify/multipart');
 
 const PORT = 3001;
 
@@ -13,14 +20,12 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
  
   // Cookie support for sessions
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  await app.register(require('@fastify/cookie'), {
+  await app.register(fastifyCookie, {
     secret: ConfigProvider.getCookieSecret(),
   });
 
   // Security headers
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  await app.register(require('@fastify/helmet'), {
+  await app.register(fastifyHelmet, {
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
@@ -43,8 +48,7 @@ async function bootstrap() {
   }));
 
   // Body size limit
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  app.register(require('@fastify/multipart'), {
+  await app.register(fastifyMultipart, {
     limits: {
       fileSize: 1024 * 1024, // 1MB
     },

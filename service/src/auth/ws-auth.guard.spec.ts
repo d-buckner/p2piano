@@ -48,21 +48,6 @@ describe('WsAuthGuard', () => {
       expect(mockClient.disconnect).not.toHaveBeenCalled();
     });
 
-    it('should allow connection with valid session in query parameters', async () => {
-      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      const mockSession = { sessionId, createdAt: new Date(), lastActivity: new Date() };
-      
-      mockClient.handshake.query.sessionId = sessionId;
-      mockSessionProvider.get.mockResolvedValue(mockSession);
-
-      const result = await guard.canActivate(mockExecutionContext);
-
-      expect(result).toBe(true);
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId);
-      expect(mockClient.session).toBe(mockSession);
-      expect(mockClient.disconnect).not.toHaveBeenCalled();
-    });
-
     it('should allow connection with valid session in Authorization header', async () => {
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
       const mockSession = { sessionId, createdAt: new Date(), lastActivity: new Date() };
@@ -168,19 +153,6 @@ describe('WsAuthGuard', () => {
       
       mockClient.handshake.auth.sessionId = sessionId;
       mockClient.handshake.query.sessionId = 'different-session';
-      mockClient.handshake.headers.authorization = 'Bearer another-session';
-      mockSessionProvider.get.mockResolvedValue(mockSession);
-
-      await guard.canActivate(mockExecutionContext);
-
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId);
-    });
-
-    it('should fallback to query when auth is not available', async () => {
-      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      const mockSession = { sessionId, createdAt: new Date(), lastActivity: new Date() };
-      
-      mockClient.handshake.query.sessionId = sessionId;
       mockClient.handshake.headers.authorization = 'Bearer another-session';
       mockSessionProvider.get.mockResolvedValue(mockSession);
 

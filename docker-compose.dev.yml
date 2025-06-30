@@ -1,14 +1,35 @@
 services:
   web:
-    environment:
-        - NODE_ENV=development
-  service:
+    build: ./client
+    restart: always
+    depends_on:
+      service:
+        condition: service_started
     environment:
       - NODE_ENV=development
-      - MONGO_URI=mongodb://root:password@database:27017
-  database:
+      - SERVICE_ENDPOINT=service:3001
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    ports:
+      - "8345:8345"
+  service:
+    build: ./service
+    restart: always
     environment:
-      MONGO_INITDB_ROOT_PASSWORD: root
-      MONGO_INITDB_ROOT_USERNAME: password
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://database:27017/p2piano
+    depends_on:
+      database:
+        condition: service_started
+    ports:
+      - "3001:3001"
+  database:
+    image: mongo
+    restart: always
+    command: mongod --noauth
     ports:
       - "27017:27017"
+volumes:
+  caddy_data:
+  caddy_config:
