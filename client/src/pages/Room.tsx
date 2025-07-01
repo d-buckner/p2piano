@@ -2,8 +2,8 @@ import { A } from '@solidjs/router';
 import { onMount, Switch, Match } from 'solid-js';
 import { joinRoom } from '../actions/WorkspaceActions';
 import { useAppSelector } from '../app/hooks';
+import PianoRenderer from '../components/PianoRenderer';
 import RoomNav from '../components/RoomNav';
-import Visualization from '../components/Visualization';
 import { selectNotes } from '../selectors/noteSelectors';
 import { selectWorkspace } from '../selectors/workspaceSelectors';
 import * as styles from './Room.css';
@@ -41,7 +41,7 @@ const Room = () => {
             <RoomNav workspace={workspace()} />
           </nav>
           <main class={styles.visualArea}>
-            <Visualization notes={notes()} />
+            <PianoRenderer notes={notes()} />
           </main>
         </div>
       </Match>

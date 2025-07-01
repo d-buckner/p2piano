@@ -2,7 +2,7 @@ import { style } from '@vanilla-extract/css';
 import { vars } from '../styles/theme.css';
 
 
-export const rightOverlay = style({
+export const roomSidebar = style({
   zIndex: 1,
   color: vars.colors.foreground,
   backgroundColor: vars.colors.background,

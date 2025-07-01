@@ -1,8 +1,8 @@
 import PianoVisualizer from 'piano-visualizer';
 import { createSignal, createEffect } from 'solid-js';
 import * as NoteActions from '../actions/NoteActions';
-import RightOverlay from './RightOverlay';
-import * as styles from './Visualization.css';
+import * as styles from './PianoRenderer.css';
+import RoomSidebar from './RoomSidebar';
 import type { Note } from '../constants';
 
 
@@ -10,7 +10,7 @@ type Props = {
     notes: Note[],
 };
 
-export default function Visualization(props: Props) {
+export default function PianoRenderer(props: Props) {
     const [containerRef, setContainerRef] = createSignal<HTMLDivElement>();
     let renderer: PianoVisualizer | undefined;
     const activeNotes = new Map<number, Note>();
@@ -51,10 +51,10 @@ export default function Visualization(props: Props) {
 
     return (
         <div
-            class={styles.visualizationContainer}
+            class={styles.pianoRendererContainer}
             ref={setContainerRef}
         >
-            <RightOverlay />
+            <RoomSidebar />
         </div>
     );
 }

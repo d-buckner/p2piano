@@ -1,6 +1,6 @@
 import Navbar from '../components/Navbar';
 import Footer from './Footer';
-import * as styles from './GeneralPage.css';
+import * as styles from './PageLayout.css';
 import type { JSX } from 'solid-js';
 
 
@@ -8,7 +8,7 @@ type Props = {
     children: JSX.Element,
 }
 
-const GeneralPage = (props: Props) => (
+const PageLayout = (props: Props) => (
     <div class={styles.page}>
         <nav class={styles.header}>
             <Navbar />
@@ -22,4 +22,4 @@ const GeneralPage = (props: Props) => (
     </div>
 );
 
-export default GeneralPage;
+export default PageLayout;

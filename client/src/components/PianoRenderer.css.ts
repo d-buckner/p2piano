@@ -1,7 +1,7 @@
 import { style } from '@vanilla-extract/css';
 
 
-export const visualizationContainer = style({
+export const pianoRendererContainer = style({
   width: '100%',
   height: '100%',
   position: 'relative',

@@ -1,10 +1,10 @@
 import { removePeerConnection, setMaxLatency, updatePeerLatency } from '../../actions/ConnectionActions';
 import { store } from '../../app/store';
-import { getConnectedPeerIds } from '../../lib/ConnectionUtils';
 import Logger from '../../lib/Logger';
 import RollingAvg from '../../lib/RollingAvg';
 import RealTimeController from '../../networking/RealTimeController';
 import { ACTION } from '../../networking/transports/WebRtcController';
+import { selectConnectedPeerIds } from '../../selectors/connectionSelectors';
 import { selectUserId } from '../../selectors/workspaceSelectors';
 import { MAX_LATENCY_CUTOFF_MS, MIN_LATENCY_CUTOFF_MS } from './constants';
 
@@ -119,7 +119,7 @@ class AudioSyncCoordinator {
       return;
     }
 
-    getConnectedPeerIds().forEach(peerId => {
+    selectConnectedPeerIds(store).forEach(peerId => {
       const pingTime = performance.now();
       try {
         this.verifyMyUserId();

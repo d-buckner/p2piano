@@ -2,7 +2,7 @@ import { setStore, store } from '../app/store';
 import { getRoom } from '../clients/RoomClient';
 import { Transport } from '../constants';
 import ClientPreferences from '../lib/ClientPreferences';
-import * as RoomActionBridge from '../lib/RoomActionBridge';
+import * as EventCoordinator from '../lib/EventCoordinator';
 import WebRtcController from '../networking/transports/WebRtcController';
 import WebsocketController from '../networking/transports/WebsocketController';
 import { selectMyUser, selectWorkspace } from '../selectors/workspaceSelectors';
@@ -34,7 +34,7 @@ export async function joinRoom(roomId: string) {
   setStore('workspace', 'isLoading', false);
 
   if (isValid) {
-    RoomActionBridge.register();
+    EventCoordinator.register();
   }
 }
 
@@ -64,7 +64,7 @@ export function updateInstrument(instrument: InstrumentType) {
 }
 
 export function destroyRoom() {
-  RoomActionBridge.destroy();
+  EventCoordinator.destroy();
   WebRtcController.destroy();
   WebsocketController.destroy();
   // Reset workspace state

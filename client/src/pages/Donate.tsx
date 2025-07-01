@@ -1,9 +1,9 @@
-import GeneralPage from '../components/GeneralPage';
+import PageLayout from '../components/PageLayout';
 import * as styles from './Donate.css';
 
 
 const Donate = () => (
-  <GeneralPage>
+  <PageLayout>
     <div class={styles.donateContainer}>
       <div class={styles.donateContent}>
         <h1 class={styles.donateHeading}>
@@ -16,7 +16,7 @@ const Donate = () => (
         </p>
       </div>
     </div>
-  </GeneralPage>
+  </PageLayout>
 );
 
 export default Donate;

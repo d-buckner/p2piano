@@ -4,10 +4,10 @@ import SettingsModal from '../components/settings/SettingsModal';
 import ClientPreferences from '../lib/ClientPreferences';
 import registerServiceWorker from '../lib/registerServiceWorker';
 import Room from './Room';
-import * as styles from './RoomCheck.css';
+import * as styles from './RoomEntryGuard.css';
 
 
-export default function RoomCheck() {
+export default function RoomEntryGuard() {
   const [accepted, setAccepted] = createSignal<boolean>(
     AudioManager.active && !!ClientPreferences.getDisplayName()
   );

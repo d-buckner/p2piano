@@ -1,11 +1,11 @@
-import GeneralPage from '../components/GeneralPage';
-import RoomCard from '../components/RoomCard';
+import HomeContent from '../components/HomeContent';
+import PageLayout from '../components/PageLayout';
 
 
 const Home = () => (
-  <GeneralPage>
-    <RoomCard />
-  </GeneralPage>
+  <PageLayout>
+    <HomeContent />
+  </PageLayout>
 );
 
 export default Home;

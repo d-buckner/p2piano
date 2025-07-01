@@ -3,7 +3,7 @@ import { updateInstrument } from '../actions/WorkspaceActions';
 import { useAppSelector } from '../app/hooks';
 import { InstrumentType } from '../audio/instruments/Instrument';
 import { selectMyUser, selectUsers } from '../selectors/workspaceSelectors';
-import * as styles from './RightOverlay.css';
+import * as styles from './RoomSidebar.css';
 import type { User } from '../lib/workspaceTypes';
 
 
@@ -23,13 +23,13 @@ interface UserListProps {
   users?: Users,
 }
 
-export default function RightOverlay() {
+export default function RoomSidebar() {
   const user = useAppSelector(selectMyUser);
   const users = useAppSelector(selectUsers);
   const { instrument } = user() || {};
 
   return (
-    <div class={styles.rightOverlay}>
+    <div class={styles.roomSidebar}>
       <InstrumentSelect instrument={instrument} />
       <UsersList users={users()} />
     </div>

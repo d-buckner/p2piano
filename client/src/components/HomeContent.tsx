@@ -3,10 +3,10 @@ import { createSignal } from 'solid-js';
 import { setRoom } from '../actions/RoomActions';
 import AudioManager from '../audio/AudioManager';
 import { createNewRoom, getRoom } from '../clients/RoomClient';
-import * as styles from './RoomCard.css';
+import * as styles from './HomeContent.css';
 
 
-export default function RoomCard() {
+export default function HomeContent() {
   const [isRoomError, setRoomError] = createSignal(false);
   const [isRoomCreating, setRoomCreating] = createSignal(false);
   const navigate = useNavigate();

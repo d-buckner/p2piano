@@ -1,6 +1,7 @@
+import { store } from '../app/store';
 import { Transport } from '../constants';
-import { getConnectedPeerIds, getPeerConnection } from '../lib/ConnectionUtils';
 import Logger from '../lib/Logger';
+import { selectConnectedPeerIds, selectPeerConnection } from '../selectors/connectionSelectors';
 import AbstractNetworkController, {
   type Message,
   type MessageHandler,
@@ -41,7 +42,7 @@ export default class RealTimeController extends AbstractNetworkController {
   public broadcast<T extends Message>(action: string, message: T) {
     const websocketPeerIds: string[] = [];
 
-    getConnectedPeerIds().forEach((peerId: string) => {
+    selectConnectedPeerIds(store).forEach((peerId: string) => {
       this.sendWithFallback(peerId, action, message, () => {
         websocketPeerIds.push(peerId);
       });
@@ -86,7 +87,7 @@ export default class RealTimeController extends AbstractNetworkController {
     message: T,
     fallback: () => void,
   ) {
-    if (getPeerConnection(peerId).transport === Transport.WEBRTC) {
+    if (selectPeerConnection(peerId)(store).transport === Transport.WEBRTC) {
       try {
         this.webrtcController.sendToPeer(peerId, action, message);
         return;
