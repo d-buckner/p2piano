@@ -20,7 +20,10 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "analyze": "vite-bundle-visualizer"
+    "analyze": "vite-bundle-visualizer",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
@@ -31,15 +34,18 @@
     "@types/webmidi": "^2.1.0",
     "@vanilla-extract/css": "^1.17.4",
     "@vanilla-extract/vite-plugin": "^5.0.7",
+    "@vitest/ui": "^3.2.4",
     "eslint": "^9.29.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-solid": "^0.14.5",
     "globals": "^16.0.0",
+    "happy-dom": "^18.0.1",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.30.1",
     "vite": "^6.3.5",
     "vite-bundle-visualizer": "^1.2.1",
     "vite-plugin-node-polyfills": "^0.23.0",
-    "vite-plugin-solid": "^2.11.7"
+    "vite-plugin-solid": "^2.11.7",
+    "vitest": "^3.2.4"
   }
 }

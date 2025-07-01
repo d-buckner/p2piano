@@ -4,6 +4,7 @@ import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
 import { defineConfig } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import solidPlugin from 'vite-plugin-solid';
+/// <reference types="vitest" />
 
 
 export default defineConfig(({ mode }) => {
@@ -44,6 +45,11 @@ export default defineConfig(({ mode }) => {
       }
     },
     define,
+    test: {
+      environment: 'happy-dom',
+      globals: true,
+      setupFiles: [],
+    },
     build: {
       sourcemap: 'hidden',
       rollupOptions: {
