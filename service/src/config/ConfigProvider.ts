@@ -67,8 +67,7 @@ export default class ConfigProvider {
     const secret = process.env.COOKIE_SECRET;
     
     if (ConfigProvider.isProduction() && !secret) {
-        console.warn('WARNING: Using default COOKIE_SECRET. Set COOKIE_SECRET environment variable for security.');
-      // throw new Error('COOKIE_SECRET environment variable is required in production');
+      throw new Error('COOKIE_SECRET environment variable is required in production');
     }
     
     // In development, provide a warning if using default secret
@@ -114,8 +113,8 @@ export default class ConfigProvider {
       errors.push('MONGO_URI must be a valid MongoDB connection string');
     }
     
-    // if (errors.length > 0) {
-    //   throw new Error(`Environment validation failed:\n${errors.map(error => `  - ${error}`).join('\n')}`);
-    // }
+    if (errors.length > 0) {
+      throw new Error(`Environment validation failed:\n${errors.map(error => `  - ${error}`).join('\n')}`);
+    }
   }
 }

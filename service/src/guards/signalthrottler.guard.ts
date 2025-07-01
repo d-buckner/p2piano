@@ -1,11 +1,11 @@
 import { Injectable, ExecutionContext, Logger } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
 import { ThrottlerModuleOptions, ThrottlerStorage } from '@nestjs/throttler';
 import { Reflector } from '@nestjs/core';
+import { BaseWsThrottlerGuard } from './base-ws-throttler.guard';
 
 @Injectable()
-export class SignalThrottlerGuard extends ThrottlerGuard {
-  private readonly logger = new Logger(SignalThrottlerGuard.name);
+export class SignalThrottlerGuard extends BaseWsThrottlerGuard {
+  protected readonly logger = new Logger(SignalThrottlerGuard.name);
 
   private readonly WEBRTC_LIMITS = {
     'ice-candidate': { limit: 600, ttl: 60000, burst: 100, burstTtl: 10000 },
@@ -25,7 +25,7 @@ export class SignalThrottlerGuard extends ThrottlerGuard {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const wsContext = context.switchToWs();
     const client = wsContext.getClient();
-    const ip = client.conn.remoteAddress;
+    const ip = this.getClientIdentifier(client);
     const data = wsContext.getData();
     const signalType = data?.signalData?.type || 'default';
     const config = this.WEBRTC_LIMITS[signalType] || this.WEBRTC_LIMITS.default;
@@ -44,9 +44,12 @@ export class SignalThrottlerGuard extends ThrottlerGuard {
         `🚫 Signal BURST limit exceeded for ${signalType} from ${ip}`,
       );
       client.emit('exception', {
-        status: 429,
+        status: 'error',
+        code: 429,
         message: `Signal burst rate limit exceeded for ${signalType}. Please slow down.`,
+        event: context.getHandler().name,
         signalType,
+        timestamp: new Date().toISOString(),
       });
       return false;
     }
@@ -65,9 +68,12 @@ export class SignalThrottlerGuard extends ThrottlerGuard {
         `🚫 Signal MAIN limit exceeded for ${signalType} from ${ip}`,
       );
       client.emit('exception', {
-        status: 429,
+        status: 'error',
+        code: 429,
         message: `Signal rate limit exceeded for ${signalType}. Please slow down.`,
+        event: context.getHandler().name,
         signalType,
+        timestamp: new Date().toISOString(),
       });
       return false;
     }
