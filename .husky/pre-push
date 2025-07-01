@@ -1,0 +1,35 @@
+# Get the branch being pushed to
+remote="$1"
+url="$2"
+
+# Read from stdin to get refs being pushed
+while read local_ref local_sha remote_ref remote_sha; do
+  # Extract branch name from remote_ref (refs/heads/branch-name)
+  branch=$(echo "$remote_ref" | sed 's|refs/heads/||')
+  
+  # Only run checks when pushing to main branch
+  if [ "$branch" = "main" ]; then
+    echo "🔍 Running pre-push checks for main branch..."
+    cd client && npm run precommit
+    
+    # Check if the command failed
+    if [ $? -ne 0 ]; then
+      echo ""
+      echo "❌ Pre-push checks failed!"
+      echo ""
+      echo "💡 To fix this:"
+      echo "  1. Review the test failures or coverage issues above"
+      echo "  2. Fix any failing tests"
+      echo "  3. If coverage dropped, either:"
+      echo "     - Write more tests to improve coverage, or"
+      echo "     - Run 'npm run coverage:update' to accept current levels"
+      echo "  4. Commit any fixes and try pushing again"
+      echo ""
+      exit 1
+    fi
+    
+    echo "✅ Pre-push checks passed!"
+  else
+    echo "⏭️  Skipping pre-push checks for branch: $branch"
+  fi
+done
