@@ -12,7 +12,7 @@ import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
 @WebSocketGateway(defaultWebSocketGatewayOptions)
 export class Notes {
     @Throttle({ default: { limit: 300, ttl: 10000 } })
-    @UseGuards(WsAuthGuard, WsThrottlerGuard)
+    @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(NoteEvents.KEY_DOWN)
     onKeyDown(@MessageBody(new WsValidationPipe()) payload: NoteOnDto, @ConnectedSocket() socket: Socket) {
         broadcastToSubset(socket, payload.targetUserIds, NoteEvents.KEY_DOWN, {
@@ -22,7 +22,7 @@ export class Notes {
     }
 
     @Throttle({ default: { limit: 400, ttl: 10000 } })
-    @UseGuards(WsAuthGuard, WsThrottlerGuard)
+    @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(NoteEvents.KEY_UP)
     onKeyUp(@MessageBody(new WsValidationPipe()) payload: NoteOffDto, @ConnectedSocket() socket: Socket) {
         broadcastToSubset(socket, payload.targetUserIds, NoteEvents.KEY_UP, { note: payload.note });

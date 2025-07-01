@@ -57,7 +57,7 @@ export class Room {
   }
 
   @Throttle({ default: { limit: 10, ttl: 30 } })
-  @UseGuards(WsAuthGuard, WsThrottlerGuard)
+  @UseGuards(WsThrottlerGuard)
   @SubscribeMessage(RoomEvents.USER_UPDATE)
   async onUserUpdate(@MessageBody(new WsValidationPipe()) payload: UserUpdateDto, @ConnectedSocket() socket: Socket) {
     const roomId = getSocketRoomId(socket);

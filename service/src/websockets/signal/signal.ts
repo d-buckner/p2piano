@@ -12,7 +12,7 @@ import type { Socket } from 'socket.io';
 
 @WebSocketGateway(defaultWebSocketGatewayOptions)
 export class Signal {
-  @UseGuards(WsAuthGuard, SignalThrottlerGuard) 
+  @UseGuards(SignalThrottlerGuard) 
   @SubscribeMessage(SignalEvents.SIGNAL)
   onSignal(@MessageBody(new WsValidationPipe()) payload: SignalPayloadDto, @ConnectedSocket() socket: Socket) {
     const userId = getSocketSessionId(socket);

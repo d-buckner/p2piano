@@ -93,7 +93,14 @@ export default class Piano implements Instrument {
     // make the swap, let the old instrument be garbage collected
     this.instrument = instrument.toDestination();
     this.velocityIndex++;
-    this.load();
+    
+    // Load next layer when browser is idle to prevent freezing with multiple users
+    requestIdleCallback(() => {
+      // Start async loading without blocking the idle callback
+      this.load().catch(error => {
+        Logger.ERROR('Piano sample loading failed:', error);
+      });
+    }, { timeout: 5000 });
   }
 
   private getSecondsFromLoad(): number {

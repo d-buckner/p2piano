@@ -43,6 +43,11 @@ export class SignalThrottlerGuard extends ThrottlerGuard {
       this.logger.warn(
         `🚫 Signal BURST limit exceeded for ${signalType} from ${ip}`,
       );
+      client.emit('exception', {
+        status: 429,
+        message: `Signal burst rate limit exceeded for ${signalType}. Please slow down.`,
+        signalType,
+      });
       return false;
     }
 
@@ -59,6 +64,11 @@ export class SignalThrottlerGuard extends ThrottlerGuard {
       this.logger.warn(
         `🚫 Signal MAIN limit exceeded for ${signalType} from ${ip}`,
       );
+      client.emit('exception', {
+        status: 429,
+        message: `Signal rate limit exceeded for ${signalType}. Please slow down.`,
+        signalType,
+      });
       return false;
     }
 

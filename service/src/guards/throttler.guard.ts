@@ -23,7 +23,13 @@ export class WsThrottlerGuard extends ThrottlerGuard {
       `🚫 WebSocket throttle limit exceeded for ${eventName} from ${ip}`,
     );
 
-    // Instead of throwing an HTTP exception, return false for WebSocket
+    // Emit 429 exception to the client
+    client.emit('exception', {
+      status: 429,
+      message: 'Rate limit exceeded. Please slow down your requests.',
+      event: eventName,
+    });
+
     return Promise.resolve();
   }
 }

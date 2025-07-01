@@ -34,7 +34,13 @@ export default class WebsocketController extends AbstractNetworkController {
     });
     this.on(WEBSOCKET_ACTIONS.USER_CONNECT, this.onUserConnect);
     this.on(WEBSOCKET_ACTIONS.USER_DISCONNECT, this.onUserDisconnect);
-    this.on('exception', () => Logger.ERROR('You have exceeded websocket message limits, please slow down!'));
+    this.on('exception', (error: Error & { status?: number }) => {
+      if (error?.status === 429) {
+        Logger.ERROR('You have exceeded websocket message limits, please slow down!');
+        return;
+      }
+      Logger.ERROR('WebSocket error:', error?.message || error);
+    });
   }
 
   public static getInstance(): WebsocketController {
