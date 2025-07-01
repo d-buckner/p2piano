@@ -18,12 +18,13 @@ P2Piano addresses the fundamental challenge of network latency in collaborative 
 
 ## Quick Start
 
-Note: you'll need podman-compose or docker-compose installed locally
+**Prerequisites:** Ensure you have `podman-compose` or `docker-compose` installed locally.
 
 ```bash
 git clone https://github.com/d-buckner/p2piano.git
 cd p2piano
-npm run dev
+npm run bootstrap  # Install dependencies
+npm run dev        # Start development environment
 ```
 
 Access the application at `http://localhost:5173`
