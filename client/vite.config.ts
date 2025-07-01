@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import replace from '@rollup/plugin-replace';
 import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
@@ -34,7 +36,28 @@ export default defineConfig(({ mode }) => {
           process: true,
           global: true,
         }
-      })
+      }),
+      {
+        name: 'serve-service-worker',
+        configureServer(server) {
+          server.middlewares.use((req, res, next) => {
+            if (req.url === '/assets/serviceWorker.js') {
+              const filePath = path.join(__dirname, 'dist', 'assets', 'serviceWorker.js');
+              
+              if (fs.existsSync(filePath)) {
+                res.setHeader('Content-Type', 'application/javascript');
+                res.setHeader('Cache-Control', 'no-cache');
+                res.end(fs.readFileSync(filePath, 'utf-8'));
+              } else {
+                res.statusCode = 404;
+                res.end('Service worker not found. Please run build first.');
+              }
+              return;
+            }
+            next();
+          });
+        },
+      },
     ],
     optimizeDeps: {
       esbuildOptions: {
