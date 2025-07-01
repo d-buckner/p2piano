@@ -9,7 +9,8 @@
     "container": "podman-compose -f docker-compose.yml up --build",
     "dev": "node scripts/dev.js",
     "servers:dev": "concurrently \"npm run client:dev\" \"npm run service:dev\"",
-    "bootstrap": "npm install && cd client && npm install && cd ../service && npm install"
+    "bootstrap": "npm install && cd client && npm install && cd ../service && npm install",
+    "prepare": "husky"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

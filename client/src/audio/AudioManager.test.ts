@@ -16,6 +16,11 @@ describe('AudioManager', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
+    // @ts-expect-error private property
+    AudioManager.state = 'inactive';
+    // @ts-expect-error private property
+    AudioManager.activeCallbacks = [];
+    
     mockToneStart.mockResolvedValue(undefined);
     mockToneContext.mockImplementation(() => ({}));
   });

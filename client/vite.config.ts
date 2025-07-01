@@ -6,6 +6,7 @@ import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
 import { defineConfig } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import solidPlugin from 'vite-plugin-solid';
+import coverageThresholds from './coverage.thresholds.json';
 /// <reference types="vitest" />
 
 
@@ -72,6 +73,29 @@ export default defineConfig(({ mode }) => {
       environment: 'happy-dom',
       globals: true,
       setupFiles: [],
+      coverage: {
+        provider: 'v8',
+        reporter: ['text', 'json', 'html', 'json-summary'],
+        exclude: [
+          'node_modules/**',
+          'dist/**',
+          'html/**',
+          'coverage/**',
+          'scripts/**',
+          '**/*.d.ts',
+          '**/*.config.*',
+          '**/*.css.ts',
+          '**/index.tsx',
+          '**/index.ts',
+          'src/styles/**',
+          'src/workers/serviceWorker.ts',
+          '**/*.test.ts',
+          '**/*.test.tsx',
+          '**/*.spec.ts',
+          '**/*.spec.tsx',
+        ],
+        thresholds: coverageThresholds,
+      },
     },
     build: {
       sourcemap: 'hidden',
