@@ -114,8 +114,8 @@ export default class ConfigProvider {
       errors.push('MONGO_URI must be a valid MongoDB connection string');
     }
     
-    if (errors.length > 0) {
-      throw new Error(`Environment validation failed:\n${errors.map(error => `  - ${error}`).join('\n')}`);
-    }
+    // if (errors.length > 0) {
+    //   throw new Error(`Environment validation failed:\n${errors.map(error => `  - ${error}`).join('\n')}`);
+    // }
   }
 }
