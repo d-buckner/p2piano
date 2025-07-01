@@ -1,5 +1,5 @@
 import { Injectable, Logger, ExecutionContext } from '@nestjs/common';
-import { ThrottlerGuard, ThrottlerLimitDetail } from '@nestjs/throttler';
+import { ThrottlerGuard } from '@nestjs/throttler';
 
 @Injectable()
 export abstract class BaseWsThrottlerGuard extends ThrottlerGuard {
@@ -12,7 +12,6 @@ export abstract class BaseWsThrottlerGuard extends ThrottlerGuard {
 
   protected async throwThrottlingException(
     context: ExecutionContext,
-    throttlerLimitDetail: ThrottlerLimitDetail,
   ): Promise<void> {
     const client = context.switchToWs().getClient();
     const eventName = context.getHandler().name;
@@ -22,7 +21,7 @@ export abstract class BaseWsThrottlerGuard extends ThrottlerGuard {
       `🚫 WebSocket throttle limit exceeded for ${eventName} from ${clientId}`,
     );
 
-    client.emit('exception', this.buildErrorResponse(context, throttlerLimitDetail));
+    client.emit('exception', this.buildErrorResponse(context));
     return Promise.resolve();
   }
 
@@ -30,7 +29,7 @@ export abstract class BaseWsThrottlerGuard extends ThrottlerGuard {
     return client.handshake?.address || client.id || 'unknown';
   }
 
-  protected buildErrorResponse(context: ExecutionContext, throttlerLimitDetail: ThrottlerLimitDetail) {
+  protected buildErrorResponse(context: ExecutionContext) {
     return {
       status: 'error',
       code: 429,

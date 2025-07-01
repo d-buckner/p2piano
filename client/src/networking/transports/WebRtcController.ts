@@ -1,6 +1,6 @@
 import SimplePeer from 'simple-peer';
 import { updatePeerTransport } from '../../actions/ConnectionActions';
-import { Transport, WEBRTC_OPTIONS } from '../../constants';
+import { Transport } from '../../constants';
 import AbstractNetworkController, { type Message } from '../AbstractNetworkController';
 import WebsocketController from './WebsocketController';
 
@@ -105,7 +105,7 @@ export default class WebRtcController extends AbstractNetworkController {
   private addPeer(userId: string) {
     const p = new SimplePeer({
       initiator: this.initiator,
-      ...WEBRTC_OPTIONS,
+      trickle: false,
     });
 
     p.on(PEER_EVENT.CONNECT, () => {
@@ -114,7 +114,7 @@ export default class WebRtcController extends AbstractNetworkController {
     });
 
     p.on(PEER_EVENT.SIGNAL, signalData => {
-      this.websocketController.broadcast(ACTION.SIGNAL, {
+      this.websocketController.sendToPeer(userId, ACTION.SIGNAL, {
         userId,
         signalData,
       });

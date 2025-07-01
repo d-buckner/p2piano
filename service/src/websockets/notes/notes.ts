@@ -3,7 +3,6 @@ import { Socket } from 'socket.io';
 import { UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { WsThrottlerGuard } from '../../guards/throttler.guard';
-import { WsAuthGuard } from '../../auth/ws-auth.guard';
 import { NoteEvents } from './events';
 import { broadcastToSubset, defaultWebSocketGatewayOptions } from '../utils';
 import { NoteOnDto, NoteOffDto } from '../../dto/ws/note.dto';

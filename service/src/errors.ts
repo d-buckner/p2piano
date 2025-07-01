@@ -5,11 +5,8 @@
  * for different failure scenarios in HTTP and WebSocket contexts.
  */
 
-import { Logger } from '@nestjs/common';
 
-/**
- * Base application error with standard properties.
- */
+// Base application error with standard properties.
 export abstract class AppError extends Error {
   abstract readonly code: string;
   abstract readonly statusCode: number;

@@ -1,7 +1,6 @@
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
-import { UseGuards } from '@nestjs/common';
+import { UseGuards, Logger } from '@nestjs/common';
 import { SignalThrottlerGuard } from '../../guards/signalthrottler.guard';
-import { WsAuthGuard } from '../../auth/ws-auth.guard';
 import { SignalEvents } from './events';
 import { defaultWebSocketGatewayOptions, getSocketSessionId } from '../utils';
 import SessionRegistry from '../SessionRegistry';
@@ -12,14 +11,55 @@ import type { Socket } from 'socket.io';
 
 @WebSocketGateway(defaultWebSocketGatewayOptions)
 export class Signal {
+  private readonly logger = new Logger(Signal.name);
+
   @UseGuards(SignalThrottlerGuard) 
   @SubscribeMessage(SignalEvents.SIGNAL)
   onSignal(@MessageBody(new WsValidationPipe()) payload: SignalPayloadDto, @ConnectedSocket() socket: Socket) {
-    const userId = getSocketSessionId(socket);
-    const socketId = SessionRegistry.getSocket(payload.userId)?.id;
-    socket.to(socketId).emit(SignalEvents.SIGNAL, {
-      signalData: payload.signalData,
-      userId,
-    });
+    try {
+      const userId = getSocketSessionId(socket);
+      if (!userId) {
+        this.logger.warn('Signal received from unauthenticated socket', { socketId: socket.id });
+        return;
+      }
+
+      const targetSocket = SessionRegistry.getSocket(payload.userId);
+      if (!targetSocket) {
+        this.logger.debug('Target user not found for signal', { 
+          from: userId, 
+          to: payload.userId,
+          signalType: payload.signalData.type 
+        });
+        return;
+      }
+
+      socket.to(targetSocket.id).emit(SignalEvents.SIGNAL, {
+        signalData: payload.signalData,
+        userId,
+      });
+
+      this.logger.debug('WebRTC signal routed successfully', {
+        from: userId,
+        to: payload.userId,
+        signalType: payload.signalData.type,
+        targetSocketId: targetSocket.id
+      });
+
+    } catch (error) {
+      this.logger.error('Error processing WebRTC signal', {
+        error: error.message,
+        socketId: socket.id,
+        targetUserId: payload.userId,
+        signalType: payload.signalData.type
+      });
+      
+      socket.emit('exception', {
+        status: 'error',
+        code: 500,
+        message: 'Failed to process WebRTC signal',
+        event: SignalEvents.SIGNAL,
+        timestamp: new Date().toISOString(),
+      });
+    }
   }
 }

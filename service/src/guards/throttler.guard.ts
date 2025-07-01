@@ -18,6 +18,7 @@ export class WsThrottlerGuard extends ThrottlerGuard {
       await this.throwThrottlingException(context, {
         limit, ttl, key, tracker, totalHits, timeToExpire, isBlocked, timeToBlockExpire,
       });
+      return false; // This should prevent handler execution
     }
     
     return true;

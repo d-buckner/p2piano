@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { WebsocketsModule } from './websockets/websockets.module';
@@ -24,10 +23,6 @@ import { HealthController } from './health/health.controller';
   ],
   controllers: [AppController, HealthController],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard
-    },
     AppService,
   ],
 })

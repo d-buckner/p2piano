@@ -1,14 +1,25 @@
-import { IsString, IsUUID, IsIn, ValidateNested, IsObject, MaxLength } from 'class-validator';
+import { IsString, IsUUID, ValidateNested, IsObject, MaxLength, IsOptional } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class SignalDataDto {
   @IsString()
-  @MaxLength(10000) // Reasonable limit for SDP
-  sdp: string;
+  @MaxLength(50000) // Increased limit for SimplePeer SDP
+  @IsOptional()
+  sdp?: string;
 
   @IsString()
-  @IsIn(['offer', 'answer', 'pranswer', 'rollback'])
-  type: string;
+  @IsOptional()
+  type?: string;
+
+  // ICE candidate fields
+  @IsOptional()
+  candidate?: any;
+
+  @IsOptional()
+  sdpMLineIndex?: number;
+
+  @IsOptional()
+  sdpMid?: string;
 }
 
 export class SignalPayloadDto {
