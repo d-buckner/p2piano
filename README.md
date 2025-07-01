@@ -2,10 +2,6 @@
 
 A real-time collaborative piano platform that enables musicians to play together over the internet with advanced audio synchronization.
 
-## Overview
-
-P2Piano addresses the fundamental challenge of network latency in collaborative music-making. Through sophisticated timing coordination and peer-to-peer networking, multiple users can perform together in real-time despite geographic separation.
-
 ### Key Features
 
 - **Real-time collaboration** with advanced latency compensation
