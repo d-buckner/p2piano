@@ -6,12 +6,17 @@ import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
 import { defineConfig } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import solidPlugin from 'vite-plugin-solid';
-import coverageThresholds from './coverage.thresholds.json';
 /// <reference types="vitest" />
 
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
+  
+  // Only import coverage thresholds in non-production environments
+  const coverageThresholds = !isProduction 
+    ? JSON.parse(fs.readFileSync('./coverage.thresholds.json', 'utf8'))
+    : {};
+
   const define: Record<string, string> = {
     // for tonejs's very persistent logger (dev server)
     'TONE_SILENCE_LOGGING': JSON.stringify(true),
@@ -94,7 +99,7 @@ export default defineConfig(({ mode }) => {
           '**/*.spec.ts',
           '**/*.spec.tsx',
         ],
-        thresholds: coverageThresholds,
+        ...(coverageThresholds && { thresholds: coverageThresholds }),
       },
     },
     build: {
