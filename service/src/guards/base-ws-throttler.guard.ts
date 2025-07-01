@@ -6,10 +6,6 @@ export abstract class BaseWsThrottlerGuard extends ThrottlerGuard {
   protected abstract readonly logger: Logger;
 
   protected async getTracker(context: ExecutionContext): Promise<string> {
-    if (context.getType() !== 'ws') {
-      return super.getTracker(context);
-    }
-
     const client = context.switchToWs().getClient();
     return this.getClientIdentifier(client);
   }
@@ -18,10 +14,6 @@ export abstract class BaseWsThrottlerGuard extends ThrottlerGuard {
     context: ExecutionContext,
     throttlerLimitDetail: ThrottlerLimitDetail,
   ): Promise<void> {
-    if (context.getType() !== 'ws') {
-      return super.throwThrottlingException(context, throttlerLimitDetail);
-    }
-
     const client = context.switchToWs().getClient();
     const eventName = context.getHandler().name;
     const clientId = this.getClientIdentifier(client);
