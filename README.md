@@ -1,25 +1,47 @@
-# P2Piano
+# 🎹 p2piano
 
 [![CI](https://img.shields.io/github/actions/workflow/status/d-buckner/p2piano/test-coverage.yml?branch=main&label=CI)](https://github.com/d-buckner/p2piano/actions)
 [![Client Coverage](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/d-buckner/p2piano/main/client/coverage.thresholds.json&label=Client%20Coverage&query=$.lines&suffix=%25&colorB=green&valColorA=red&valColorB=yellow&valColorC=green&valThresholdA=50&valThresholdB=70)](https://github.com/d-buckner/p2piano/tree/main/client/coverage)
 [![Service Coverage](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/d-buckner/p2piano/main/service/coverage.thresholds.json&label=Service%20Coverage&query=$.lines&suffix=%25&colorB=green&valColorA=red&valColorB=yellow&valColorC=green&valThresholdA=50&valThresholdB=70)](https://github.com/d-buckner/p2piano/tree/main/service/coverage)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-A real-time collaborative piano platform that enables musicians to play together over the internet with advanced audio synchronization.
+**A real-time collaborative music platform where musicians can play together from anywhere in the world.**
 
-### Key Features
+p2piano enables instant musical collaboration through your web browser. Create a room, share the code with friends, and start jamming together. No downloads, no registration required.
 
-- **Real-time collaboration** with advanced latency compensation
-- **Multiple instruments** including piano, bass, and guitar with high-quality samples
-- **MIDI keyboard support** for external hardware integration
-- **Peer-to-peer networking** via WebRTC for minimal latency
-- **No registration required**
-- **Visual feedback** with real-time note visualization
-- **Cross-platform compatibility** supporting desktop, tablet, and mobile devices
+**[Try it out](https://p2piano.com)**
 
-## Quick Start
+![P2Piano Demo](docs/demo-screenshot.png)
 
-**Prerequisites:** Ensure you have `podman-compose` or `docker-compose` installed locally.
+## ✨ Features
+
+- 🎹 **Multiple Instruments** - Piano, electric bass, acoustic and electric guitar
+- ⚡ **Real-Time Sync** - Advanced audio synchronization keeps everyone in time
+- 🎮 **MIDI Support** - Connect your MIDI keyboard for the full experience
+- 🌐 **Works Everywhere** - Any modern browser on desktop, tablet, or mobile
+- 🔗 **Instant Sharing** - Just share a 5-letter room code to invite others
+- 🎵 **Visual Feedback** - See notes as they're played by you and collaborators
+- 🚫 **No Registration** - Start playing immediately, no account needed
+- 📱 **Cross-Platform** - Seamless experience across all devices
+
+## 🚀 Quick Start Guide
+
+### For Users
+
+1. **Visit the [website](https://p2piano.com)**
+2. **Click "Create New Room"** or **enter a 5-letter room code**
+3. **Choose your instrument** from the dropdown menu
+4. **Set your display name** so others can identify you
+5. **Start playing!** Use your keyboard, touch, mouse, or MIDI controller
+
+#### Tips
+- Avoid wireless headphones and keyboards if possible, these add considerable latency
+- Unmute your iOS device to enable sound
+- Piano keys map to your computer keyboard (A-K for white keys, W-O for black keys)
+
+### For Developers
+
+**Prerequisites:** Node.js 20+, podman-compose or docker-compose
 
 ```bash
 git clone https://github.com/d-buckner/p2piano.git
@@ -28,7 +50,7 @@ npm run bootstrap  # Install dependencies
 npm run dev        # Start development environment
 ```
 
-Access the application at `http://localhost:5173`
+The application will be available at `http://localhost:5173`
 
 
 ## Architecture
@@ -37,7 +59,7 @@ Access the application at `http://localhost:5173`
 
 **Client Architecture:**
 - **Audio Synchronization Engine**: Measures latency and coordinates timing between participants
-- **Instrument System**: Software synthesizers with high-quality samples for multiple instruments
+- **Instrument System**: Synthesizers and samplers for multiple instruments. Progressive sample loading.
 - **Network Controller**: Manages WebRTC peer connections with WebSocket fallback
 - **State Management**: Centralized application state with reactive updates
 
@@ -57,7 +79,7 @@ Access the application at `http://localhost:5173`
 
 ### Audio Synchronization
 
-P2Piano implements an audio synchronization system that measures network latency and schedules audio events using the Web Audio API for sample-level timings.
+p2piano implements an audio synchronization system that measures network latency and schedules audio events using the Web Audio API for sample-level timings.
 
 ### Networking Strategy
 
@@ -65,42 +87,107 @@ P2Piano implements an audio synchronization system that measures network latency
 - **WebSocket**: Room changes, server-mediated connections for signaling and fallback
 - **Transport selection**: Automatic selection based on connection availability
 
-## Project Structure
+## 📂 Project Structure
 
 ```
 p2piano/
-├── client/                 # SolidJS frontend application
+├── 🎨 client/              # Frontend (SolidJS + TypeScript)
 │   ├── src/
-│   │   ├── actions/        # Application actions
-│   │   ├── app/           # Store configuration and providers
-│   │   ├── audio/         # Audio engine and instrument implementations
-│   │   ├── clients/       # API and service clients
-│   │   ├── components/    # UI components and styling
-│   │   ├── controllers/   # Input controllers (keyboard, MIDI)
-│   │   ├── handlers/      # Event handlers
-│   │   ├── lib/           # Core libraries and utilities
-│   │   ├── networking/    # WebRTC and WebSocket networking
-│   │   ├── pages/         # Route components
-│   │   ├── selectors/     # State selectors
-│   │   ├── styles/        # Global styles and theming
-│   │   └── workers/       # Service workers
-├── service/               # NestJS backend service
+│   │   ├── 🎬 actions/     # State management actions
+│   │   ├── 🏪 app/         # Store configuration
+│   │   ├── 🎵 audio/       # Audio engine & instruments
+│   │   ├── 🌐 clients/      # API communication
+│   │   ├── 🧩 components/  # UI components
+│   │   ├── 🎮 controllers/ # Input handling (keyboard, MIDI)
+│   │   ├── 📡 networking/  # WebRTC & WebSocket
+│   │   ├── 📄 pages/       # Route components
+│   │   └── 🎨 styles/      # Styling & themes
+├── ⚙️  service/            # Backend (NestJS + TypeScript)
 │   ├── src/
-│   │   ├── clients/       # Database adapters
-│   │   ├── entities/      # Data models
-│   │   └── gateways/      # WebSocket handlers
-└── docker-compose.yml     # Multi-service orchestration
+│   │   ├── 🗄️  clients/    # Database layer
+│   │   ├── 📊 entities/    # Data models
+│   │   ├── 🚪 websockets/  # Real-time communication
+│   │   ├── 🛡️  auth/       # Authentication & authorization
+│   │   └── 🔧 utils/       # Shared utilities
+├── 🐳 docker-compose.yml   # Container orchestration
+├── 📋 package.json         # Workspace configuration
+└── 📚 docs/                # Documentation & assets
 ```
 
-## Development
+### Key Technologies
 
-### Prerequisites
+- **Frontend**: SolidJS, TypeScript, Vanilla Extract CSS, Vite
+- **Backend**: NestJS, Fastify, MongoDB, Socket.IO
+- **Audio**: Web Audio API, Tone.js for synthesis
+- **Networking**: WebRTC for P2P, WebSocket fallback
+- **Testing**: Vitest, comprehensive unit & integration tests
+- **DevOps**: Docker, GitHub Actions, automated testing & coverage
 
-- Node.js 18+
-- npm or yarn
-- Docker and Docker Compose (for containerized development)
-- MongoDB (if running services independently)
+### Development Commands
 
-## Support
+```bash
+# Install dependencies for all packages
+npm run bootstrap
 
-For technical questions, bug reports, or feature requests, please use the GitHub issue tracker.
+# Start development servers (client + service)
+npm run dev
+
+# Run individual services
+npm run client:dev    # Frontend only
+npm run service:dev   # Backend only
+
+# Testing
+npm run test          # Run all tests
+npm run test:coverage # Generate coverage reports
+npm run test:watch    # Watch mode for development
+
+# Code quality
+npm run lint          # Check code style
+npm run lint:fix      # Auto-fix issues
+npm run typecheck     # TypeScript validation
+
+# Production builds
+npm run build         # Build all packages
+npm run container     # Build and run with Docker
+```
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and configure:
+
+```bash
+# Database
+MONGO_URI=mongodb://localhost:27017/p2piano
+MONGO_USERNAME=your_username
+MONGO_PASSWORD=your_password
+
+# Security
+COOKIE_SECRET=your_secure_random_string
+
+# Optional: Production settings
+NODE_ENV=development
+PORT=3001
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Whether you're a developer, musician, or just someone with ideas:
+
+- **🐛 Report bugs** using the [issue tracker](https://github.com/d-buckner/p2piano/issues)
+- **💡 Suggest features** that would improve the experience
+- **🔧 Submit pull requests** for bug fixes or enhancements
+- **📖 Improve documentation** to help others understand and use the project
+- **🎵 Share your music** and experiences using P2Piano
+
+### Development Contributions
+
+Before contributing code:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes and add tests
+4. Ensure all tests pass (`npm run test`)
+5. Run linting (`npm run lint:fix`)
+6. Commit your changes (`git commit -m 'Add amazing feature'`)
+7. Push to your branch (`git push origin feature/amazing-feature`)
+8. Open a Pull Request
