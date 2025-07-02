@@ -10,7 +10,7 @@ import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
 
 @WebSocketGateway(defaultWebSocketGatewayOptions)
 export class Notes {
-    @Throttle({ default: { limit: 300, ttl: 10000 } })
+    @Throttle({ default: { limit: 1000, ttl: 10000 } }) // 100 notes/second allows for fast passages, glissandos, and complex chords
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(NoteEvents.KEY_DOWN)
     onKeyDown(@MessageBody(new WsValidationPipe()) payload: NoteOnDto, @ConnectedSocket() socket: Socket) {
@@ -20,7 +20,7 @@ export class Notes {
         });
     }
 
-    @Throttle({ default: { limit: 400, ttl: 10000 } })
+    @Throttle({ default: { limit: 1000, ttl: 10000 } }) // Match KEY_DOWN limit - every note down should have a corresponding note up
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(NoteEvents.KEY_UP)
     onKeyUp(@MessageBody(new WsValidationPipe()) payload: NoteOffDto, @ConnectedSocket() socket: Socket) {

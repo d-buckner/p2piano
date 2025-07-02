@@ -55,7 +55,7 @@ export class Room {
     this.destroyConnection = this.destroyConnection.bind(this);
   }
 
-  @Throttle({ default: { limit: 10, ttl: 30 } })
+  @Throttle({ default: { limit: 60, ttl: 30000 } }) // 2 updates per second allows for smooth real-time collaboration
   @UseGuards(WsThrottlerGuard)
   @SubscribeMessage(RoomEvents.USER_UPDATE)
   async onUserUpdate(@MessageBody(new WsValidationPipe()) payload: UserUpdateDto, @ConnectedSocket() socket: Socket) {

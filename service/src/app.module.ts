@@ -11,12 +11,12 @@ import { HealthController } from './health/health.controller';
       {
         name: 'default',
         ttl: 60000, // 1 minute
-        limit: 100, // 100 requests per minute per IP
+        limit: 500, // 500 requests per minute per session - generous for normal app usage
       },
       {
         name: 'strict',
         ttl: 60000, // 1 minute  
-        limit: 60, // 60 requests per minute per IP for sensitive endpoints
+        limit: 200, // 200 requests per minute per session for sensitive endpoints
       }
     ]),
     WebsocketsModule,

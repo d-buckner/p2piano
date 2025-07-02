@@ -8,7 +8,13 @@ export class WsThrottlerGuard extends ThrottlerGuard {
   async handleRequest(requestProps: ThrottlerRequest): Promise<boolean> {
     const { context, limit, ttl, throttler, blockDuration, generateKey } = requestProps;
     const client = context.switchToWs().getClient();
-    const tracker = client.conn?.remoteAddress || client._socket?.remoteAddress || client.id;
+    
+    // Use a combination of IP and session id for better tracking
+    // This helps distinguish between multiple users on the same network
+    const ip = client.conn?.remoteAddress || client._socket?.remoteAddress || 'unknown';
+    const sessionId = client.id;
+    const tracker = `${ip}:${sessionId}`;
+    
     const key = generateKey(context, tracker, throttler.name);
     
     const { totalHits, timeToExpire, isBlocked, timeToBlockExpire } = 
