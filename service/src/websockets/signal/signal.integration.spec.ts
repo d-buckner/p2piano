@@ -1,3 +1,4 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { Signal } from './signal';
 import { SignalEvents } from './events';
 import { SignalPayloadDto } from '../../dto/ws/signal.dto';
@@ -6,36 +7,36 @@ import { getSocketSessionId } from '../utils';
 import { Socket } from 'socket.io';
 
 // Mock dependencies
-jest.mock('../SessionRegistry');
-jest.mock('../utils');
+vi.mock('../SessionRegistry');
+vi.mock('../utils');
 
 describe('Signal Gateway Message Flow', () => {
   let gateway: Signal;
-  let mockSocket: jest.Mocked<Socket>;
-  let targetSocket: jest.Mocked<Socket>;
-  let mockSessionRegistry: jest.Mocked<typeof SessionRegistry>;
-  let mockGetSocketSessionId: jest.MockedFunction<typeof getSocketSessionId>;
+  let mockSocket: any;
+  let targetSocket: any;
+  let mockSessionRegistry: any;
+  let mockGetSocketSessionId: any;
 
   beforeEach(() => {
-    mockSessionRegistry = SessionRegistry as jest.Mocked<typeof SessionRegistry>;
-    mockGetSocketSessionId = getSocketSessionId as jest.MockedFunction<typeof getSocketSessionId>;
+    mockSessionRegistry = SessionRegistry as any;
+    mockGetSocketSessionId = getSocketSessionId as any;
 
     gateway = new Signal();
 
     // Setup mock sockets
     mockSocket = {
       id: 'sender-socket',
-      to: jest.fn().mockReturnThis(),
-      emit: jest.fn(),
+      to: vi.fn().mockReturnThis(),
+      emit: vi.fn(),
     } as any;
 
     targetSocket = {
       id: 'target-socket',
-      to: jest.fn().mockReturnThis(),
-      emit: jest.fn(),
+      to: vi.fn().mockReturnThis(),
+      emit: vi.fn(),
     } as any;
 
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('WebRTC Signaling Flow', () => {
@@ -54,7 +55,7 @@ describe('Signal Gateway Message Flow', () => {
         }
       };
 
-      const mockEmit = jest.fn();
+      const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
       gateway.onSignal(offerPayload, mockSocket);
@@ -81,7 +82,7 @@ describe('Signal Gateway Message Flow', () => {
         }
       };
 
-      const mockEmit = jest.fn();
+      const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
       gateway.onSignal(answerPayload, mockSocket);
@@ -109,7 +110,7 @@ describe('Signal Gateway Message Flow', () => {
         }
       };
 
-      const mockEmit = jest.fn();
+      const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
       gateway.onSignal(candidatePayload, mockSocket);
@@ -134,7 +135,7 @@ describe('Signal Gateway Message Flow', () => {
       mockGetSocketSessionId.mockReturnValueOnce(user1);
       mockSessionRegistry.getSocket.mockReturnValueOnce(socket2);
 
-      const mockEmit1 = jest.fn();
+      const mockEmit1 = vi.fn();
       mockSocket.to.mockReturnValueOnce({ emit: mockEmit1 } as any);
 
       gateway.onSignal({
@@ -146,7 +147,7 @@ describe('Signal Gateway Message Flow', () => {
       mockGetSocketSessionId.mockReturnValueOnce(user1);
       mockSessionRegistry.getSocket.mockReturnValueOnce(socket3);
 
-      const mockEmit2 = jest.fn();
+      const mockEmit2 = vi.fn();
       mockSocket.to.mockReturnValueOnce({ emit: mockEmit2 } as any);
 
       gateway.onSignal({
@@ -192,7 +193,7 @@ describe('Signal Gateway Message Flow', () => {
       mockGetSocketSessionId.mockReturnValue(null);
       mockSessionRegistry.getSocket.mockReturnValue(targetSocket);
 
-      const mockEmit = jest.fn();
+      const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
       expect(() => {
@@ -235,7 +236,7 @@ a=rtpmap:111 opus/48000/2`;
       mockGetSocketSessionId.mockReturnValue('user-1');
       mockSessionRegistry.getSocket.mockReturnValue(targetSocket);
 
-      const mockEmit = jest.fn();
+      const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
       gateway.onSignal({
@@ -259,7 +260,7 @@ a=rtpmap:111 opus/48000/2`;
       mockGetSocketSessionId.mockReturnValue('user-1');
       mockSessionRegistry.getSocket.mockReturnValue(targetSocket);
 
-      const mockEmit = jest.fn();
+      const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
       gateway.onSignal({

@@ -10,7 +10,21 @@
     "dev": "node scripts/dev.js",
     "servers:dev": "concurrently \"npm run client:dev\" \"npm run service:dev\"",
     "bootstrap": "npm install && cd client && npm install && cd ../service && npm install",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "npm run test:service && npm run test:client",
+    "test:service": "cd service && npm run test",
+    "test:client": "cd client && npm run test",
+    "test:coverage": "npm run test:coverage:service && npm run test:coverage:client",
+    "test:coverage:service": "cd service && npm run test:coverage",
+    "test:coverage:client": "cd client && npm run test:coverage",
+    "test:watch": "concurrently \"npm run test:watch:service\" \"npm run test:watch:client\"",
+    "test:watch:service": "cd service && npm run test:watch",
+    "test:watch:client": "cd client && npm run test:watch",
+    "coverage:report": "node scripts/coverage-consolidator.js",
+    "coverage:full": "npm run test:coverage && npm run coverage:report",
+    "lint": "npm run lint:service && npm run lint:client",
+    "lint:service": "cd service && npm run lint",
+    "lint:client": "cd client && npm run lint"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"

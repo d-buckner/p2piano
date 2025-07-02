@@ -120,8 +120,8 @@ describe('WsValidationPipe', () => {
       expect(exception.getError()).toEqual({
         message: 'Validation failed',
         errors: [
-          'type must be one of: offer, answer, pranswer, rollback',
-          'sdp must be shorter than or equal to 10000 characters',
+          'signalData.type must be one of: offer, answer, pranswer, rollback',
+          'signalData.sdp must be shorter than or equal to 10000 characters',
         ],
       });
     });
@@ -154,7 +154,7 @@ describe('WsValidationPipe', () => {
       expect(exception).toBeInstanceOf(WsException);
       expect(exception.getError()).toEqual({
         message: 'Validation failed',
-        errors: ['level3 must be a string'],
+        errors: ['level1.level2.level3 must be a string'],
       });
     });
 
@@ -188,7 +188,7 @@ describe('WsValidationPipe', () => {
         message: 'Validation failed',
         errors: [
           'userId must be a UUID',
-          'type must be one of: offer, answer, pranswer, rollback',
+          'signalData.type must be one of: offer, answer, pranswer, rollback',
         ],
       });
     });
