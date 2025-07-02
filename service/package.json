@@ -19,7 +19,7 @@
     "test:coverage": "vitest --coverage",
     "test:ci": "vitest --coverage --run",
     "coverage:update": "node scripts/update-thresholds.js",
-    "precommit": "npm run test:ci && npm run coverage:update"
+    "prepush": "npm run test:ci && npm run coverage:update"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
