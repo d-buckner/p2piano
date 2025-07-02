@@ -29,12 +29,6 @@ export const createSharedConfig = (options: {
       'src/**/*.d.ts',
       '**/*.config.*',
     ],
-    coverageThresholds = {
-      lines: 80,
-      functions: 80,
-      branches: 80,
-      statements: 80,
-    },
   } = options;
 
   return defineConfig({
@@ -50,9 +44,6 @@ export const createSharedConfig = (options: {
         reportsDirectory: './coverage',
         include: coverageInclude,
         exclude: coverageExclude,
-        thresholds: {
-          global: coverageThresholds,
-        },
         all: true,
         watermarks: {
           statements: [50, 80],

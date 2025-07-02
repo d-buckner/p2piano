@@ -18,9 +18,11 @@
     "test": "vitest",
     "test:watch": "vitest --watch",
     "test:run": "vitest run",
-    "test:coverage": "vitest --coverage",
+    "test:coverage": "vitest --coverage --run",
     "test:ci": "vitest --coverage --run",
-    "coverage:update": "node scripts/update-thresholds.js"
+    "coverage:update": "node scripts/update-thresholds.js",
+    "docs": "typedoc",
+    "docs:serve": "npm run docs && npx http-server docs -p 8080 -o"
   },
   "dependencies": {
     "@fastify/cookie": "^11.0.2",
@@ -60,6 +62,7 @@
     "ts-loader": "^9.2.3",
     "ts-node": "^10.0.0",
     "tsconfig-paths": "4.1.1",
+    "typedoc": "^0.28.7",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4"
   }

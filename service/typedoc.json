@@ -1,0 +1,47 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src"],
+  "entryPointStrategy": "expand",
+  "out": "docs",
+  "exclude": [
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/test-utils/**",
+    "**/dist/**",
+    "**/node_modules/**",
+    "**/coverage/**"
+  ],
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": false,
+  "includeVersion": true,
+  "sort": ["source-order"],
+  "groupOrder": [
+    "Classes",
+    "Interfaces",
+    "Type Aliases",
+    "Variables",
+    "Functions"
+  ],
+  "categorizeByGroup": false,
+  "defaultCategory": "Other",
+  "categoryOrder": [
+    "Controllers",
+    "Services", 
+    "Guards",
+    "Pipes",
+    "DTOs",
+    "Entities",
+    "Utils",
+    "*"
+  ],
+  "readme": "./README.md",
+  "plugin": [],
+  "theme": "default",
+  "cleanOutputDir": true,
+  "titleLink": "https://github.com/d-buckner/p2piano",
+  "navigationLinks": {
+    "GitHub": "https://github.com/d-buckner/p2piano",
+    "API Docs": "http://localhost:3001/api"
+  }
+}

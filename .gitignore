@@ -4,3 +4,6 @@ node_modules
 .env
 
 .DS_Store
+
+# README drafts and planning
+README_next.md

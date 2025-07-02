@@ -31,6 +31,13 @@ export interface MockRealTimeController {
   destroy: Mock;
 }
 
+export interface MockToneSampler {
+  triggerAttack: Mock;
+  triggerRelease: Mock;
+  releaseAll: Mock;
+  toDestination: Mock;
+}
+
 export const createMockConfigProvider = (url = 'http://localhost:3001'): MockConfigProvider => ({
   getServiceUrl: vi.fn(() => url),
 });
@@ -62,3 +69,34 @@ export const createMockRealTimeController = (): MockRealTimeController => ({
   getInstance: vi.fn(),
   destroy: vi.fn(),
 });
+
+export const createMockToneSampler = (): MockToneSampler => ({
+  triggerAttack: vi.fn(),
+  triggerRelease: vi.fn(),
+  releaseAll: vi.fn(),
+  toDestination: vi.fn().mockReturnThis(),
+});
+
+/**
+ * Sets up ToneJS mocks for testing audio instruments
+ * Call this in test setup to avoid audio context issues
+ */
+export const setupToneJSMocks = () => {
+  const mockSamplerInstance = createMockToneSampler();
+  
+  // Mock the tone module
+  vi.mock('tone', () => ({
+    Sampler: vi.fn().mockImplementation(() => mockSamplerInstance),
+  }));
+
+  // Mock audio-related dependencies
+  vi.mock('../../lib/NoteHelpers', () => ({
+    toFrequency: vi.fn((midi: number) => `${midi}Hz`),
+  }));
+
+  vi.mock('../instruments/getDelayTime', () => ({
+    default: vi.fn((delay?: number) => delay || 0),
+  }));
+
+  return { mockSamplerInstance };
+};

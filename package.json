@@ -33,7 +33,9 @@
     "typecheck:client": "cd client && npm run typecheck",
     "build": "npm run build:service && npm run build:client",
     "build:service": "cd service && npm run build",
-    "build:client": "cd client && npm run build"
+    "build:client": "cd client && npm run build",
+    "docs": "cd service && npm run docs",
+    "docs:serve": "cd service && npm run docs:serve"
   },
   "devDependencies": {
     "concurrently": "^9.1.0"
