@@ -1,5 +1,8 @@
 # P2Piano
 
+[![Client Coverage](https://img.shields.io/endpoint?url=https://d-buckner.github.io/p2piano/client-badge.json)](https://github.com/d-buckner/p2piano/actions/workflows/test-coverage.yml)
+[![Service Coverage](https://img.shields.io/endpoint?url=https://d-buckner.github.io/p2piano/service-badge.json)](https://github.com/d-buckner/p2piano/actions/workflows/test-coverage.yml)
+
 A real-time collaborative piano platform that enables musicians to play together over the internet with advanced audio synchronization.
 
 ### Key Features

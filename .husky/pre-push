@@ -10,12 +10,43 @@ while read local_ref local_sha remote_ref remote_sha; do
   # Only run checks when pushing to main branch
   if [ "$branch" = "main" ]; then
     echo "🔍 Running pre-push checks for main branch..."
-    cd client && npm run precommit
     
-    # Check if the command failed
+    # Run linting
+    echo "📝 Running linting..."
+    npm run lint
     if [ $? -ne 0 ]; then
       echo ""
-      echo "❌ Pre-push checks failed!"
+      echo "❌ Linting failed!"
+      echo ""
+      echo "💡 To fix this:"
+      echo "  1. Run 'npm run lint:fix' to auto-fix issues"
+      echo "  2. Manually fix any remaining issues"
+      echo "  3. Commit the fixes and try pushing again"
+      echo ""
+      exit 1
+    fi
+    
+    # Run typechecking
+    echo "🔍 Running type checking..."
+    npm run typecheck
+    if [ $? -ne 0 ]; then
+      echo ""
+      echo "❌ Type checking failed!"
+      echo ""
+      echo "💡 To fix this:"
+      echo "  1. Review the TypeScript errors above"
+      echo "  2. Fix the type issues in the code"
+      echo "  3. Commit the fixes and try pushing again"
+      echo ""
+      exit 1
+    fi
+    
+    # Run client tests and coverage
+    echo "🧪 Running client tests and coverage checks..."
+    cd client && npm run test:ci && npm run coverage:update
+    if [ $? -ne 0 ]; then
+      echo ""
+      echo "❌ Client tests or coverage checks failed!"
       echo ""
       echo "💡 To fix this:"
       echo "  1. Review the test failures or coverage issues above"
@@ -28,7 +59,34 @@ while read local_ref local_sha remote_ref remote_sha; do
       exit 1
     fi
     
-    echo "✅ Pre-push checks passed!"
+    # Run service tests and coverage
+    echo "🧪 Running service tests and coverage checks..."
+    cd ../service && npm run test:ci && npm run coverage:update
+    if [ $? -ne 0 ]; then
+      echo ""
+      echo "❌ Service tests or coverage checks failed!"
+      echo ""
+      echo "💡 To fix this:"
+      echo "  1. Review the test failures or coverage issues above"
+      echo "  2. Fix any failing tests"
+      echo "  3. If coverage dropped, either:"
+      echo "     - Write more tests to improve coverage, or"
+      echo "     - Run 'npm run coverage:update' to accept current levels"
+      echo "  4. Commit any fixes and try pushing again"
+      echo ""
+      exit 1
+    fi
+    
+    # Check if coverage thresholds were updated
+    cd ..
+    if ! git diff --quiet client/coverage.thresholds.json service/coverage.thresholds.json; then
+      echo "📊 Coverage thresholds were updated, amending to last commit..."
+      git add client/coverage.thresholds.json service/coverage.thresholds.json
+      git commit --amend --no-edit
+      echo "✅ Coverage thresholds amended to last commit"
+    fi
+    
+    echo "✅ All pre-push checks passed!"
   else
     echo "⏭️  Skipping pre-push checks for branch: $branch"
   fi

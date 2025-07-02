@@ -20,6 +20,7 @@
     "lib": ["ES2021"],
     "moduleResolution": "node",
     "esModuleInterop": true,
+    "resolveJsonModule": true,
     "types": ["vitest/globals"]
   }
 }

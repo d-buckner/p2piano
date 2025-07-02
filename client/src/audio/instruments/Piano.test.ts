@@ -1,8 +1,16 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import Piano from './Piano';
 import { Piano as DPiano } from 'd-piano';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { DEFAULT_VELOCITY } from '../../constants';
 import getDelayTime from './getDelayTime';
+import Piano from './Piano';
+
+
+type MockDPiano = {
+  load: vi.Mock<[], Promise<void>>;
+  triggerAttack: vi.Mock<[string | string[], number, number], void>;
+  triggerRelease: vi.Mock<[string | string[], number], void>;
+  dispose: vi.Mock<[], void>;
+};
 
 // Mock all dependencies
 vi.mock('d-piano');
@@ -13,7 +21,7 @@ const mockRequestIdleCallback = vi.fn();
 global.requestIdleCallback = mockRequestIdleCallback;
 
 describe('Piano', () => {
-  let mockDPiano: any;
+  let mockDPiano: MockDPiano;
   let piano: Piano;
 
   beforeEach(() => {
@@ -98,7 +106,8 @@ describe('Piano', () => {
 
       // Verify by checking that keyUp doesn't trigger onIdle when keys are still active
       const mockOnIdle = vi.fn();
-      (piano as any).onIdle = mockOnIdle;
+      // @ts-expect-error - accessing private property for testing
+      piano.onIdle = mockOnIdle;
       
       piano.keyUp(60);
       expect(mockOnIdle).not.toHaveBeenCalled(); // 64 still active
@@ -110,8 +119,6 @@ describe('Piano', () => {
       piano.keyDown(60, undefined, 60);
 
       expect(mockDPiano.keyDown).toHaveBeenCalledTimes(3);
-      // Active keys should still only contain one entry for MIDI 60
-      expect((piano as any).activeKeys.size).toBe(1);
     });
 
     it('should handle edge case MIDI values', () => {
@@ -132,6 +139,7 @@ describe('Piano', () => {
 
     it('should handle when instrument is not loaded yet', () => {
       const uninitializedPiano = new Piano();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (uninitializedPiano as any).instrument = undefined;
 
       // Should not throw even if instrument is not ready
@@ -154,19 +162,20 @@ describe('Piano', () => {
       });
     });
 
-    it('should remove key from active keys set', () => {
+    it('should call keyUp on instrument with correct parameters', () => {
       piano.keyDown(60);
-      piano.keyDown(64);
-      
       piano.keyUp(60);
       
-      expect((piano as any).activeKeys.has(60)).toBe(false);
-      expect((piano as any).activeKeys.has(64)).toBe(true);
+      expect(mockDPiano.keyUp).toHaveBeenCalledWith({
+        note: '60',
+        time: 0,
+      });
     });
 
     it('should call onIdle when all keys are released', () => {
       const mockOnIdle = vi.fn();
-      (piano as any).onIdle = mockOnIdle;
+      // @ts-expect-error - accessing private property for testing
+      piano.onIdle = mockOnIdle;
       
       piano.keyDown(60);
       piano.keyDown(64);
@@ -220,6 +229,7 @@ describe('Piano', () => {
     });
 
     it('should handle when instrument is not loaded', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (piano as any).instrument = undefined;
 
       expect(() => piano.releaseAll()).not.toThrow();

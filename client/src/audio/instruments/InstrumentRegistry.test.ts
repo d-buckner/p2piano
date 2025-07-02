@@ -1,18 +1,31 @@
 import { describe, it, expect } from 'vitest';
 import { InstrumentType } from './Instrument';
 
-describe('InstrumentRegistry', () => {
-  it('should have all required instrument types defined', () => {
-    // Tests that all critical instrument types are available
-    // This catches regressions if someone removes an instrument type
-    expect(InstrumentType.PIANO).toBeDefined();
-    expect(InstrumentType.SYNTH).toBeDefined();
-    expect(InstrumentType.ELECTRIC_BASS).toBeDefined();
-    
-    // Ensure the enum has exactly the expected values
-    const instrumentTypes = Object.values(InstrumentType);
-    expect(instrumentTypes).toContain('PIANO');
-    expect(instrumentTypes).toContain('SYNTH');
-    expect(instrumentTypes).toContain('ELECTRIC_BASS');
+
+describe('InstrumentType', () => {
+  describe('enum values', () => {
+    it('should define PIANO instrument type', () => {
+      expect(InstrumentType.PIANO).toBe('PIANO');
+    });
+
+    it('should define SYNTH instrument type', () => {
+      expect(InstrumentType.SYNTH).toBe('SYNTH');
+    });
+
+    it('should define ELECTRIC_BASS instrument type', () => {
+      expect(InstrumentType.ELECTRIC_BASS).toBe('ELECTRIC_BASS');
+    });
+  });
+
+  describe('enum completeness', () => {
+    it('should contain exactly the expected instrument types', () => {
+      const instrumentTypes = Object.values(InstrumentType);
+      expect(instrumentTypes).toEqual(['PIANO', 'SYNTH', 'ELECTRIC_BASS']);
+    });
+
+    it('should have stable enum keys for backwards compatibility', () => {
+      // Ensures enum keys remain stable for serialization/API compatibility
+      expect(Object.keys(InstrumentType)).toEqual(['PIANO', 'SYNTH', 'ELECTRIC_BASS']);
+    });
   });
 });

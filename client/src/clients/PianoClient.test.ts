@@ -1,12 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import PianoClient from './PianoClient';
 import RealTimeController from '../networking/RealTimeController';
+import PianoClient from './PianoClient';
+
+
+type MockRealTimeController = {
+  broadcast: vi.Mock<[string, unknown], void>;
+  sendToPeer: vi.Mock<[string, string, unknown], void>;
+};
 
 // Mock RealTimeController
 vi.mock('../networking/RealTimeController');
 
 describe('PianoClient', () => {
-  let mockRealTimeController: any;
+  let mockRealTimeController: MockRealTimeController;
 
   beforeEach(() => {
     vi.clearAllMocks();

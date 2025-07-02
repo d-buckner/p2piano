@@ -28,7 +28,6 @@
     "test:coverage": "vitest --coverage",
     "test:ci": "vitest --coverage --run",
     "coverage:update": "node scripts/update-thresholds.js",
-    "precommit": "npm run test:ci && npm run coverage:update",
     "prepare": "husky"
   },
   "devDependencies": {

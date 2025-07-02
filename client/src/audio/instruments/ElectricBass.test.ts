@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
+
 describe('ElectricBass', () => {
   it('should have correct MIDI offset constant', () => {
     // This tests that the MIDI offset is correctly set to -24 semitones (2 octaves down)

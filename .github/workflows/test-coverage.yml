@@ -48,6 +48,45 @@ jobs:
         working-directory: service
         run: npm run test:ci
 
+      - name: Generate coverage badges
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          # Extract coverage percentages
+          CLIENT_COVERAGE=$(jq -r '.total.lines.pct' client/coverage/coverage-summary.json)
+          SERVICE_COVERAGE=$(jq -r '.total.lines.pct' service/coverage/coverage-summary.json)
+          
+          # Determine badge colors based on coverage
+          get_color() {
+            if (( $(echo "$1 >= 80" | bc -l) )); then
+              echo "brightgreen"
+            elif (( $(echo "$1 >= 60" | bc -l) )); then
+              echo "yellow"
+            else
+              echo "red"
+            fi
+          }
+          
+          CLIENT_COLOR=$(get_color $CLIENT_COVERAGE)
+          SERVICE_COLOR=$(get_color $SERVICE_COVERAGE)
+          
+          # Create badge JSON files
+          echo "{\"schemaVersion\": 1, \"label\": \"client coverage\", \"message\": \"${CLIENT_COVERAGE}%\", \"color\": \"${CLIENT_COLOR}\"}" > client-badge.json
+          echo "{\"schemaVersion\": 1, \"label\": \"service coverage\", \"message\": \"${SERVICE_COVERAGE}%\", \"color\": \"${SERVICE_COLOR}\"}" > service-badge.json
+          
+          # Create badges directory
+          mkdir -p badges
+          cp client-badge.json badges/
+          cp service-badge.json badges/
+
+      - name: Deploy badges to GitHub Pages
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./badges
+          keep_files: false
+          commit_message: "Update coverage badges"
+
       - name: Upload coverage artifacts
         if: github.event_name == 'pull_request'
         uses: actions/upload-artifact@v4

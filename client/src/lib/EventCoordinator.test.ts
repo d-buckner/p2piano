@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { register, destroy } from './EventCoordinator';
-import RoomHandlers from '../handlers/RoomHandlers';
-import * as NoteActions from '../actions/NoteActions';
 import HuMIDI from 'humidi';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import * as NoteActions from '../actions/NoteActions';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import AudioSyncCoordinator from '../audio/syncronization/AudioSyncCoordinator';
+import RoomHandlers from '../handlers/RoomHandlers';
+import { register, destroy } from './EventCoordinator';
 
 // Mock all dependencies
 vi.mock('humidi', () => ({
@@ -204,9 +204,9 @@ describe('EventCoordinator', () => {
       register();
 
       // Verify MIDI note events map to room handlers
-      const midiCalls = (HuMIDI.on as any).mock.calls;
-      expect(midiCalls.find((call: any) => call[0] === 'noteon')[1]).toBe(RoomHandlers.keyDownHandler);
-      expect(midiCalls.find((call: any) => call[0] === 'noteoff')[1]).toBe(RoomHandlers.keyUpHandler);
+      const midiCalls = vi.mocked(HuMIDI.on).mock.calls;
+      expect(midiCalls.find((call) => call[0] === 'noteon')?.[1]).toBe(RoomHandlers.keyDownHandler);
+      expect(midiCalls.find((call) => call[0] === 'noteoff')?.[1]).toBe(RoomHandlers.keyUpHandler);
     });
 
     it('should map WebSocket events to correct handlers', () => {

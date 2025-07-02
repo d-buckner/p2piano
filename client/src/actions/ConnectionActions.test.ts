@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { setStore } from '../app/store';
+import { Transport } from '../constants';
 import {
   addPeerConnection,
   removePeerConnection,
@@ -6,8 +8,10 @@ import {
   updatePeerLatency,
   setMaxLatency,
 } from './ConnectionActions';
-import { setStore, store } from '../app/store';
-import { Transport } from '../constants';
+
+
+type PeerConnections = Record<string, { latency: number; transport: Transport }>;
+type SetConnections = (connections: PeerConnections) => PeerConnections;
 
 // Mock the store
 vi.mock('../app/store', () => ({
@@ -57,7 +61,7 @@ describe('ConnectionActions', () => {
       expect(setStore).toHaveBeenCalledWith('connection', 'peerConnections', expect.any(Function));
       
       // Test the function passed to setStore
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2] as Function;
+      const updateFunction = vi.mocked(setStore).mock.calls[0][2] as SetConnections;
       const mockConnections = {
         'user-123': { latency: 50, transport: Transport.WEBRTC },
         'user-456': { latency: 25, transport: Transport.WEBSOCKET },
@@ -74,7 +78,7 @@ describe('ConnectionActions', () => {
     it('should handle removing non-existent user gracefully', () => {
       removePeerConnection('nonexistent-user');
 
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2] as Function;
+      const updateFunction = vi.mocked(setStore).mock.calls[0][2] as SetConnections;
       const mockConnections = {
         'user-456': { latency: 25, transport: Transport.WEBSOCKET },
       };
@@ -89,7 +93,7 @@ describe('ConnectionActions', () => {
     it('should not mutate original connections object', () => {
       removePeerConnection('user-123');
 
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2] as Function;
+      const updateFunction = vi.mocked(setStore).mock.calls[0][2] as SetConnections;
       const originalConnections = {
         'user-123': { latency: 50, transport: Transport.WEBRTC },
         'user-456': { latency: 25, transport: Transport.WEBSOCKET },
@@ -108,7 +112,7 @@ describe('ConnectionActions', () => {
     it('should handle empty connections object', () => {
       removePeerConnection('user-123');
 
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2] as Function;
+      const updateFunction = vi.mocked(setStore).mock.calls[0][2] as SetConnections;
       const result = updateFunction({});
 
       expect(result).toEqual({});
@@ -250,7 +254,7 @@ describe('ConnectionActions', () => {
       
       // Verify the removal function behavior
       const updateFunction = vi.mocked(setStore).mock.calls
-        .find(call => typeof call[2] === 'function')?.[2] as Function;
+        .find(call => typeof call[2] === 'function')?.[2] as SetConnections;
       
       const mockConnections = {
         'temp-user': { latency: 50, transport: Transport.WEBRTC },

@@ -4,7 +4,6 @@ import { SignalEvents } from './events';
 import { SignalPayloadDto } from '../../dto/ws/signal.dto';
 import SessionRegistry from '../SessionRegistry';
 import { getSocketSessionId } from '../utils';
-import { Socket } from 'socket.io';
 
 // Mock dependencies
 vi.mock('../utils', () => ({

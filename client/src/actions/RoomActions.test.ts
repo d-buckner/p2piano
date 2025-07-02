@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { setRoom, setUserId } from './RoomActions';
 import { setStore } from '../app/store';
-import type { Room } from '../lib/workspaceTypes';
+import { setRoom, setUserId } from './RoomActions';
+import type { Room, User } from '../lib/workspaceTypes';
 
 // Mock the store
 vi.mock('../app/store', () => ({
@@ -74,11 +74,12 @@ describe('RoomActions', () => {
     });
 
     it('should handle room with many users', () => {
-      const users: Record<string, any> = {};
+      const users: Record<string, User> = {};
       for (let i = 1; i <= 10; i++) {
         users[`user-${i}`] = {
           userId: `user-${i}`,
           displayName: `User ${i}`,
+          color: '#000000',
           instrument: i % 2 === 0 ? 'piano' : 'guitar',
         };
       }

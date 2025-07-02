@@ -9,7 +9,6 @@ import {
   broadcastToSubset,
 } from './utils';
 import SessionRegistry from './SessionRegistry';
-import ConfigProvider from '../config/ConfigProvider';
 import type { Socket } from 'socket.io';
 import type { Session } from '../entities/Session';
 
@@ -30,10 +29,20 @@ describe('WebSocket Utils', () => {
           roomId: 'room-456',
           displayName: 'Test User',
         },
-      },
+        headers: {},
+        time: new Date().toISOString(),
+        address: '127.0.0.1',
+        xdomain: false,
+        secure: false,
+        issued: Date.now(),
+        url: '/socket.io',
+        auth: {},
+      } as any,
       session: {
         sessionId: 'session-789',
         userId: 'user-123',
+        createdAt: new Date(),
+        lastActivity: new Date(),
       } as Session,
       to: vi.fn().mockReturnThis(),
       emit: vi.fn(),
@@ -82,7 +91,9 @@ describe('WebSocket Utils', () => {
     });
 
     it('should handle missing room ID gracefully', () => {
-      mockSocket.handshake!.query = {};
+      if (mockSocket.handshake) {
+        mockSocket.handshake.query = {};
+      }
       
       const roomId = getSocketRoomId(mockSocket as Socket);
       
@@ -98,7 +109,9 @@ describe('WebSocket Utils', () => {
     });
 
     it('should handle missing display name gracefully', () => {
-      mockSocket.handshake!.query = {};
+      if (mockSocket.handshake) {
+        mockSocket.handshake.query = {};
+      }
       
       const displayName = getSocketDisplayName(mockSocket as Socket);
       
@@ -119,7 +132,9 @@ describe('WebSocket Utils', () => {
 
     it('should handle partial metadata gracefully', () => {
       mockSocket.session = undefined;
-      mockSocket.handshake!.query = { roomId: 'room-456' };
+      if (mockSocket.handshake) {
+        mockSocket.handshake.query = { roomId: 'room-456' };
+      }
       
       const metadata = getSocketMetadata(mockSocket as Socket);
       
@@ -206,12 +221,12 @@ describe('WebSocket Utils', () => {
     beforeEach(() => {
       // Mock SessionRegistry.getSocket
       vi.mocked(SessionRegistry.getSocket).mockImplementation((userId: string) => {
-        const socketMap: Record<string, { id: string }> = {
+        const socketMap: Record<string, Partial<Socket>> = {
           'user-1': { id: 'socket-1' },
           'user-2': { id: 'socket-2' },
           'user-3': { id: 'socket-3' },
         };
-        return socketMap[userId] || null;
+        return socketMap[userId] as Socket || null;
       });
     });
 
@@ -243,7 +258,7 @@ describe('WebSocket Utils', () => {
 
     it('should handle mix of valid and invalid users gracefully', () => {
       vi.mocked(SessionRegistry.getSocket).mockImplementation((userId: string) => {
-        return userId === 'valid-user' ? { id: 'socket-1' } : null;
+        return userId === 'valid-user' ? { id: 'socket-1' } as Socket : null;
       });
       
       const targetUsers = ['valid-user', 'invalid-user'];
@@ -318,11 +333,24 @@ describe('WebSocket Utils', () => {
     });
 
     it('should handle missing handshake query gracefully', () => {
-      mockSocket.handshake = { query: {} } as any;
+      const socketWithEmptyQuery = {
+        ...mockSocket,
+        handshake: {
+          query: {},
+          headers: {},
+          time: new Date().toISOString(),
+          address: '127.0.0.1',
+          xdomain: false,
+          secure: false,
+          issued: Date.now(),
+          url: '/socket.io',
+          auth: {},
+        } as any,
+      };
       
-      const roomId = getSocketRoomId(mockSocket as Socket);
-      const displayName = getSocketDisplayName(mockSocket as Socket);
-      const metadata = getSocketMetadata(mockSocket as Socket);
+      const roomId = getSocketRoomId(socketWithEmptyQuery as Socket);
+      const displayName = getSocketDisplayName(socketWithEmptyQuery as Socket);
+      const metadata = getSocketMetadata(socketWithEmptyQuery as Socket);
       
       expect(roomId).toBeUndefined();
       expect(displayName).toBeUndefined();

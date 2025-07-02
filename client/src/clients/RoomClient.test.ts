@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createNewRoom, getRoom } from './RoomClient';
 import ConfigProvider from '../lib/ConfigProvider';
+import { createNewRoom, getRoom } from './RoomClient';
 
 // Mock dependencies
 vi.mock('../lib/ConfigProvider', () => ({

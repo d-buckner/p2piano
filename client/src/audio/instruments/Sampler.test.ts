@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Sampler as ToneSampler } from 'tone';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Sampler from './Sampler';
+
 
 vi.mock('tone', () => ({
   Sampler: vi.fn(),
@@ -15,7 +16,12 @@ vi.mock('./getDelayTime', () => ({
 }));
 
 describe('Sampler', () => {
-  let mockSamplerInstance: any;
+  let mockSamplerInstance: {
+    triggerAttack: ReturnType<typeof vi.fn>;
+    triggerRelease: ReturnType<typeof vi.fn>;
+    releaseAll: ReturnType<typeof vi.fn>;
+    toDestination: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     mockSamplerInstance = {
@@ -24,6 +30,7 @@ describe('Sampler', () => {
       releaseAll: vi.fn(),
       toDestination: vi.fn().mockReturnThis(),
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (ToneSampler as any).mockImplementation(() => mockSamplerInstance);
   });
 

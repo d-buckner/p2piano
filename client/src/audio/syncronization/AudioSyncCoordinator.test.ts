@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import AudioSyncCoordinator from './AudioSyncCoordinator';
-import RealTimeController from '../../networking/RealTimeController';
 import * as ConnectionActions from '../../actions/ConnectionActions';
+import RealTimeController from '../../networking/RealTimeController';
+import { ACTION } from '../../networking/transports/WebRtcController';
 import * as connectionSelectors from '../../selectors/connectionSelectors';
 import * as workspaceSelectors from '../../selectors/workspaceSelectors';
-import { ACTION } from '../../networking/transports/WebRtcController';
+import AudioSyncCoordinator from './AudioSyncCoordinator';
 
 // Mock all dependencies
 vi.mock('../../networking/RealTimeController');
@@ -21,7 +21,10 @@ vi.mock('../../selectors/workspaceSelectors');
 vi.mock('../../lib/Logger');
 
 describe('AudioSyncCoordinator', () => {
-  let mockRealTimeController: any;
+  let mockRealTimeController: {
+    sendToPeer: ReturnType<typeof vi.fn>;
+    on: ReturnType<typeof vi.fn>;
+  };
   
   beforeEach(() => {
     vi.clearAllMocks();
@@ -43,9 +46,9 @@ describe('AudioSyncCoordinator', () => {
     vi.spyOn(performance, 'now').mockReturnValue(1000);
     
     // Mock setTimeout to prevent actual delays in tests
-    vi.spyOn(global, 'setTimeout').mockImplementation((cb: any) => {
+    vi.spyOn(global, 'setTimeout').mockImplementation(() => {
       // Don't actually delay, just return a fake timer ID
-      return 123 as any;
+      return 123 as NodeJS.Timeout;
     });
   });
   

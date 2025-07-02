@@ -1,11 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import RoomHandlers from './RoomHandlers';
 import * as NoteActions from '../actions/NoteActions';
 import { setRoom, setUserId } from '../actions/RoomActions';
-import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
-import { selectWorkspace, selectMyUser } from '../selectors/workspaceSelectors';
-import { selectNotesByMidi } from '../selectors/noteSelectors';
 import { InstrumentType } from '../audio/instruments/Instrument';
+import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
+import { selectNotesByMidi } from '../selectors/noteSelectors';
+import { selectWorkspace, selectMyUser } from '../selectors/workspaceSelectors';
+import { createTestRoom, createTestUser, createTestNotesByMidi } from '../test-utils/testDataFactories';
+import RoomHandlers from './RoomHandlers';
 
 // Mock all dependencies
 vi.mock('../actions/NoteActions', () => ({
@@ -99,14 +100,9 @@ describe('RoomHandlers', () => {
 
   describe('roomJoinHandler', () => {
     it('should register all users and set room state', () => {
+      const room = createTestRoom();
       const payload = {
-        room: {
-          id: 'room123',
-          users: {
-            user1: { userId: 'user1', instrument: InstrumentType.PIANO },
-            user2: { userId: 'user2', instrument: InstrumentType.SYNTH },
-          },
-        },
+        room,
         userId: 'user1',
       };
 
@@ -115,12 +111,13 @@ describe('RoomHandlers', () => {
       expect(InstrumentRegistry.register).toHaveBeenCalledWith('user1', InstrumentType.PIANO);
       expect(InstrumentRegistry.register).toHaveBeenCalledWith('user2', InstrumentType.SYNTH);
       expect(setUserId).toHaveBeenCalledWith('user1');
-      expect(setRoom).toHaveBeenCalledWith(payload.room);
+      expect(setRoom).toHaveBeenCalledWith(room);
     });
 
     it('should handle room with no users', () => {
+      const room = createTestRoom({ users: {} });
       const payload = {
-        room: { id: 'room123', users: {} },
+        room,
         userId: 'user1',
       };
 
@@ -172,7 +169,7 @@ describe('RoomHandlers', () => {
         },
       };
 
-      (selectWorkspace as any).mockReturnValue({ room: oldRoom });
+      vi.mocked(selectWorkspace).mockReturnValue({ room: oldRoom } as ReturnType<typeof selectWorkspace>);
 
       const payload = {
         room: newRoom,
@@ -192,7 +189,7 @@ describe('RoomHandlers', () => {
         },
       };
 
-      (selectWorkspace as any).mockReturnValue({ room });
+      vi.mocked(selectWorkspace).mockReturnValue({ room } as ReturnType<typeof selectWorkspace>);
 
       const payload = {
         room,
@@ -206,7 +203,7 @@ describe('RoomHandlers', () => {
     });
 
     it('should handle missing user gracefully', () => {
-      (selectWorkspace as any).mockReturnValue({ room: { users: {} } });
+      vi.mocked(selectWorkspace).mockReturnValue({ room: { users: {} } } as ReturnType<typeof selectWorkspace>);
 
       const payload = {
         room: { users: {} },
@@ -241,22 +238,16 @@ describe('RoomHandlers', () => {
 
   describe('blurHandler', () => {
     it('should release all notes for current user', () => {
-      const mockUser = { userId: 'currentUser' };
-      const mockNotes = {
-        60: [
-          { midi: 60, peerId: 'currentUser' },
-          { midi: 60, peerId: 'otherUser' },
-        ],
-        64: [
-          { midi: 64, peerId: 'currentUser' },
-        ],
-        67: [
-          { midi: 67, peerId: 'otherUser' },
-        ],
-      };
+      const currentUser = createTestUser({ userId: 'currentUser' });
+      const mockNotes = createTestNotesByMidi([
+        { midi: 60, peerId: 'currentUser' },
+        { midi: 60, peerId: 'otherUser' },
+        { midi: 64, peerId: 'currentUser' },
+        { midi: 67, peerId: 'otherUser' },
+      ]);
 
-      (selectMyUser as any).mockReturnValue(mockUser);
-      (selectNotesByMidi as any).mockReturnValue(mockNotes);
+      vi.mocked(selectMyUser).mockReturnValue(currentUser);
+      vi.mocked(selectNotesByMidi).mockReturnValue(mockNotes);
 
       RoomHandlers.blurHandler();
 
@@ -267,8 +258,8 @@ describe('RoomHandlers', () => {
     });
 
     it('should handle no current user', () => {
-      (selectMyUser as any).mockReturnValue(null);
-      (selectNotesByMidi as any).mockReturnValue({});
+      vi.mocked(selectMyUser).mockReturnValue(null);
+      vi.mocked(selectNotesByMidi).mockReturnValue({});
 
       RoomHandlers.blurHandler();
 
@@ -276,9 +267,9 @@ describe('RoomHandlers', () => {
     });
 
     it('should handle empty notes', () => {
-      const mockUser = { userId: 'currentUser' };
-      (selectMyUser as any).mockReturnValue(mockUser);
-      (selectNotesByMidi as any).mockReturnValue({});
+      const currentUser = createTestUser({ userId: 'currentUser' });
+      vi.mocked(selectMyUser).mockReturnValue(currentUser);
+      vi.mocked(selectNotesByMidi).mockReturnValue({});
 
       RoomHandlers.blurHandler();
 

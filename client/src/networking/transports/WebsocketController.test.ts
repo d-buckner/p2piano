@@ -1,8 +1,8 @@
+import { io } from 'socket.io-client';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import WebsocketController, { WEBSOCKET_ACTIONS } from './WebsocketController';
 import { addPeerConnection, removePeerConnection } from '../../actions/ConnectionActions';
 import { Transport } from '../../constants';
-import { io } from 'socket.io-client';
+import WebsocketController, { WEBSOCKET_ACTIONS } from './WebsocketController';
 
 // Mock dependencies
 vi.mock('socket.io-client', () => ({
@@ -32,9 +32,9 @@ vi.mock('../../lib/ConfigProvider', () => ({
 
 vi.mock('../../lib/Logger', () => ({
   default: {
-    error: vi.fn(),
-    warn: vi.fn(),
-    info: vi.fn(),
+    ERROR: vi.fn(),
+    WARN: vi.fn(),
+    INFO: vi.fn(),
   },
 }));
 
@@ -60,7 +60,8 @@ describe('WebsocketController', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset singleton instance
-    (WebsocketController as any).instance = undefined;
+    // @ts-expect-error - accessing private property for testing
+    WebsocketController.instance = undefined;
   });
 
   afterEach(() => {
@@ -184,7 +185,7 @@ describe('WebsocketController', () => {
 
   describe('user connection management', () => {
     it('should handle user connections', () => {
-      const controller = WebsocketController.getInstance();
+      WebsocketController.getInstance();
       
       // Get the registered callback for USER_CONNECT
       const connectCallback = mockSocket.on.mock.calls.find(
@@ -204,7 +205,7 @@ describe('WebsocketController', () => {
     });
 
     it('should handle user disconnections', () => {
-      const controller = WebsocketController.getInstance();
+      WebsocketController.getInstance();
       
       // Get the registered callback for USER_DISCONNECT
       const disconnectCallback = mockSocket.on.mock.calls.find(
@@ -222,7 +223,7 @@ describe('WebsocketController', () => {
 
   describe('error handling', () => {
     it('should handle rate limiting errors', () => {
-      const controller = WebsocketController.getInstance();
+      WebsocketController.getInstance();
       
       // Get the exception handler
       const exceptionCallback = mockSocket.on.mock.calls.find(
@@ -238,7 +239,7 @@ describe('WebsocketController', () => {
     });
 
     it('should handle general websocket errors', () => {
-      const controller = WebsocketController.getInstance();
+      WebsocketController.getInstance();
       
       const exceptionCallback = mockSocket.on.mock.calls.find(
         call => call[0] === 'exception'

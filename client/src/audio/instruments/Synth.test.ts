@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PolySynth, Synth as ToneSynth } from 'tone';
-import Synth from './Synth';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DEFAULT_VELOCITY } from '../../constants';
+import Synth from './Synth';
+
 
 vi.mock('tone', () => ({
   PolySynth: vi.fn(),
@@ -18,7 +19,12 @@ vi.mock('./getDelayTime', () => ({
 
 describe('Synth', () => {
   let synth: Synth;
-  let mockPolySynthInstance: any;
+  let mockPolySynthInstance: {
+    triggerAttack: ReturnType<typeof vi.fn>;
+    triggerRelease: ReturnType<typeof vi.fn>;
+    releaseAll: ReturnType<typeof vi.fn>;
+    toDestination: ReturnType<typeof vi.fn>;
+  };
 
   beforeEach(() => {
     mockPolySynthInstance = {
@@ -27,6 +33,7 @@ describe('Synth', () => {
       releaseAll: vi.fn(),
       toDestination: vi.fn().mockReturnThis(),
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (PolySynth as any).mockImplementation(() => mockPolySynthInstance);
     synth = new Synth();
   });

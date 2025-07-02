@@ -1,11 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-  joinRoom,
-  updateDisplayName,
-  updateInstrument,
-  destroyRoom,
-} from './WorkspaceActions';
-import { setStore, store } from '../app/store';
+import { setStore } from '../app/store';
 import { getRoom } from '../clients/RoomClient';
 import { Transport } from '../constants';
 import ClientPreferences from '../lib/ClientPreferences';
@@ -13,7 +7,14 @@ import * as EventCoordinator from '../lib/EventCoordinator';
 import WebRtcController from '../networking/transports/WebRtcController';
 import WebsocketController from '../networking/transports/WebsocketController';
 import * as workspaceSelectors from '../selectors/workspaceSelectors';
+import {
+  joinRoom,
+  updateDisplayName,
+  updateInstrument,
+  destroyRoom,
+} from './WorkspaceActions';
 import type { Room } from '../lib/workspaceTypes';
+import type { Message } from '../networking/AbstractNetworkController';
 
 // Mock all dependencies
 vi.mock('../app/store', () => ({
@@ -28,8 +29,14 @@ vi.mock('../networking/transports/WebRtcController');
 vi.mock('../networking/transports/WebsocketController');
 vi.mock('../selectors/workspaceSelectors');
 
+type MockWebsocketController = {
+  broadcast: vi.Mock<[action: string, message: Message], void>;
+  sendToPeer: vi.Mock<[peerId: string, action: string, message: Message], void>;
+  destroy: vi.Mock<[], void>;
+};
+
 describe('WorkspaceActions', () => {
-  let mockWebsocketController: any;
+  let mockWebsocketController: MockWebsocketController;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -160,7 +167,7 @@ describe('WorkspaceActions', () => {
       const roomWithUndefinedUsers: Room = {
         roomId: 'undefined-users-room',
         name: 'Room with undefined users',
-        users: undefined as any,
+        users: undefined,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -300,7 +307,7 @@ describe('WorkspaceActions', () => {
     });
 
     it('should not update when user is undefined', () => {
-      vi.mocked(workspaceSelectors.selectMyUser).mockReturnValue(undefined as any);
+      vi.mocked(workspaceSelectors.selectMyUser).mockReturnValue(undefined);
 
       updateDisplayName('New Name');
 
@@ -345,7 +352,7 @@ describe('WorkspaceActions', () => {
         customProperty: 'should be preserved',
       };
 
-      vi.mocked(workspaceSelectors.selectMyUser).mockReturnValue(currentUser as any);
+      vi.mocked(workspaceSelectors.selectMyUser).mockReturnValue(currentUser);
 
       updateInstrument('electric-bass');
 
