@@ -57,15 +57,31 @@ jobs:
             client/coverage/
             service/coverage/
 
-      - name: Update coverage thresholds on main
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      - name: Update coverage thresholds if improved
+        if: github.event_name == 'pull_request'
         run: |
-          cd client && npm run coverage:update
-          cd ../service && npm run coverage:update
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          cd client && npm run coverage:update || true
+          cd ../service && npm run coverage:update || true
+          
+      - name: Check if thresholds were updated
+        if: github.event_name == 'pull_request'
+        id: check-thresholds
+        run: |
+          if git diff --quiet client/coverage.thresholds.json service/coverage.thresholds.json; then
+            echo "updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "updated=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit updated thresholds
+        if: github.event_name == 'pull_request' && steps.check-thresholds.outputs.updated == 'true'
+        run: |
+          git config --local user.email "coverage-bot@github.com"
+          git config --local user.name "coverage-bot"
           git add client/coverage.thresholds.json service/coverage.thresholds.json
-          git diff --staged --quiet || git commit -m "chore: update coverage thresholds [skip ci]"
+          git commit -m "chore: update coverage thresholds
+
+          🤖 Generated with [GitHub Actions](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
           git push
 
       - name: Generate consolidated coverage report
