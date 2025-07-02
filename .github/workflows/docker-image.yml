@@ -26,8 +26,12 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build the server image
       run: |
-        cd service && docker build . --file Dockerfile --tag ghcr.io/${{github.actor}}/p2piano-server:latest \
-        && docker push ghcr.io/${{github.actor}}/p2piano-server:latest
+        cd service && docker build . --file Dockerfile --tag ghcr.io/${{github.actor}}/p2piano-server:latest
+        
+    - name: Push the server image
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        docker push ghcr.io/${{github.actor}}/p2piano-server:latest
 
   build-client:
     runs-on: ubuntu-latest
@@ -48,5 +52,9 @@ jobs:
     - uses: actions/checkout@v4
     - name: Build the client image
       run: |
-        cd client && docker build . --file Dockerfile --tag ghcr.io/${{github.actor}}/p2piano-client:latest \
-        && docker push ghcr.io/${{github.actor}}/p2piano-client:latest
+        cd client && docker build . --file Dockerfile --tag ghcr.io/${{github.actor}}/p2piano-client:latest
+        
+    - name: Push the client image
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        docker push ghcr.io/${{github.actor}}/p2piano-client:latest
