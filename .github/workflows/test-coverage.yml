@@ -14,9 +14,9 @@ on:
       - 'service/**'
 
 jobs:
-  client-coverage:
+  test-coverage:
     runs-on: ubuntu-latest
-    name: Client Coverage
+    name: Test Coverage
     permissions:
       contents: write
       pull-requests: write
@@ -24,73 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Need full history for --changed flag
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: client/package-lock.json
-
-      - name: Install dependencies
-        working-directory: client
-        run: npm ci
-
-      - name: Run tests with coverage
-        working-directory: client
-        run: npm run test:ci
-
-      - name: Upload client coverage artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: client-coverage
-          path: |
-            client/coverage/coverage-summary.json
-            client/coverage/coverage-final.json
-
-  service-coverage:
-    runs-on: ubuntu-latest
-    name: Service Coverage
-    
-    steps:
-      - uses: actions/checkout@v4
-        with:
           fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: service/package-lock.json
-
-      - name: Install dependencies
-        working-directory: service
-        run: npm ci
-
-      - name: Run tests with coverage
-        working-directory: service
-        run: npm run test:ci
-
-      - name: Upload service coverage artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: service-coverage
-          path: |
-            service/coverage/coverage-summary.json
-            service/coverage/coverage-final.json
-
-  update-thresholds:
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [client-coverage, service-coverage]
-    runs-on: ubuntu-latest
-    name: Update Coverage Thresholds
-    
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -106,53 +40,39 @@ jobs:
         working-directory: service
         run: npm ci
 
-      - name: Update client coverage thresholds
+      - name: Run client tests with coverage
         working-directory: client
-        run: npm run coverage:update
+        run: npm run test:ci
 
-      - name: Update service coverage thresholds
+      - name: Run service tests with coverage
         working-directory: service
-        run: npm run coverage:update
+        run: npm run test:ci
 
-      - name: Commit threshold updates
+      - name: Update coverage thresholds on main
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: |
+          cd client && npm run coverage:update
+          cd ../service && npm run coverage:update
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git add client/coverage.thresholds.json service/coverage.thresholds.json
           git diff --staged --quiet || git commit -m "chore: update coverage thresholds [skip ci]"
           git push
 
-  coverage-report:
-    if: github.event_name == 'pull_request'
-    needs: [client-coverage, service-coverage]
-    runs-on: ubuntu-latest
-    name: Coverage Report
-    
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Download client coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: client-coverage
-          path: client-coverage
-
-      - name: Download service coverage
-        uses: actions/download-artifact@v4
-        with:
-          name: service-coverage
-          path: service-coverage
-
-      - name: Comment consolidated coverage on PR
+      - name: Comment client coverage on PR
+        if: github.event_name == 'pull_request'
         uses: davelosert/vitest-coverage-report-action@v2
         with:
-          json-summary-path: client-coverage/coverage-summary.json
-          json-final-path: client-coverage/coverage-final.json
+          working-directory: client
+          json-summary-path: coverage/coverage-summary.json
+          json-final-path: coverage/coverage-final.json
           name: Client Coverage
         
       - name: Comment service coverage on PR
+        if: github.event_name == 'pull_request'
         uses: davelosert/vitest-coverage-report-action@v2
         with:
-          json-summary-path: service-coverage/coverage-summary.json
-          json-final-path: service-coverage/coverage-final.json
+          working-directory: service
+          json-summary-path: coverage/coverage-summary.json
+          json-final-path: coverage/coverage-final.json
           name: Service Coverage
