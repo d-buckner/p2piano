@@ -90,6 +90,7 @@ export default class Piano implements Instrument {
   private swapInstrument(instrument: DPiano) {
     // stop any ringing in the existing piano
     this.instrument?.stopAll();
+    this.instrument?.dispose();
     // make the swap, let the old instrument be garbage collected
     this.instrument = instrument.toDestination();
     this.velocityIndex++;
