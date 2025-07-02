@@ -39,10 +39,10 @@ describe('UserUpdateDto', () => {
       expect(errors).toHaveLength(0);
     });
 
-    it('should pass validation for short color code', async () => {
+    it('should pass validation for short hex color code', async () => {
       dto.userId = '550e8400-e29b-41d4-a716-446655440000';
       dto.displayName = 'John';
-      dto.color = 'red';
+      dto.color = '#f00';
       dto.instrument = 'PIANO';
       
       const errors = await validate(dto);
@@ -110,18 +110,29 @@ describe('UserUpdateDto', () => {
     });
 
     describe('color validation', () => {
-      it('should fail validation for color too short', async () => {
+      it('should fail validation for invalid hex color format', async () => {
         dto.userId = '550e8400-e29b-41d4-a716-446655440000';
         dto.displayName = 'John';
-        dto.color = 'ab';
+        dto.color = 'red';
         dto.instrument = 'PIANO';
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.minLength).toBeDefined();
+        expect(errors[0].constraints?.matches).toBeDefined();
       });
 
-      it('should fail validation for color too long', async () => {
+      it('should fail validation for color without hash prefix', async () => {
+        dto.userId = '550e8400-e29b-41d4-a716-446655440000';
+        dto.displayName = 'John';
+        dto.color = 'FF0000';
+        dto.instrument = 'PIANO';
+        
+        const errors = await validate(dto);
+        expect(errors).toHaveLength(1);
+        expect(errors[0].constraints?.matches).toBeDefined();
+      });
+
+      it('should fail validation for color with invalid length', async () => {
         dto.userId = '550e8400-e29b-41d4-a716-446655440000';
         dto.displayName = 'John';
         dto.color = '#FFFFFFF';
@@ -129,7 +140,7 @@ describe('UserUpdateDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.maxLength).toBeDefined();
+        expect(errors[0].constraints?.matches).toBeDefined();
       });
     });
 

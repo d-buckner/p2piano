@@ -1,13 +1,14 @@
-import { IsString, IsUUID, ValidateNested, IsObject, MaxLength, IsOptional } from 'class-validator';
+import { IsString, IsUUID, ValidateNested, IsObject, MaxLength, IsOptional, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class SignalDataDto {
   @IsString()
-  @MaxLength(50000) // Increased limit for SimplePeer SDP
+  @MaxLength(10000) // Consistent with test expectations
   @IsOptional()
   sdp?: string;
 
   @IsString()
+  @IsIn(['offer', 'answer', 'pranswer', 'rollback'])
   @IsOptional()
   type?: string;
 

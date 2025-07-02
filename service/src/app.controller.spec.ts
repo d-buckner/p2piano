@@ -3,8 +3,8 @@ describe('AppController Session Management', () => {
 
   beforeEach(() => {
     mockResponse = {
-      setCookie: jest.fn(),
-      clearCookie: jest.fn(),
+      setCookie: vi.fn(),
+      clearCookie: vi.fn(),
     };
   });
 

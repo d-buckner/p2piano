@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { Signal } from './signal';
 import { SignalEvents } from './events';
 import { SignalPayloadDto } from '../../dto/ws/signal.dto';
@@ -7,46 +7,45 @@ import { getSocketSessionId } from '../utils';
 import { Socket } from 'socket.io';
 
 // Mock dependencies
-jest.mock('../utils', () => ({
-  getSocketSessionId: jest.fn(),
+vi.mock('../utils', () => ({
+  getSocketSessionId: vi.fn(),
   defaultWebSocketGatewayOptions: {}
 }));
 
-jest.mock('../SessionRegistry', () => ({
-  getSocket: jest.fn(),
-  clear: jest.fn()
+vi.mock('../SessionRegistry', () => ({
+  default: {
+    getSocket: vi.fn(),
+    registerSession: vi.fn(),
+    destroySession: vi.fn()
+  }
 }));
 
 describe('Signal Gateway', () => {
   let gateway: Signal;
-  let mockSocket: jest.Mocked<Socket>;
-  let targetSocket: jest.Mocked<Socket>;
+  let mockSocket: any;
+  let targetSocket: any;
 
-  const mockGetSocketSessionId = getSocketSessionId as jest.MockedFunction<typeof getSocketSessionId>;
-  const mockSessionRegistry = SessionRegistry as jest.Mocked<typeof SessionRegistry>;
+  const mockGetSocketSessionId = getSocketSessionId as any;
+  const mockSessionRegistry = SessionRegistry as any;
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [Signal],
-    }).compile();
-
-    gateway = module.get<Signal>(Signal);
+  beforeEach(() => {
+    gateway = new Signal();
 
     // Create mock sockets
     mockSocket = {
       id: 'sender-socket-id',
-      to: jest.fn().mockReturnThis(),
-      emit: jest.fn(),
+      to: vi.fn().mockReturnThis(),
+      emit: vi.fn(),
     } as any;
 
     targetSocket = {
       id: 'target-socket-id',
-      to: jest.fn().mockReturnThis(),
-      emit: jest.fn(),
+      to: vi.fn().mockReturnThis(),
+      emit: vi.fn(),
     } as any;
 
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('onSignal', () => {
@@ -57,7 +56,7 @@ describe('Signal Gateway', () => {
       mockGetSocketSessionId.mockReturnValue(senderUserId);
       mockSessionRegistry.getSocket.mockReturnValue(targetSocket);
       mockSocket.to.mockReturnValue({
-        emit: jest.fn()
+        emit: vi.fn()
       } as any);
     });
 
@@ -86,7 +85,7 @@ describe('Signal Gateway', () => {
         }
       };
 
-      const mockEmit = jest.fn();
+      const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
       gateway.onSignal(payload, mockSocket);
@@ -108,7 +107,7 @@ describe('Signal Gateway', () => {
         }
       };
 
-      const mockEmit = jest.fn();
+      const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
       gateway.onSignal(payload, mockSocket);
@@ -127,7 +126,7 @@ describe('Signal Gateway', () => {
         }
       };
 
-      const mockEmit = jest.fn();
+      const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
       gateway.onSignal(payload, mockSocket);
@@ -147,7 +146,7 @@ describe('Signal Gateway', () => {
         }
       };
 
-      const mockEmit = jest.fn();
+      const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
       gateway.onSignal(payload, mockSocket);
@@ -172,7 +171,8 @@ describe('Signal Gateway', () => {
           gateway.onSignal(payload, mockSocket);
         }).not.toThrow();
 
-        expect(mockSocket.to).toHaveBeenCalledWith(undefined);
+        // Should not call socket.to() when target is not found (method returns early)
+        expect(mockSocket.to).not.toHaveBeenCalled();
       });
 
       it('should handle case when sender user ID is not found', () => {
@@ -183,15 +183,14 @@ describe('Signal Gateway', () => {
           signalData: { type: 'offer', sdp: 'test-sdp' }
         };
 
-        const mockEmit = jest.fn();
+        const mockEmit = vi.fn();
         mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
         gateway.onSignal(payload, mockSocket);
 
-        expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
-          signalData: payload.signalData,
-          userId: null
-        });
+        // Should not emit signal when sender is not authenticated (method returns early)
+        expect(mockEmit).not.toHaveBeenCalled();
+        expect(mockSocket.to).not.toHaveBeenCalled();
       });
 
       it('should handle empty signal data', () => {
@@ -200,7 +199,7 @@ describe('Signal Gateway', () => {
           signalData: {} as any
         };
 
-        const mockEmit = jest.fn();
+        const mockEmit = vi.fn();
         mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
         expect(() => {
@@ -234,7 +233,7 @@ describe('Signal Gateway', () => {
           signalData: { type: 'offer', sdp: 'test-sdp' }
         };
 
-        const mockEmit = jest.fn();
+        const mockEmit = vi.fn();
         mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
         gateway.onSignal(payload, mockSocket);
@@ -277,7 +276,7 @@ a=rtpmap:111 opus/48000/2`;
           }
         };
 
-        const mockEmit = jest.fn();
+        const mockEmit = vi.fn();
         mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
         gateway.onSignal(payload, mockSocket);
@@ -300,7 +299,7 @@ a=rtpmap:111 opus/48000/2`;
           signalData: candidate
         };
 
-        const mockEmit = jest.fn();
+        const mockEmit = vi.fn();
         mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
         gateway.onSignal(payload, mockSocket);

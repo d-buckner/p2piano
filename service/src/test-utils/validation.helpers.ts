@@ -1,5 +1,6 @@
 import { validate, ValidationError } from 'class-validator';
 import { ExecutionContext } from '@nestjs/common';
+import { ObjectId, WithId } from 'mongodb';
 import { Session } from '../entities/Session';
 import { Socket } from 'socket.io';
 import { Request } from '../types/request';
@@ -18,7 +19,7 @@ interface MockWsClientOptions {
     issued: number;
     url: string;
   };
-  disconnect?: jest.Mock;
+  disconnect?: any;
   [key: string]: any;
 }
 
@@ -58,16 +59,16 @@ export async function expectValidationSuccess(dto: object): Promise<void> {
 }
 
 /**
- * Helper to create valid UUID for testing
+ * Helper to create UUID for testing
  */
-export function createValidUUID(): string {
+export function createUUID(): string {
   return '550e8400-e29b-41d4-a716-446655440000';
 }
 
 /**
- * Helper to create multiple valid UUIDs for testing
+ * Helper to create multiple UUIDs for testing
  */
-export function createValidUUIDs(count: number): string[] {
+export function createUUIDs(count: number): string[] {
   return Array(count).fill(0).map((_, i) => 
     `550e8400-e29b-41d4-a716-44665544000${i.toString().padStart(1, '0')}`
   );
@@ -107,16 +108,33 @@ export function getConstraintMessages(errors: ValidationError[]): string[] {
 }
 
 /**
+ * Helper to create mock ObjectId for MongoDB documents
+ */
+export function createMockObjectId(): ObjectId {
+  return new ObjectId();
+}
+
+/**
  * Helper to create mock session data
  */
 export function createMockSession(overrides: MockSessionOptions = {}): Session {
   return {
-    sessionId: createValidUUID(),
+    sessionId: createUUID(),
     createdAt: new Date(),
     lastActivity: new Date(),
     ipAddress: '192.168.1.1',
     userAgent: 'Mozilla/5.0 (Test)',
     ...overrides,
+  };
+}
+
+/**
+ * Helper to create mock session data with MongoDB _id field
+ */
+export function createMockSessionWithId(overrides: MockSessionOptions = {}): WithId<Session> {
+  return {
+    _id: createMockObjectId(),
+    ...createMockSession(overrides),
   };
 }
 
@@ -137,7 +155,7 @@ export function createMockWsClient(overrides: MockWsClientOptions = {}): Partial
       url: '/',
       ...overrides.handshake,
     },
-    disconnect: jest.fn(),
+    disconnect: () => {},
     ...overrides,
   };
 }
@@ -160,7 +178,7 @@ export function createMockHttpRequest(overrides: MockHttpRequestOptions = {}): P
  */
 export function createMockHttpExecutionContext(request: MockHttpRequestOptions = {}): Partial<ExecutionContext> {
   return {
-    switchToHttp: jest.fn().mockReturnValue({
+    switchToHttp: () => ({
       getRequest: () => createMockHttpRequest(request),
     }),
   } as Partial<ExecutionContext>;
@@ -171,7 +189,7 @@ export function createMockHttpExecutionContext(request: MockHttpRequestOptions =
  */
 export function createMockWsExecutionContext(client: MockWsClientOptions = {}): Partial<ExecutionContext> {
   return {
-    switchToWs: jest.fn().mockReturnValue({
+    switchToWs: () => ({
       getClient: () => createMockWsClient(client),
     }),
   } as Partial<ExecutionContext>;

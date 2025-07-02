@@ -4,16 +4,19 @@ on:
   pull_request:
     paths:
       - 'client/**'
+      - 'service/**'
       - '.github/workflows/test-coverage.yml'
   push:
     branches:
       - main
     paths:
       - 'client/**'
+      - 'service/**'
 
 jobs:
-  coverage:
+  client-coverage:
     runs-on: ubuntu-latest
+    name: Client Coverage
     
     steps:
       - uses: actions/checkout@v4
@@ -42,3 +45,37 @@ jobs:
           working-directory: client
           json-summary-path: coverage/coverage-summary.json
           json-final-path: coverage/coverage-final.json
+          name: Client Coverage
+
+  service-coverage:
+    runs-on: ubuntu-latest
+    name: Service Coverage
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: service/package-lock.json
+
+      - name: Install dependencies
+        working-directory: service
+        run: npm ci
+
+      - name: Run tests with coverage
+        working-directory: service
+        run: npm run test:ci
+
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@v2
+        with:
+          working-directory: service
+          json-summary-path: coverage/coverage-summary.json
+          json-final-path: coverage/coverage-final.json
+          name: Service Coverage

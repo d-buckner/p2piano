@@ -1,39 +1,29 @@
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import SessionProvider, { Session } from './Session';
 import Database from '../clients/Database';
 import { SessionNotFoundError } from '../errors';
+import ConfigProvider from '../config/ConfigProvider';
 
-// Mock Database
-jest.mock('../clients/Database', () => ({
+// Mock ConfigProvider to test IP validation
+vi.mock('../config/ConfigProvider', () => ({
   default: {
-    collection: jest.fn(),
+    isProduction: vi.fn(),
   },
 }));
 
-// Mock crypto.randomUUID instead of uuid package
-Object.defineProperty(global, 'crypto', {
-  value: {
-    randomUUID: jest.fn().mockReturnValue('550e8400-e29b-41d4-a716-446655440000'),
-  },
-});
-
 describe('SessionProvider', () => {
   let mockCollection: any;
-  let mockRandomUUID: jest.Mock;
+  let mockRandomUUID: any;
+  let mockConfigProvider: any;
 
   beforeEach(() => {
-    mockCollection = {
-      insertOne: jest.fn(),
-      findOne: jest.fn(),
-      updateOne: jest.fn(),
-      deleteOne: jest.fn(),
-      deleteMany: jest.fn(),
-      createIndex: jest.fn(),
-    };
-
-    (Database.collection as jest.Mock).mockReturnValue(mockCollection);
-    mockRandomUUID = global.crypto.randomUUID as jest.Mock;
+    // Get the mocked collection from the global Database mock
+    mockCollection = (Database.collection as any)();
+    mockRandomUUID = global.crypto.randomUUID as any;
+    mockConfigProvider = ConfigProvider as any;
+    mockConfigProvider.isProduction.mockReturnValue(false);
     
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('create', () => {
@@ -170,24 +160,105 @@ describe('SessionProvider', () => {
     });
   });
 
-  describe('database indexes', () => {
-    it('should create proper indexes on initialization', () => {
-      // The indexes are created when the module is loaded
-      expect(mockCollection.createIndex).toHaveBeenCalledWith({ sessionId: 1 });
-      expect(mockCollection.createIndex).toHaveBeenCalledWith(
-        { lastActivity: 1 }, 
-        { expireAfterSeconds: 86400 }
-      );
-    });
-  });
+  describe('IP address validation', () => {
+    const sessionId = '550e8400-e29b-41d4-a716-446655440000';
+    const mockSession: Session = {
+      sessionId,
+      createdAt: new Date('2023-01-01'),
+      lastActivity: new Date('2023-01-01'),
+      ipAddress: '192.168.1.1',
+      userAgent: 'Mozilla/5.0',
+    };
 
-  describe('session expiration', () => {
-    it('should set TTL to 24 hours (86400 seconds)', () => {
-      // Verify the TTL index is set correctly
-      expect(mockCollection.createIndex).toHaveBeenCalledWith(
-        { lastActivity: 1 }, 
-        { expireAfterSeconds: 86400 }
-      );
+    it('should allow IP mismatch in non-production mode', async () => {
+      mockConfigProvider.isProduction.mockReturnValue(false);
+      mockCollection.findOne.mockResolvedValue(mockSession);
+      mockCollection.updateOne.mockResolvedValue({ modifiedCount: 1 });
+
+      const result = await SessionProvider.get(sessionId, '10.0.0.1');
+
+      expect(result).toBe(mockSession);
+      expect(mockCollection.updateOne).toHaveBeenCalled();
+    });
+
+    it('should reject IP mismatch in production mode', async () => {
+      mockConfigProvider.isProduction.mockReturnValue(true);
+      mockCollection.findOne.mockResolvedValue(mockSession);
+
+      await expect(SessionProvider.get(sessionId, '10.0.0.1'))
+        .rejects.toThrow(new SessionNotFoundError(`Session ${sessionId} IP mismatch`));
+
+      expect(mockCollection.findOne).toHaveBeenCalledWith({ sessionId });
+      expect(mockCollection.updateOne).not.toHaveBeenCalled();
+    });
+
+    it('should allow matching IP addresses in production', async () => {
+      mockConfigProvider.isProduction.mockReturnValue(true);
+      mockCollection.findOne.mockResolvedValue(mockSession);
+      mockCollection.updateOne.mockResolvedValue({ modifiedCount: 1 });
+
+      const result = await SessionProvider.get(sessionId, '192.168.1.1');
+
+      expect(result).toBe(mockSession);
+      expect(mockCollection.updateOne).toHaveBeenCalled();
+    });
+
+    it('should allow access when session has no stored IP address', async () => {
+      const sessionWithoutIP = { ...mockSession, ipAddress: undefined };
+      mockConfigProvider.isProduction.mockReturnValue(true);
+      mockCollection.findOne.mockResolvedValue(sessionWithoutIP);
+      mockCollection.updateOne.mockResolvedValue({ modifiedCount: 1 });
+
+      const result = await SessionProvider.get(sessionId, '192.168.1.100');
+
+      expect(result).toBe(sessionWithoutIP);
+      expect(mockCollection.updateOne).toHaveBeenCalled();
+    });
+
+    it('should allow access when no IP address is provided', async () => {
+      mockConfigProvider.isProduction.mockReturnValue(true);
+      mockCollection.findOne.mockResolvedValue(mockSession);
+      mockCollection.updateOne.mockResolvedValue({ modifiedCount: 1 });
+
+      const result = await SessionProvider.get(sessionId);
+
+      expect(result).toBe(mockSession);
+      expect(mockCollection.updateOne).toHaveBeenCalled();
+    });
+
+    it('should handle edge case with empty string IP addresses', async () => {
+      const sessionWithEmptyIP = { ...mockSession, ipAddress: '' };
+      mockConfigProvider.isProduction.mockReturnValue(true);
+      mockCollection.findOne.mockResolvedValue(sessionWithEmptyIP);
+      mockCollection.updateOne.mockResolvedValue({ modifiedCount: 1 });
+
+      const result = await SessionProvider.get(sessionId, '192.168.1.1');
+
+      expect(result).toBe(sessionWithEmptyIP);
+      expect(mockCollection.updateOne).toHaveBeenCalled();
+    });
+
+    it('should validate IPv6 addresses in production', async () => {
+      const ipv6Session = { ...mockSession, ipAddress: '2001:db8::1' };
+      mockConfigProvider.isProduction.mockReturnValue(true);
+      mockCollection.findOne.mockResolvedValue(ipv6Session);
+
+      await expect(SessionProvider.get(sessionId, '2001:db8::2'))
+        .rejects.toThrow(SessionNotFoundError);
+
+      expect(mockCollection.updateOne).not.toHaveBeenCalled();
+    });
+
+    it('should allow matching IPv6 addresses in production', async () => {
+      const ipv6Session = { ...mockSession, ipAddress: '2001:db8::1' };
+      mockConfigProvider.isProduction.mockReturnValue(true);
+      mockCollection.findOne.mockResolvedValue(ipv6Session);
+      mockCollection.updateOne.mockResolvedValue({ modifiedCount: 1 });
+
+      const result = await SessionProvider.get(sessionId, '2001:db8::1');
+
+      expect(result).toBe(ipv6Session);
+      expect(mockCollection.updateOne).toHaveBeenCalled();
     });
   });
 

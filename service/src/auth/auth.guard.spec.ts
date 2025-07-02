@@ -1,87 +1,94 @@
-import { ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from './auth.guard';
 import SessionProvider from '../entities/Session';
+import { SessionExtractor } from '../utils/session-extractor';
+import { AuthenticationError } from '../errors';
+import { 
+  createMockSessionWithId, 
+  createUUID
+} from '../test-utils/validation.helpers';
 
-// Mock SessionProvider
-jest.mock('../entities/Session');
+import { vi } from 'vitest';
+
+// Mock SessionProvider and SessionExtractor
+vi.mock('../entities/Session');
+vi.mock('../utils/session-extractor');
 
 describe('AuthGuard', () => {
   let guard: AuthGuard;
-  let mockExecutionContext: jest.Mocked<ExecutionContext>;
+  let mockExecutionContext: any;
   let mockRequest: any;
-  let mockSessionProvider: jest.Mocked<typeof SessionProvider>;
+  let mockSessionProvider: any;
+  let mockSessionExtractor: any;
 
   beforeEach(() => {
-    mockSessionProvider = SessionProvider as jest.Mocked<typeof SessionProvider>;
+    mockSessionProvider = SessionProvider as any;
+    mockSessionExtractor = SessionExtractor as any;
+    
+    // Set up mock implementations
+    mockSessionProvider.get = vi.fn();
+    mockSessionExtractor.extractSessionId = vi.fn();
+    
     guard = new AuthGuard();
     mockRequest = {
       headers: {},
       cookies: {},
+      ip: '192.168.1.1',
     };
 
     mockExecutionContext = {
-      switchToHttp: jest.fn().mockReturnValue({
+      switchToHttp: vi.fn(() => ({
         getRequest: () => mockRequest,
-      }),
+      })),
     } as any;
 
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('valid sessions', () => {
     it('should allow access with valid session in Authorization header', async () => {
-      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      const mockSession = { 
-        _id: '507f1f77bcf86cd799439011',
-        sessionId, 
-        createdAt: new Date(), 
-        lastActivity: new Date() 
-      };
+      const sessionId = createUUID();
+      const mockSession = createMockSessionWithId({ sessionId });
       
-      mockRequest.headers.authorization = `Bearer ${sessionId}`;
+      mockSessionExtractor.extractSessionId.mockReturnValue(sessionId);
       mockSessionProvider.get.mockResolvedValue(mockSession);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(true);
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId);
+      expect(mockSessionExtractor.extractSessionId).toHaveBeenCalledWith(mockRequest);
+      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, mockRequest.ip);
       expect(mockRequest.session).toBe(mockSession);
     });
 
     it('should allow access with valid session in cookie', async () => {
-      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      const mockSession = { 
-        _id: '507f1f77bcf86cd799439011',
-        sessionId, 
-        createdAt: new Date(), 
-        lastActivity: new Date() 
-      };
+      const sessionId = createUUID();
+      const mockSession = createMockSessionWithId({ sessionId });
       
-      mockRequest.cookies.sessionId = sessionId;
+      mockSessionExtractor.extractSessionId.mockReturnValue(sessionId);
       mockSessionProvider.get.mockResolvedValue(mockSession);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(true);
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId);
+      expect(mockSessionExtractor.extractSessionId).toHaveBeenCalledWith(mockRequest);
+      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, mockRequest.ip);
       expect(mockRequest.session).toBe(mockSession);
     });
 
 
     it('should prioritize Authorization header over other methods', async () => {
-      const headerSessionId = '550e8400-e29b-41d4-a716-446655440000';
-      const cookieSessionId = '6ba7b810-9dad-11d1-80b4-00c04fd430c8';
-      const mockSession = { sessionId: headerSessionId, createdAt: new Date(), lastActivity: new Date() };
+      const headerSessionId = createUUID();
+      const mockSession = createMockSessionWithId({ sessionId: headerSessionId });
       
-      mockRequest.headers.authorization = `Bearer ${headerSessionId}`;
-      mockRequest.cookies.sessionId = cookieSessionId;
+      mockSessionExtractor.extractSessionId.mockReturnValue(headerSessionId);
       mockSessionProvider.get.mockResolvedValue(mockSession);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(true);
-      expect(SessionProvider.get).toHaveBeenCalledWith(headerSessionId);
-      expect(mockSessionProvider.get).not.toHaveBeenCalledWith(cookieSessionId);
+      expect(mockSessionExtractor.extractSessionId).toHaveBeenCalledWith(mockRequest);
+      expect(mockSessionProvider.get).toHaveBeenCalledWith(headerSessionId, mockRequest.ip);
     });
   });
 
@@ -93,81 +100,88 @@ describe('AuthGuard', () => {
       expect(mockSessionProvider.get).not.toHaveBeenCalled();
     });
 
-    it('should throw UnauthorizedException when session does not exist', async () => {
-      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
+    it('should throw AuthenticationError when session does not exist', async () => {
+      const sessionId = createUUID();
       
-      mockRequest.headers.authorization = `Bearer ${sessionId}`;
+      mockSessionExtractor.extractSessionId.mockReturnValue(sessionId);
       mockSessionProvider.get.mockResolvedValue(null);
 
       await expect(guard.canActivate(mockExecutionContext))
-        .rejects.toThrow(new UnauthorizedException('Invalid session'));
+        .rejects.toThrow(AuthenticationError);
       
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId);
+      expect(mockSessionExtractor.extractSessionId).toHaveBeenCalledWith(mockRequest);
+      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, mockRequest.ip);
     });
 
-    it('should throw UnauthorizedException when SessionProvider throws error', async () => {
-      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
+    it('should throw AuthenticationError when SessionProvider throws error', async () => {
+      const sessionId = createUUID();
       
-      mockRequest.headers.authorization = `Bearer ${sessionId}`;
+      mockSessionExtractor.extractSessionId.mockReturnValue(sessionId);
       mockSessionProvider.get.mockRejectedValue(new Error('Session not found'));
 
       await expect(guard.canActivate(mockExecutionContext))
-        .rejects.toThrow(new UnauthorizedException('Invalid session'));
+        .rejects.toThrow(AuthenticationError);
       
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId);
+      expect(mockSessionExtractor.extractSessionId).toHaveBeenCalledWith(mockRequest);
+      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, mockRequest.ip);
     });
 
     it('should throw UnauthorizedException for malformed Authorization header', async () => {
-      mockRequest.headers.authorization = 'Invalid format';
+      mockSessionExtractor.extractSessionId.mockReturnValue(null);
 
       await expect(guard.canActivate(mockExecutionContext))
         .rejects.toThrow(new UnauthorizedException('Session required'));
       
+      expect(mockSessionExtractor.extractSessionId).toHaveBeenCalledWith(mockRequest);
       expect(mockSessionProvider.get).not.toHaveBeenCalled();
     });
 
     it('should throw UnauthorizedException for Authorization header without Bearer prefix', async () => {
-      mockRequest.headers.authorization = '550e8400-e29b-41d4-a716-446655440000';
+      mockSessionExtractor.extractSessionId.mockReturnValue(null);
 
       await expect(guard.canActivate(mockExecutionContext))
         .rejects.toThrow(new UnauthorizedException('Session required'));
       
+      expect(mockSessionExtractor.extractSessionId).toHaveBeenCalledWith(mockRequest);
       expect(mockSessionProvider.get).not.toHaveBeenCalled();
     });
 
     it('should throw UnauthorizedException for empty sessionId', async () => {
-      mockRequest.headers.authorization = 'Bearer ';
+      mockSessionExtractor.extractSessionId.mockReturnValue('');
 
       await expect(guard.canActivate(mockExecutionContext))
         .rejects.toThrow(new UnauthorizedException('Session required'));
       
+      expect(mockSessionExtractor.extractSessionId).toHaveBeenCalledWith(mockRequest);
       expect(mockSessionProvider.get).not.toHaveBeenCalled();
     });
   });
 
   describe('session extraction', () => {
     it('should extract session from Authorization header correctly', async () => {
-      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      const mockSession = { sessionId, createdAt: new Date(), lastActivity: new Date() };
+      const sessionId = createUUID();
+      const mockSession = createMockSessionWithId({ sessionId });
       
-      mockRequest.headers.authorization = `Bearer ${sessionId}`;
+      mockSessionExtractor.extractSessionId.mockReturnValue(sessionId);
       mockSessionProvider.get.mockResolvedValue(mockSession);
 
       await guard.canActivate(mockExecutionContext);
 
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId);
+      expect(mockSessionExtractor.extractSessionId).toHaveBeenCalledWith(mockRequest);
+      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, mockRequest.ip);
     });
 
     it('should fallback to cookie when Authorization header is missing', async () => {
-      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
-      const mockSession = { sessionId, createdAt: new Date(), lastActivity: new Date() };
+      const sessionId = createUUID();
+      const mockSession = createMockSessionWithId({ sessionId });
       
-      mockRequest.cookies.sessionId = sessionId;
+      mockSessionExtractor.extractSessionId.mockReturnValue(sessionId);
       mockSessionProvider.get.mockResolvedValue(mockSession);
 
       await guard.canActivate(mockExecutionContext);
 
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId);
+      expect(mockSessionExtractor.extractSessionId).toHaveBeenCalledWith(mockRequest);
+      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, mockRequest.ip);
     });
 
   });

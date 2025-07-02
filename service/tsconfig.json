@@ -19,6 +19,7 @@
     "noFallthroughCasesInSwitch": false,
     "lib": ["ES2021"],
     "moduleResolution": "node",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "types": ["vitest/globals"]
   }
 }
