@@ -1,8 +1,8 @@
 # P2Piano
 
-[![Build Status](https://github.com/d-buckner/p2piano/workflows/CI/badge.svg)](https://github.com/d-buckner/p2piano/actions)
-[![Client Coverage](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/d-buckner/p2piano/main/client/coverage.thresholds.json&label=Client%20Coverage&query=$.lines&suffix=%25&color=green)](https://github.com/d-buckner/p2piano/tree/main/client/coverage)
-[![Service Coverage](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/d-buckner/p2piano/main/service/coverage.thresholds.json&label=Service%20Coverage&query=$.lines&suffix=%25&color=green)](https://github.com/d-buckner/p2piano/tree/main/service/coverage)
+[![CI](https://img.shields.io/github/actions/workflow/status/d-buckner/p2piano/test-coverage.yml?branch=main&label=CI)](https://github.com/d-buckner/p2piano/actions)
+[![Client Coverage](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/d-buckner/p2piano/main/client/coverage.thresholds.json&label=Client%20Coverage&query=$.lines&suffix=%25&colorB=forestgreen&valColorA=red&valColorB=yellow&valColorC=forestgreen&valThresholdA=50&valThresholdB=70)](https://github.com/d-buckner/p2piano/tree/main/client/coverage)
+[![Service Coverage](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/d-buckner/p2piano/main/service/coverage.thresholds.json&label=Service%20Coverage&query=$.lines&suffix=%25&colorB=forestgreen&valColorA=red&valColorB=yellow&valColorC=forestgreen&valThresholdA=50&valThresholdB=70)](https://github.com/d-buckner/p2piano/tree/main/service/coverage)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 A real-time collaborative piano platform that enables musicians to play together over the internet with advanced audio synchronization.
