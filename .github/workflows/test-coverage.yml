@@ -17,6 +17,9 @@ jobs:
   client-coverage:
     runs-on: ubuntu-latest
     name: Client Coverage
+    permissions:
+      contents: write
+      pull-requests: write
     
     steps:
       - uses: actions/checkout@v4
@@ -37,6 +40,33 @@ jobs:
       - name: Run tests with coverage
         working-directory: client
         run: npm run test:ci
+
+      - name: Update coverage thresholds if improved
+        if: github.event_name == 'pull_request'
+        working-directory: client
+        run: |
+          npm run coverage:update || true
+          
+      - name: Check if thresholds were updated
+        if: github.event_name == 'pull_request'
+        id: check-thresholds
+        run: |
+          if git diff --quiet client/coverage.thresholds.json; then
+            echo "updated=false" >> $GITHUB_OUTPUT
+          else
+            echo "updated=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit updated thresholds
+        if: github.event_name == 'pull_request' && steps.check-thresholds.outputs.updated == 'true'
+        run: |
+          git config --local user.email "coverage-bot@github.com"
+          git config --local user.name "coverage-bot"
+          git add client/coverage.thresholds.json
+          git commit -m "chore: update coverage thresholds
+
+          🤖 Generated with [GitHub Actions](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+          git push
 
       - name: Comment coverage on PR
         if: github.event_name == 'pull_request'
