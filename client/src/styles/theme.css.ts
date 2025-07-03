@@ -8,6 +8,8 @@ export const [themeClass, vars] = createTheme({
     foreground: '#FFF',
     primary: '#FFF',
     muted: '#666',
+    success: '#059669',
+    danger: '#dc2626',
   },
   fonts: {
     body: 'Ysabeau, sans-serif',
@@ -25,5 +27,25 @@ export const [themeClass, vars] = createTheme({
     sm: '0.125rem',
     md: '0.375rem',
     lg: '0.5rem',
+  },
+  fontSizes: {
+    xs: '0.75rem',
+    sm: '0.875rem',
+    md: '1rem',
+    lg: '1.25rem',
+  },
+  sizes: {
+    headerHeight: '2.75rem',
+  },
+  overlays: {
+    subtle: 'rgba(255, 255, 255, 0.05)',
+    border: 'rgba(255, 255, 255, 0.1)',
+    hover: 'rgba(255, 255, 255, 0.1)',
+    active: 'rgba(255, 255, 255, 0.2)',
+    borderHover: 'rgba(255, 255, 255, 0.15)',
+    insetShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.3)',
+  },
+  transitions: {
+    fast: '0.2s ease',
   },
 });

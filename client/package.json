@@ -6,6 +6,7 @@
   "type": "module",
   "dependencies": {
     "@solidjs/router": "^0.15.3",
+    "clsx": "^2.1.1",
     "d-piano": "^0.2.1",
     "humidi": "^0.1.5",
     "piano-visualizer": "^1.0.17",

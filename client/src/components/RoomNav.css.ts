@@ -4,11 +4,13 @@ import { vars } from '../styles/theme.css';
 
 export const roomNav = style({
   width: '100%',
+  height: vars.sizes.headerHeight,
   boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-  padding: '4px 16px',
+  padding: `0 ${vars.spacing.md}`,
   backgroundColor: vars.colors.secondary,
   display: 'flex',
   justifyContent: 'space-between',
+  alignItems: 'center',
   color: 'white',
 });
 
