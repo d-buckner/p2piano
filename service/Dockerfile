@@ -14,7 +14,7 @@ COPY tsconfig*.json ./
 RUN npm install
 
 # Copy source and build
-COPY src .
+COPY src ./src
 RUN npm run build
 
 # Change ownership to non-root user
