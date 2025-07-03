@@ -1,15 +1,7 @@
 import SessionRegistry from './SessionRegistry';
 import ConfigProvider from '../config/ConfigProvider';
+import type { AuthenticatedSocket } from '../types/socket';
 
-import type { Socket } from 'socket.io';
-import type { Session } from '../entities/Session';
-
-// Extend Socket to include session property
-declare module 'socket.io' {
-  interface Socket {
-    session?: Session;
-  }
-}
 
 export const defaultWebSocketGatewayOptions = {
   namespace: 'api',
@@ -21,24 +13,24 @@ export const defaultWebSocketGatewayOptions = {
     },
 };
 
-export function getSocketSessionId(socket: Socket) {
+export function getSocketSessionId(socket: AuthenticatedSocket) {
   // Get sessionId from the session attached by auth guard
   return socket.session?.sessionId || null;
 }
 
-export function getSocketRoomId(socket: Socket) {
+export function getSocketRoomId(socket: AuthenticatedSocket) {
   return getSocketHandshakeQuery(socket).roomId as string;
 }
 
-export function getSocketDisplayName(socket: Socket) {
+export function getSocketDisplayName(socket: AuthenticatedSocket) {
   return getSocketHandshakeQuery(socket).displayName as string;
 }
 
-function getSocketHandshakeQuery(socket: Socket) {
+function getSocketHandshakeQuery(socket: AuthenticatedSocket) {
   return socket.handshake.query;
 }
 
-export function getSocketMetadata(socket: Socket) {
+export function getSocketMetadata(socket: AuthenticatedSocket) {
   return {
     displayName: getSocketDisplayName(socket),
     sessionId: getSocketSessionId(socket),
@@ -46,7 +38,7 @@ export function getSocketMetadata(socket: Socket) {
   }
 }
 
-export function broadcast<T>(socket: Socket, eventType: string, payload: T) {
+export function broadcast<T>(socket: AuthenticatedSocket, eventType: string, payload: T) {
   const roomId = getSocketRoomId(socket);
   const userId = getSocketSessionId(socket);
   const decoratedPayload: T & { userId: string } = {
@@ -56,7 +48,7 @@ export function broadcast<T>(socket: Socket, eventType: string, payload: T) {
   socket.to(roomId).emit(eventType, decoratedPayload);
 }
 
-export function broadcastToSubset<T>(socket: Socket, userIds: string[], eventType: string, payload: T) {
+export function broadcastToSubset<T>(socket: AuthenticatedSocket, userIds: string[], eventType: string, payload: T) {
   const userId = getSocketSessionId(socket);
   const decoratedPayload: T & { userId: string } = {
     ...payload,

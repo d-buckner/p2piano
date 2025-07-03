@@ -16,22 +16,16 @@ import {
 } from '../utils';
 import { RoomEvents, SocketEvents } from './events';
 import RoomEntity from '../../entities/Room';
-import SessionProvider from '../../entities/Session';
 import SessionRegistry from '../SessionRegistry';
 import { UserUpdateDto } from '../../dto/ws/user-update.dto';
 import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
-import { SessionExtractor } from '../../utils/session-extractor';
+import { SessionValidatorService } from '../../services/session-validator.service';
 import { WebSocketError, RoomError } from '../../errors';
 
-import type { Server, Socket } from 'socket.io';
-import type { Session } from '../../entities/Session';
+import type { Server } from 'socket.io';
+import type { AuthenticatedSocket } from '../../types/socket';
 
-// Extend Socket to include session property
-declare module 'socket.io' {
-  interface Socket {
-    session?: Session;
-  }
-}
+// Socket interface is now extended in types/socket.ts
 
 /**
  * WebSocket gateway handling real-time room operations.
@@ -50,7 +44,7 @@ export class Room {
   @WebSocketServer()
   server: Server;
 
-  constructor() {
+  constructor(private readonly sessionValidator: SessionValidatorService) {
     this.bootstrapConnection = this.bootstrapConnection.bind(this);
     this.destroyConnection = this.destroyConnection.bind(this);
   }
@@ -58,7 +52,7 @@ export class Room {
   @Throttle({ default: { limit: 60, ttl: 30000 } }) // 2 updates per second allows for smooth real-time collaboration
   @UseGuards(WsThrottlerGuard)
   @SubscribeMessage(RoomEvents.USER_UPDATE)
-  async onUserUpdate(@MessageBody(new WsValidationPipe()) payload: UserUpdateDto, @ConnectedSocket() socket: Socket) {
+  async onUserUpdate(@MessageBody(new WsValidationPipe()) payload: UserUpdateDto, @ConnectedSocket() socket: AuthenticatedSocket) {
     const roomId = getSocketRoomId(socket);
     const roomEntity = new RoomEntity(roomId);
     const roomData = await roomEntity.updateUser(payload);
@@ -76,7 +70,7 @@ export class Room {
     this.server.off(SocketEvents.CONNECTION, this.bootstrapConnection);
   }
 
-  async bootstrapConnection(socket: Socket): Promise<void> {
+  async bootstrapConnection(socket: AuthenticatedSocket): Promise<void> {
     const { displayName, roomId } = getSocketMetadata(socket);
 
     if (!roomId) {
@@ -85,28 +79,20 @@ export class Room {
       return;
     }
 
-    // Authenticate the WebSocket connection using the same logic as WsAuthGuard
+    // Session is already validated by SessionIoAdapter at transport level
+    // Now we just need to attach it to the socket for use in handlers
     try {
-      const sessionId = SessionExtractor.extractSessionIdFromSocket(socket);
-      if (!sessionId) {
-        Logger.warn(`User denied connection - no sessionId found`);
+      const isValid = await this.sessionValidator.validateAndAttachToSocket(socket);
+      
+      // This should always succeed since the adapter already validated it
+      if (!isValid) {
+        Logger.error(`Unexpected: session validation failed after adapter validation`);
         socket.disconnect();
         return;
       }
 
-      const ipAddress = this.getClientIP(socket);
-      const session = await SessionProvider.get(sessionId, ipAddress);
-      if (!session) {
-        Logger.warn(`User denied connection due to invalid session ${sessionId}`);
-        socket.disconnect();
-        return;
-      }
-
-      // Attach session to socket for later use
-      socket.session = session;
-
-      const prevSocket = SessionRegistry.getSocket(session.sessionId);
-      SessionRegistry.registerSession(session.sessionId, socket);
+      const prevSocket = SessionRegistry.getSocket(socket.session.sessionId);
+      SessionRegistry.registerSession(socket.session.sessionId, socket);
       // Disconnect existing connection if exists
       prevSocket?.disconnect();
 
@@ -114,7 +100,7 @@ export class Room {
 
       try {
         // Retry logic for race condition handling in the case the room was just created
-        const roomData = await this.retryRoomJoin(roomEntity, session.sessionId, displayName as string, 5);
+        const roomData = await this.retryRoomJoin(roomEntity, socket.session.sessionId, displayName as string, 5);
 
         socket.join(roomId);
         socket.on(SocketEvents.DISCONNECT, reason => this.destroyConnection(socket, reason));
@@ -125,31 +111,31 @@ export class Room {
         }
 
         broadcast(socket, RoomEvents.USER_CONNECT, {
-          userId: session.sessionId,
+          userId: socket.session.sessionId,
           room: roomData,
         });
 
         socket.emit(RoomEvents.ROOM_JOIN, {
-          userId: session.sessionId,
+          userId: socket.session.sessionId,
           room: roomData,
         });
 
-        Logger.log(`Session ${session.sessionId} connected to room ${roomId}`, 'RoomGateway');
+        Logger.log(`Session ${socket.session.sessionId} connected to room ${roomId}`, 'RoomGateway');
         Logger.debug(`Room ${roomId} now has ${Object.keys(roomData.users || {}).length} users`, 'RoomGateway');
       } catch (err) {
         const roomError = new RoomError(`Failed to join room ${roomId}`, {
-          sessionId: session.sessionId,
+          sessionId: socket.session.sessionId,
           roomId,
           originalError: err.message,
         });
         Logger.error(roomError);
-        SessionRegistry.destroySession(session.sessionId);
+        SessionRegistry.destroySession(socket.session.sessionId);
         socket.disconnect();
       }
     } catch (error) {
       const wsError = new WebSocketError('Session authentication failed', {
         roomId,
-        clientIP: this.getClientIP(socket),
+        clientIP: socket.session?.ipAddress || 'unknown',
         originalError: error.message,
       });
       Logger.warn(wsError);
@@ -174,7 +160,7 @@ export class Room {
     }
   }
 
-  async destroyConnection(socket: Socket, reason: string): Promise<void> {
+  async destroyConnection(socket: AuthenticatedSocket, reason: string): Promise<void> {
     const {
       sessionId,
       roomId,
@@ -205,9 +191,5 @@ export class Room {
     Logger.debug(`Disconnect reason: ${reason}`, 'RoomGateway');
   }
 
-  private getClientIP(socket: Socket): string | undefined {
-    return socket.handshake?.address ||
-      socket.conn?.remoteAddress;
-  }
 
 }

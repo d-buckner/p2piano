@@ -41,6 +41,13 @@ while read local_ref local_sha remote_ref remote_sha; do
       exit 1
     fi
     
+    # Check if there are any uncommitted threshold changes before testing
+    threshold_changes_before=$(git status --porcelain -- client/coverage.thresholds.json service/coverage.thresholds.json)
+    
+    # Extract current coverage values before running tests
+    client_coverage_before=$(cat client/coverage.thresholds.json | grep '"lines"' | sed 's/.*: \([0-9.]*\).*/\1/')
+    service_coverage_before=$(cat service/coverage.thresholds.json | grep '"lines"' | sed 's/.*: \([0-9.]*\).*/\1/')
+    
     # Stash any uncommitted changes to test only committed code
     echo "💾 Stashing uncommitted changes..."
     git stash push -u -m "pre-push-stash-$(date +%s)" || true
@@ -63,7 +70,7 @@ while read local_ref local_sha remote_ref remote_sha; do
       exit 1
     fi
     
-    # Update client coverage thresholds and check if they changed
+    # Update client coverage thresholds
     npm run coverage:update
     cd ..
     
@@ -85,20 +92,31 @@ while read local_ref local_sha remote_ref remote_sha; do
       exit 1
     fi
     
-    # Update service coverage thresholds and check if they changed
+    # Update service coverage thresholds
     npm run coverage:update
     cd ..
     
-    # Check if coverage thresholds were updated and commit them
-    if ! git diff --quiet -- client/coverage.thresholds.json service/coverage.thresholds.json; then
-      echo "📊 Coverage thresholds were updated, amending to last commit..."
+    # Restore any stashed changes first
+    git stash pop || true
+    
+    # Extract coverage values after running tests
+    client_coverage_after=$(cat client/coverage.thresholds.json | grep '"lines"' | sed 's/.*: \([0-9.]*\).*/\1/')
+    service_coverage_after=$(cat service/coverage.thresholds.json | grep '"lines"' | sed 's/.*: \([0-9.]*\).*/\1/')
+    
+    # Display coverage comparison
+    echo ""
+    echo "📊 Test Coverage Summary:"
+    echo "  Client:  ${client_coverage_before}% → ${client_coverage_after}%"
+    echo "  Service: ${service_coverage_before}% → ${service_coverage_after}%"
+    echo ""
+    
+    # Check if there are any threshold changes now (either from before or from test runs)
+    if ! git diff --quiet -- client/coverage.thresholds.json service/coverage.thresholds.json || [ -n "$threshold_changes_before" ]; then
+      echo "📊 Coverage thresholds need to be committed, amending to last commit..."
       git add client/coverage.thresholds.json service/coverage.thresholds.json
       git commit --amend --no-edit
       echo "✅ Coverage thresholds amended to last commit"
     fi
-    
-    # Restore any stashed changes
-    git stash pop || true
     
     echo "✅ All pre-push checks passed!"
   else

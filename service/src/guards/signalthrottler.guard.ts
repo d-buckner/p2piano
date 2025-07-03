@@ -1,5 +1,6 @@
 import { Injectable, Logger, ExecutionContext } from '@nestjs/common';
 import { ThrottlerGuard, ThrottlerRequest } from '@nestjs/throttler';
+import { AuthenticatedSocket } from '../types/socket';
 
 @Injectable()
 export class SignalThrottlerGuard extends ThrottlerGuard {
@@ -7,8 +8,8 @@ export class SignalThrottlerGuard extends ThrottlerGuard {
 
   async handleRequest(requestProps: ThrottlerRequest): Promise<boolean> {
     const { context, limit, ttl, throttler, blockDuration, generateKey } = requestProps;
-    const client = context.switchToWs().getClient();
-    const tracker = client.conn?.remoteAddress || client._socket?.remoteAddress || client.id;
+    const client = context.switchToWs().getClient<AuthenticatedSocket>();
+    const tracker = client.session?.ipAddress || client.id;
     const key = generateKey(context, tracker, throttler.name);
     
     const { totalHits, timeToExpire, isBlocked, timeToBlockExpire } = 

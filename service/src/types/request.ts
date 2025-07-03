@@ -5,7 +5,6 @@ export interface Request extends FastifyRequest {
   session?: Session;
   cookies: {
     sessionId?: string;
-    [key: string]: string | undefined;
   };
 }
 
