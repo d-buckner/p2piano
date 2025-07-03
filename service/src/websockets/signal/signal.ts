@@ -6,8 +6,7 @@ import { defaultWebSocketGatewayOptions, getSocketSessionId } from '../utils';
 import SessionRegistry from '../SessionRegistry';
 import { SignalPayloadDto } from '../../dto/ws/signal.dto';
 import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
-
-import type { Socket } from 'socket.io';
+import { AuthenticatedSocket } from '../../types/socket';
 
 @WebSocketGateway(defaultWebSocketGatewayOptions)
 export class Signal {
@@ -15,7 +14,7 @@ export class Signal {
 
   @UseGuards(SignalThrottlerGuard) 
   @SubscribeMessage(SignalEvents.SIGNAL)
-  onSignal(@MessageBody(new WsValidationPipe()) payload: SignalPayloadDto, @ConnectedSocket() socket: Socket) {
+  onSignal(@MessageBody(new WsValidationPipe()) payload: SignalPayloadDto, @ConnectedSocket() socket: AuthenticatedSocket) {
     try {
       const userId = getSocketSessionId(socket);
       if (!userId) {

@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import ConfigProvider from './config/ConfigProvider';
+import { SessionIoAdapter } from './adapters/session-io.adapter';
 
 async function bootstrap() {
   // Validate environment variables before starting the application
@@ -11,6 +12,9 @@ async function bootstrap() {
   
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
  
+  // Use custom WebSocket adapter for session validation
+  app.useWebSocketAdapter(new SessionIoAdapter(app));
+
   // Cookie support for sessions
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   await app.register(require('@fastify/cookie'), {

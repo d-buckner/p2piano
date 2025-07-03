@@ -1,231 +1,306 @@
+import { Test } from '@nestjs/testing';
 import { vi } from 'vitest';
+import { ExecutionContext } from '@nestjs/common';
 import { WsAuthGuard } from './ws-auth.guard';
-import SessionProvider from '../entities/Session';
-import { SessionExtractor } from '../utils/session-extractor';
+import { SessionValidatorService } from '../services/session-validator.service';
 import { 
-  createMockSessionWithId, 
+  createMockWsExecutionContext,
   createUUID
 } from '../test-utils/validation.helpers';
 
-// Mock SessionProvider and SessionExtractor
-vi.mock('../entities/Session');
-vi.mock('../utils/session-extractor');
-
 describe('WsAuthGuard', () => {
   let guard: WsAuthGuard;
-  let mockExecutionContext: any;
-  let mockClient: any;
-  let mockSessionProvider: any;
-  let mockSessionExtractor: any;
+  let sessionValidatorService: any;
 
-  beforeEach(() => {
-    mockSessionProvider = SessionProvider as any;
-    mockSessionExtractor = SessionExtractor as any;
-    
-    // Set up mock implementations
-    mockSessionProvider.get = vi.fn();
-    mockSessionExtractor.extractSessionIdFromSocket = vi.fn();
-    
-    guard = new WsAuthGuard();
-    mockClient = {
-      handshake: {
-        auth: {},
-        query: {},
-        headers: {},
-        address: '192.168.1.1',
-      },
-      disconnect: vi.fn(),
+  beforeEach(async () => {
+    // Create mock session validator service
+    sessionValidatorService = {
+      validateAndAttachToSocket: vi.fn(),
     };
 
-    mockExecutionContext = {
-      switchToWs: vi.fn(() => ({
-        getClient: () => mockClient,
-      })),
-    } as any;
+    const module = await Test.createTestingModule({
+      providers: [
+        {
+          provide: WsAuthGuard,
+          useFactory: () => new WsAuthGuard(sessionValidatorService),
+        },
+        {
+          provide: SessionValidatorService,
+          useValue: sessionValidatorService,
+        },
+      ],
+    }).compile();
+
+    guard = module.get<WsAuthGuard>(WsAuthGuard);
 
     vi.clearAllMocks();
   });
 
-  describe('valid sessions', () => {
-    it('should allow connection with valid session in handshake auth', async () => {
+  describe('Session Validation', () => {
+    it('should allow connection when session validation succeeds', async () => {
       const sessionId = createUUID();
-      const mockSession = createMockSessionWithId({ sessionId });
-      
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(sessionId);
-      mockSessionProvider.get.mockResolvedValue(mockSession);
+      const mockExecutionContext = createMockWsExecutionContext({
+        handshake: {
+          auth: { sessionId },
+          query: { roomId: 'test-room' },
+          headers: {},
+          time: new Date().toISOString(),
+          address: '192.168.1.1',
+          xdomain: false,
+          secure: false,
+          issued: Date.now(),
+          url: '/socket.io/'
+        }
+      });
+
+      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(true);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(true);
-      expect(mockSessionExtractor.extractSessionIdFromSocket).toHaveBeenCalledWith(mockClient);
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, '192.168.1.1');
-      expect(mockClient.session).toBe(mockSession);
-      expect(mockClient.disconnect).not.toHaveBeenCalled();
+      expect(sessionValidatorService.validateAndAttachToSocket).toHaveBeenCalledWith(expect.any(Object));
     });
 
-    it('should allow connection with valid session in Authorization header', async () => {
+    it('should reject connection when session validation fails', async () => {
+      const mockExecutionContext = createMockWsExecutionContext({
+        handshake: {
+          auth: {},
+          query: {},
+          headers: {},
+          time: new Date().toISOString(),
+          address: '192.168.1.1',
+          xdomain: false,
+          secure: false,
+          issued: Date.now(),
+          url: '/socket.io/'
+        }
+      });
+
+      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(false);
+
+      const result = await guard.canActivate(mockExecutionContext);
+
+      expect(result).toBe(false);
+      expect(sessionValidatorService.validateAndAttachToSocket).toHaveBeenCalledWith(expect.any(Object));
+      const client = mockExecutionContext.switchToWs().getClient();
+      expect(client.disconnect).toHaveBeenCalled();
+    });
+
+    it('should handle session validation errors gracefully', async () => {
+      const mockExecutionContext = createMockWsExecutionContext({
+        handshake: {
+          auth: { sessionId: 'invalid-session' },
+          query: {},
+          headers: {},
+          time: new Date().toISOString(),
+          address: '192.168.1.1',
+          xdomain: false,
+          secure: false,
+          issued: Date.now(),
+          url: '/socket.io/'
+        }
+      });
+
+      const error = new Error('Database connection failed');
+      sessionValidatorService.validateAndAttachToSocket.mockRejectedValue(error);
+
+      const result = await guard.canActivate(mockExecutionContext);
+
+      expect(result).toBe(false);
+      const client = mockExecutionContext.switchToWs().getClient();
+      expect(client.disconnect).toHaveBeenCalled();
+    });
+  });
+
+  describe('Different Session Sources', () => {
+    it('should validate sessions from handshake auth', async () => {
       const sessionId = createUUID();
-      const mockSession = createMockSessionWithId({ sessionId });
-      
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(sessionId);
-      mockSessionProvider.get.mockResolvedValue(mockSession);
+      const mockExecutionContext = createMockWsExecutionContext({
+        handshake: {
+          auth: { sessionId },
+          query: {},
+          headers: {},
+          time: new Date().toISOString(),
+          address: '127.0.0.1',
+          xdomain: false,
+          secure: false,
+          issued: Date.now(),
+          url: '/socket.io/'
+        }
+      });
+
+      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(true);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(true);
-      expect(mockSessionExtractor.extractSessionIdFromSocket).toHaveBeenCalledWith(mockClient);
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, '192.168.1.1');
-      expect(mockClient.session).toBe(mockSession);
-      expect(mockClient.disconnect).not.toHaveBeenCalled();
+      expect(sessionValidatorService.validateAndAttachToSocket).toHaveBeenCalledWith(expect.any(Object));
     });
 
-    it('should prioritize handshake auth over other methods', async () => {
-      const authSessionId = createUUID();
-      const mockSession = createMockSessionWithId({ sessionId: authSessionId });
-      
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(authSessionId);
-      mockSessionProvider.get.mockResolvedValue(mockSession);
+    it('should validate sessions from authorization headers', async () => {
+      const sessionId = createUUID();
+      const mockExecutionContext = createMockWsExecutionContext({
+        handshake: {
+          auth: {},
+          query: {},
+          headers: { authorization: `Bearer ${sessionId}` },
+          time: new Date().toISOString(),
+          address: '127.0.0.1',
+          xdomain: false,
+          secure: false,
+          issued: Date.now(),
+          url: '/socket.io/'
+        }
+      });
+
+      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(true);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(true);
-      expect(mockSessionExtractor.extractSessionIdFromSocket).toHaveBeenCalledWith(mockClient);
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(authSessionId, '192.168.1.1');
+      expect(sessionValidatorService.validateAndAttachToSocket).toHaveBeenCalledWith(expect.any(Object));
+    });
+
+    it('should validate sessions from cookies', async () => {
+      const sessionId = createUUID();
+      const mockExecutionContext = createMockWsExecutionContext({
+        handshake: {
+          auth: {},
+          query: {},
+          headers: { cookie: `sessionId=${sessionId}; other=value` },
+          time: new Date().toISOString(),
+          address: '127.0.0.1',
+          xdomain: false,
+          secure: false,
+          issued: Date.now(),
+          url: '/socket.io/'
+        }
+      });
+
+      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(true);
+
+      const result = await guard.canActivate(mockExecutionContext);
+
+      expect(result).toBe(true);
+      expect(sessionValidatorService.validateAndAttachToSocket).toHaveBeenCalledWith(expect.any(Object));
     });
   });
 
-  describe('invalid sessions', () => {
-    it('should disconnect client and return false when no session provided', async () => {
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(null);
-      
+  describe('Edge Cases', () => {
+    it('should handle missing execution context gracefully', async () => {
+      const mockExecutionContext = {
+        switchToWs: () => ({
+          getClient: () => null,
+          getData: () => ({}),
+        }),
+        getClass: () => ({}),
+        getHandler: () => ({}),
+      } as ExecutionContext;
+
+      const result = await guard.canActivate(mockExecutionContext);
+
+      expect(result).toBe(false);
+      expect(sessionValidatorService.validateAndAttachToSocket).not.toHaveBeenCalled();
+    });
+
+    it('should handle malformed clients gracefully', async () => {
+      const mockClient = { disconnect: vi.fn() }; // Incomplete client object with disconnect
+
+      const mockExecutionContext = {
+        switchToWs: () => ({
+          getClient: () => mockClient,
+          getData: () => ({}),
+        }),
+        getClass: () => ({}),
+        getHandler: () => ({}),
+      } as ExecutionContext;
+
+      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(false);
+
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(false);
       expect(mockClient.disconnect).toHaveBeenCalled();
-      expect(mockSessionExtractor.extractSessionIdFromSocket).toHaveBeenCalledWith(mockClient);
-      expect(mockSessionProvider.get).not.toHaveBeenCalled();
     });
 
-    it('should disconnect client and return false when session does not exist', async () => {
+    it('should handle concurrent validation requests', async () => {
       const sessionId = createUUID();
-      
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(sessionId);
-      mockSessionProvider.get.mockResolvedValue(null);
+      const mockExecutionContexts = Array(5).fill(0).map(() => 
+        createMockWsExecutionContext({
+          handshake: {
+            auth: { sessionId },
+            query: {},
+            headers: {},
+            time: new Date().toISOString(),
+            address: '127.0.0.1',
+            xdomain: false,
+            secure: false,
+            issued: Date.now(),
+            url: '/socket.io/'
+          }
+        })
+      );
 
-      const result = await guard.canActivate(mockExecutionContext);
+      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(true);
 
-      expect(result).toBe(false);
-      expect(mockClient.disconnect).toHaveBeenCalled();
-      expect(mockSessionExtractor.extractSessionIdFromSocket).toHaveBeenCalledWith(mockClient);
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, '192.168.1.1');
-    });
+      const promises = mockExecutionContexts.map(context => 
+        guard.canActivate(context)
+      );
 
-    it('should disconnect client and return false when SessionProvider throws error', async () => {
-      const sessionId = createUUID();
-      
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(sessionId);
-      mockSessionProvider.get.mockRejectedValue(new Error('Session not found'));
+      const results = await Promise.all(promises);
 
-      const result = await guard.canActivate(mockExecutionContext);
-
-      expect(result).toBe(false);
-      expect(mockClient.disconnect).toHaveBeenCalled();
-      expect(mockSessionExtractor.extractSessionIdFromSocket).toHaveBeenCalledWith(mockClient);
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, '192.168.1.1');
-    });
-
-    it('should disconnect client for malformed Authorization header', async () => {
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(null);
-
-      const result = await guard.canActivate(mockExecutionContext);
-
-      expect(result).toBe(false);
-      expect(mockClient.disconnect).toHaveBeenCalled();
-      expect(mockSessionExtractor.extractSessionIdFromSocket).toHaveBeenCalledWith(mockClient);
-      expect(mockSessionProvider.get).not.toHaveBeenCalled();
-    });
-
-    it('should disconnect client for Authorization header without Bearer prefix', async () => {
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(null);
-
-      const result = await guard.canActivate(mockExecutionContext);
-
-      expect(result).toBe(false);
-      expect(mockClient.disconnect).toHaveBeenCalled();
-      expect(mockSessionExtractor.extractSessionIdFromSocket).toHaveBeenCalledWith(mockClient);
-      expect(mockSessionProvider.get).not.toHaveBeenCalled();
-    });
-
-    it('should disconnect client for empty sessionId', async () => {
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue('');
-
-      const result = await guard.canActivate(mockExecutionContext);
-
-      expect(result).toBe(false);
-      expect(mockClient.disconnect).toHaveBeenCalled();
-      expect(mockSessionExtractor.extractSessionIdFromSocket).toHaveBeenCalledWith(mockClient);
-      expect(mockSessionProvider.get).not.toHaveBeenCalled();
+      expect(results.every(result => result === true)).toBe(true);
+      expect(sessionValidatorService.validateAndAttachToSocket).toHaveBeenCalledTimes(5);
     });
   });
 
-  describe('session extraction priority', () => {
-    it('should extract from handshake auth first', async () => {
-      const sessionId = createUUID();
-      const mockSession = createMockSessionWithId({ sessionId });
-      
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(sessionId);
-      mockSessionProvider.get.mockResolvedValue(mockSession);
+  describe('Security Scenarios', () => {
+    it('should reject connections with empty session data', async () => {
+      const mockExecutionContext = createMockWsExecutionContext({
+        handshake: {
+          auth: { sessionId: '' },
+          query: {},
+          headers: {},
+          time: new Date().toISOString(),
+          address: '192.168.1.1',
+          xdomain: false,
+          secure: false,
+          issued: Date.now(),
+          url: '/socket.io/'
+        }
+      });
 
-      await guard.canActivate(mockExecutionContext);
-
-      expect(mockSessionExtractor.extractSessionIdFromSocket).toHaveBeenCalledWith(mockClient);
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, '192.168.1.1');
-    });
-
-    it('should fallback to Authorization header when auth and query are not available', async () => {
-      const sessionId = createUUID();
-      const mockSession = createMockSessionWithId({ sessionId });
-      
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(sessionId);
-      mockSessionProvider.get.mockResolvedValue(mockSession);
-
-      await guard.canActivate(mockExecutionContext);
-
-      expect(mockSessionExtractor.extractSessionIdFromSocket).toHaveBeenCalledWith(mockClient);
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, '192.168.1.1');
-    });
-  });
-
-  describe('error handling', () => {
-    it('should handle missing handshake gracefully', async () => {
-      mockClient.handshake = undefined;
+      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(false);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(false);
-      expect(mockClient.disconnect).toHaveBeenCalled();
+      const client = mockExecutionContext.switchToWs().getClient();
+      expect(client.disconnect).toHaveBeenCalled();
     });
 
-    it('should handle missing handshake properties gracefully', async () => {
-      mockClient.handshake = {};
+    it('should reject connections with malformed session IDs', async () => {
+      const mockExecutionContext = createMockWsExecutionContext({
+        handshake: {
+          auth: { sessionId: 'not-a-uuid' },
+          query: {},
+          headers: {},
+          time: new Date().toISOString(),
+          address: '192.168.1.1',
+          xdomain: false,
+          secure: false,
+          issued: Date.now(),
+          url: '/socket.io/'
+        }
+      });
+
+      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(false);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(false);
-      expect(mockClient.disconnect).toHaveBeenCalled();
-    });
-
-    it('should handle null handshake properties gracefully', async () => {
-      mockClient.handshake = {
-        auth: null,
-        query: null,
-        headers: null,
-      };
-
-      const result = await guard.canActivate(mockExecutionContext);
-
-      expect(result).toBe(false);
-      expect(mockClient.disconnect).toHaveBeenCalled();
+      const client = mockExecutionContext.switchToWs().getClient();
+      expect(client.disconnect).toHaveBeenCalled();
     });
   });
 });

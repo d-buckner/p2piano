@@ -4,6 +4,7 @@ import { ObjectId, WithId } from 'mongodb';
 import { Session } from '../entities/Session';
 import { Socket } from 'socket.io';
 import { Request } from '../types/request';
+import { vi } from 'vitest';
 
 type MockSessionOptions = Partial<Session>
 
@@ -155,7 +156,7 @@ export function createMockWsClient(overrides: MockWsClientOptions = {}): Partial
       url: '/',
       ...overrides.handshake,
     },
-    disconnect: () => {},
+    disconnect: vi.fn(),
     ...overrides,
   };
 }
@@ -176,21 +177,54 @@ export function createMockHttpRequest(overrides: MockHttpRequestOptions = {}): P
 /**
  * Helper to create mock execution context for HTTP
  */
-export function createMockHttpExecutionContext(request: MockHttpRequestOptions = {}): Partial<ExecutionContext> {
+export function createMockHttpExecutionContext(
+  request: MockHttpRequestOptions = {},
+  reply: any = { cookie: vi.fn() }
+): ExecutionContext {
+  const mockRequest = createMockHttpRequest(request);
   return {
     switchToHttp: () => ({
-      getRequest: () => createMockHttpRequest(request),
+      getRequest: () => mockRequest,
+      getResponse: () => reply,
     }),
-  } as Partial<ExecutionContext>;
+    getClass: () => ({}),
+    getHandler: () => ({}),
+  } as ExecutionContext;
 }
 
 /**
  * Helper to create mock execution context for WebSocket
  */
-export function createMockWsExecutionContext(client: MockWsClientOptions = {}): Partial<ExecutionContext> {
+export function createMockWsExecutionContext(client: MockWsClientOptions = {}): ExecutionContext {
+  const mockClient = createMockWsClient(client);
   return {
     switchToWs: () => ({
-      getClient: () => createMockWsClient(client),
+      getClient: () => mockClient,
+      getData: () => ({}),
     }),
-  } as Partial<ExecutionContext>;
+    getClass: () => ({}),
+    getHandler: () => ({}),
+  } as ExecutionContext;
+}
+
+/**
+ * Helper to create a mock that attaches session to request
+ */
+export function createSessionAttachingMock(session: Session) {
+  return vi.fn().mockImplementation(async (req: { session?: Session }) => {
+    req.session = session;
+    return session;
+  });
+}
+
+/**
+ * Helper to create a mock that returns different sessions for concurrent requests
+ */
+export function createConcurrentSessionMocks(sessions: Session[]) {
+  let callIndex = 0;
+  return vi.fn().mockImplementation(async (req: { session?: Session }) => {
+    const session = sessions[callIndex++];
+    req.session = session;
+    return session;
+  });
 }

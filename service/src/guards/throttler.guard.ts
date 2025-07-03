@@ -1,5 +1,7 @@
 import { Injectable, Logger, ExecutionContext } from '@nestjs/common';
 import { ThrottlerGuard, ThrottlerRequest } from '@nestjs/throttler';
+import { AuthenticatedSocket } from '../types/socket';
+import { getSocketSessionId } from '../websockets/utils';
 
 @Injectable()
 export class WsThrottlerGuard extends ThrottlerGuard {
@@ -7,12 +9,12 @@ export class WsThrottlerGuard extends ThrottlerGuard {
 
   async handleRequest(requestProps: ThrottlerRequest): Promise<boolean> {
     const { context, limit, ttl, throttler, blockDuration, generateKey } = requestProps;
-    const client = context.switchToWs().getClient();
+    const client = context.switchToWs().getClient<AuthenticatedSocket>();
     
-    // Use a combination of IP and session id for better tracking
+    // Use a combination of IP and session id from session object
     // This helps distinguish between multiple users on the same network
-    const ip = client.conn?.remoteAddress || client._socket?.remoteAddress || 'unknown';
-    const sessionId = client.id;
+    const ip = client.session.ipAddress || 'unknown';
+    const sessionId = getSocketSessionId(client);
     const tracker = `${ip}:${sessionId}`;
     
     const key = generateKey(context, tracker, throttler.name);
@@ -31,7 +33,7 @@ export class WsThrottlerGuard extends ThrottlerGuard {
   }
 
   protected async throwThrottlingException(context: ExecutionContext, throttlerLimitDetail: any): Promise<void> {
-    const client = context.switchToWs().getClient();
+    const client = context.switchToWs().getClient<AuthenticatedSocket>();
     const eventName = context.getHandler().name;
     const ip = throttlerLimitDetail.tracker;
 

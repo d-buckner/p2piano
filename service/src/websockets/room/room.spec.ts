@@ -5,14 +5,12 @@ import { RoomEvents, SocketEvents } from './events';
 import RoomEntity from '../../entities/Room';
 import SessionProvider from '../../entities/Session';
 import SessionRegistry from '../SessionRegistry';
-import { SessionExtractor } from '../../utils/session-extractor';
 import { createMockSessionWithId, createUUID } from '../../test-utils/validation.helpers';
 
 // Mock dependencies
 vi.mock('../../entities/Room');
 vi.mock('../../entities/Session');
 vi.mock('../SessionRegistry');
-vi.mock('../../utils/session-extractor');
 vi.mock('../../errors');
 vi.mock('@nestjs/common');
 vi.mock('../utils', () => ({
@@ -27,11 +25,11 @@ describe('Room WebSocket Gateway', () => {
   let mockServer: any;
   let mockSocket: any;
   let mockSessionProvider: any;
-  let mockSessionExtractor: any;
   let mockSessionRegistry: any;
   let mockRoomEntity: any;
   let mockLogger: any;
   let mockUtils: any;
+  let mockSessionValidator: any;
 
   beforeEach(async () => {
     // Mock Server
@@ -62,14 +60,12 @@ describe('Room WebSocket Gateway', () => {
 
     // Mock dependencies
     mockSessionProvider = SessionProvider as any;
-    mockSessionExtractor = SessionExtractor as any;
     mockSessionRegistry = SessionRegistry as any;
     mockRoomEntity = RoomEntity as any;
     mockLogger = Logger as any;
 
     // Set up mock implementations
     mockSessionProvider.get = vi.fn();
-    mockSessionExtractor.extractSessionIdFromSocket = vi.fn();
     mockSessionRegistry.getSocket = vi.fn();
     mockSessionRegistry.registerSession = vi.fn();
     mockSessionRegistry.destroySession = vi.fn();
@@ -95,8 +91,13 @@ describe('Room WebSocket Gateway', () => {
     mockUtils.getSocketRoomId.mockReturnValue('room-123');
     mockUtils.broadcast = vi.fn();
 
+    // Mock SessionValidatorService
+    mockSessionValidator = {
+      validateAndAttachToSocket: vi.fn(),
+    };
+
     // Create gateway instance
-    roomGateway = new Room();
+    roomGateway = new Room(mockSessionValidator);
     roomGateway.server = mockServer;
 
     vi.clearAllMocks();
@@ -176,8 +177,10 @@ describe('Room WebSocket Gateway', () => {
       const mockSession = createMockSessionWithId({ sessionId });
       const mockRoomData = { users: { [sessionId]: { displayName } } };
 
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(sessionId);
-      mockSessionProvider.get.mockResolvedValue(mockSession);
+      // Mock session validation
+      mockSessionValidator.validateAndAttachToSocket.mockResolvedValue(true);
+      mockSocket.session = mockSession;
+      
       mockSessionRegistry.getSocket.mockReturnValue(null); // No previous socket
 
       const mockRoomInstance = {
@@ -187,9 +190,7 @@ describe('Room WebSocket Gateway', () => {
 
       await roomGateway.bootstrapConnection(mockSocket);
 
-      expect(mockSessionExtractor.extractSessionIdFromSocket).toHaveBeenCalledWith(mockSocket);
-      expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, '192.168.1.1');
-      expect(mockSocket.session).toBe(mockSession);
+      expect(mockSessionValidator.validateAndAttachToSocket).toHaveBeenCalledWith(mockSocket);
       expect(mockSessionRegistry.registerSession).toHaveBeenCalledWith(sessionId, mockSocket);
       expect(mockSocket.join).toHaveBeenCalledWith(roomId);
       expect(mockSocket.on).toHaveBeenCalledWith(SocketEvents.DISCONNECT, expect.any(Function));
@@ -208,8 +209,10 @@ describe('Room WebSocket Gateway', () => {
       const mockRoomData = { users: { [sessionId]: { displayName } } };
       const prevSocket = { disconnect: vi.fn() };
 
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(sessionId);
-      mockSessionProvider.get.mockResolvedValue(mockSession);
+      // Mock session validation
+      mockSessionValidator.validateAndAttachToSocket.mockResolvedValue(true);
+      mockSocket.session = mockSession;
+      
       mockSessionRegistry.getSocket.mockReturnValue(prevSocket);
 
       const mockRoomInstance = {
@@ -236,21 +239,24 @@ describe('Room WebSocket Gateway', () => {
     });
 
     it('should disconnect socket when sessionId is missing', async () => {
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(null);
+      // Mock validation failure due to missing session
+      mockSessionValidator.validateAndAttachToSocket.mockRejectedValue(new Error('No session'));
 
       await roomGateway.bootstrapConnection(mockSocket);
 
-      expect(mockLogger.warn).toHaveBeenCalledWith('User denied connection - no sessionId found');
+      expect(mockLogger.warn).toHaveBeenCalledWith(expect.objectContaining({
+        constructor: expect.any(Function)
+      }));
       expect(mockSocket.disconnect).toHaveBeenCalled();
     });
 
     it('should disconnect socket when session is invalid', async () => {
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(sessionId);
-      mockSessionProvider.get.mockResolvedValue(null);
+      // Mock validation failure
+      mockSessionValidator.validateAndAttachToSocket.mockResolvedValue(false);
 
       await roomGateway.bootstrapConnection(mockSocket);
 
-      expect(mockLogger.warn).toHaveBeenCalledWith(`User denied connection due to invalid session ${sessionId}`);
+      expect(mockLogger.error).toHaveBeenCalledWith(expect.stringContaining('Unexpected: session validation failed'));
       expect(mockSocket.disconnect).toHaveBeenCalled();
     });
 
@@ -258,8 +264,10 @@ describe('Room WebSocket Gateway', () => {
       const mockSession = createMockSessionWithId({ sessionId });
       const roomError = new Error('Room join failed');
 
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(sessionId);
-      mockSessionProvider.get.mockResolvedValue(mockSession);
+      // Mock session validation
+      mockSessionValidator.validateAndAttachToSocket.mockResolvedValue(true);
+      mockSocket.session = mockSession;
+      
       mockSessionRegistry.getSocket.mockReturnValue(null);
 
       const mockRoomInstance = {
@@ -276,12 +284,13 @@ describe('Room WebSocket Gateway', () => {
 
     it('should handle session authentication errors', async () => {
       const authError = new Error('Auth failed');
-      mockSessionExtractor.extractSessionIdFromSocket.mockReturnValue(sessionId);
-      mockSessionProvider.get.mockRejectedValue(authError);
+      mockSessionValidator.validateAndAttachToSocket.mockRejectedValue(authError);
 
       await roomGateway.bootstrapConnection(mockSocket);
 
-      expect(mockLogger.warn).toHaveBeenCalled();
+      expect(mockLogger.warn).toHaveBeenCalledWith(expect.objectContaining({
+        constructor: expect.any(Function)
+      }));
       expect(mockSocket.disconnect).toHaveBeenCalled();
     });
   });
@@ -392,38 +401,4 @@ describe('Room WebSocket Gateway', () => {
     });
   });
 
-  describe('Client IP extraction', () => {
-    it('should extract IP from handshake address', () => {
-      const socket = {
-        handshake: { address: '192.168.1.100' },
-        conn: { remoteAddress: '10.0.0.1' },
-      };
-
-      const ip = (roomGateway as any).getClientIP(socket);
-
-      expect(ip).toBe('192.168.1.100');
-    });
-
-    it('should fallback to connection remote address', () => {
-      const socket = {
-        handshake: { address: null },
-        conn: { remoteAddress: '10.0.0.1' },
-      };
-
-      const ip = (roomGateway as any).getClientIP(socket);
-
-      expect(ip).toBe('10.0.0.1');
-    });
-
-    it('should handle missing IP gracefully', () => {
-      const socket = {
-        handshake: {},
-        conn: {},
-      };
-
-      const ip = (roomGateway as any).getClientIP(socket);
-
-      expect(ip).toBeUndefined();
-    });
-  });
 });

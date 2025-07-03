@@ -1,9 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { Observable } from 'rxjs';
 import { Request } from '../types/request';
-import SessionProvider from '../entities/Session';
-import { SessionExtractor } from '../utils/session-extractor';
-import { AuthenticationError } from '../errors';
+import { SessionValidatorService } from '../services/session-validator.service';
 
 /**
  * Authentication guard that validates user sessions for HTTP requests.
@@ -23,6 +20,8 @@ import { AuthenticationError } from '../errors';
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
+  constructor(private readonly sessionValidator: SessionValidatorService) {}
+
   /**
    * Determines if the current request is authorized by validating the session.
    * 
@@ -30,47 +29,24 @@ export class AuthGuard implements CanActivate {
    * @returns Promise resolving to true if authorized
    * @throws UnauthorizedException if session is invalid or missing
    */
-  canActivate(
+  async canActivate(
     context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
-    const request = context.switchToHttp().getRequest();
-    return this.validateSession(request);
-  }
-
-  /**
-   * Validates the user session and attaches it to the request.
-   * 
-   * @param request - The HTTP request object
-   * @returns Promise resolving to true if session is valid
-   * @throws UnauthorizedException if session validation fails
-   */
-  private async validateSession(request: Request): Promise<boolean> {
-    const sessionId = SessionExtractor.extractSessionId(request);
+  ): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<Request>();
     
-    if (!sessionId) {
-      throw new UnauthorizedException('Session required');
-    }
-
     try {
-      const session = await SessionProvider.get(sessionId, request.ip);
-      if (!session) {
-        throw new AuthenticationError('Invalid session', { sessionId, ip: request.ip });
+      const isValid = await this.sessionValidator.validateAndAttachToRequest(request);
+      
+      if (!isValid) {
+        throw new UnauthorizedException('Session required');
       }
       
-      // Attach session to request for later use
-      request.session = session;
       return true;
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      
-      throw new AuthenticationError('Session validation failed', { 
-        sessionId, 
-        ip: request.ip,
-        originalError: error.message 
-      });
+      throw new UnauthorizedException('Session required');
     }
   }
-
 }
