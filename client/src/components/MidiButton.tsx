@@ -1,20 +1,17 @@
 import clsx from 'clsx';
 import HuMIDI from 'humidi';
-import { createSignal, createEffect } from 'solid-js';
+import { setMidiEnabled } from '../actions/MidiActions';
+import { useAppSelector } from '../app/hooks';
+import { selectMidi } from '../selectors/midiSelectors';
+import UsbIcon from './UsbIcon';
 import * as styles from './MidiButton.css';
 
 
 function MidiButton() {
-  const [midiEnabled, setMidiEnabled] = createSignal(false);
-
-  createEffect(() => {
-    if (HuMIDI.isEnabled()) {
-      setMidiEnabled(true);
-    }
-  });
+  const midi = useAppSelector(selectMidi);
 
   async function handleMidiToggle() {
-    if (!midiEnabled()) {
+    if (!midi().enabled) {
       try {
         await HuMIDI.requestAccess();
         setMidiEnabled(true);
@@ -26,10 +23,10 @@ function MidiButton() {
 
   return (
     <button
-      class={clsx(styles.midiButton, midiEnabled() && styles.active)}
+      class={clsx(styles.midiButton, midi().enabled && styles.active)}
       onClick={handleMidiToggle}
     >
-      midi
+      <UsbIcon />
     </button>
   );
 }

@@ -3,6 +3,7 @@ import * as NoteActions from '../actions/NoteActions';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import AudioSyncCoordinator from '../audio/syncronization/AudioSyncCoordinator';
 import KeyboardController from '../controllers/KeyboardController';
+import MetronomeHandlers from '../handlers/MetronomeHandlers';
 import RoomHandlers from '../handlers/RoomHandlers';
 import RealTimeController from '../networking/RealTimeController';
 import WebsocketController from '../networking/transports/WebsocketController';
@@ -13,6 +14,10 @@ import type { MessageHandler } from '../networking/AbstractNetworkController';
 const RTC_HANDLERS = {
   KEY_DOWN: RoomHandlers.keyDownHandler,
   KEY_UP: RoomHandlers.keyUpHandler,
+  METRONOME_TICK: MetronomeHandlers.tickHandler,
+  METRONOME_START: MetronomeHandlers.startHandler,
+  METRONOME_STOP: MetronomeHandlers.stopHandler,
+  SET_BPM: MetronomeHandlers.bpmHandler,
 } as const;
 const WEBSOCKET_HANDLERS = {
   ROOM_JOIN: RoomHandlers.roomJoinHandler,

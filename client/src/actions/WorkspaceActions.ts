@@ -1,6 +1,7 @@
 import { setStore, store } from '../app/store';
 import { getRoom } from '../clients/RoomClient';
 import { Transport } from '../constants';
+import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import ClientPreferences from '../lib/ClientPreferences';
 import * as EventCoordinator from '../lib/EventCoordinator';
 import WebRtcController from '../networking/transports/WebRtcController';
@@ -39,11 +40,14 @@ export async function joinRoom(roomId: string) {
 }
 
 export function updateDisplayName(displayName: string) {
-  // TODO: update optimistically
   const user = selectMyUser(store);
   if (!user) {
     return;
   }
+  
+  // Update optimistically - focused update to just the user's displayName
+  setStore('workspace', 'room', 'users', user.userId, 'displayName', displayName);
+  
   ClientPreferences.setDisplayName(displayName);
   WebsocketController.getInstance().broadcast('USER_UPDATE', {
     ...user,
@@ -52,11 +56,17 @@ export function updateDisplayName(displayName: string) {
 }
 
 export function updateInstrument(instrument: InstrumentType) {
-  // TODO: update optimistically
   const user = selectMyUser(store);
   if (!user) {
     return;
   }
+  
+  // Update optimistically - focused update to just the user's instrument
+  setStore('workspace', 'room', 'users', user.userId, 'instrument', instrument);
+  
+  // Update instrument registry immediately for optimistic update
+  InstrumentRegistry.register(user.userId, instrument);
+  
   WebsocketController.getInstance().broadcast('USER_UPDATE', {
     ...user,
     instrument,

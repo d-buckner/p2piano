@@ -18,8 +18,8 @@ self.addEventListener('activate', () => {
 self.addEventListener('fetch', (event: FetchEvent) => {
   const url = event.request.url;
   
-  // Only handle .mp3 audio requests
-  if (!url.endsWith('.mp3')) {
+  // Only handle .mp3 and .ogg audio requests
+  if (!/\.(mp3|ogg)$/i.test(url)) {
     return;
   }
   

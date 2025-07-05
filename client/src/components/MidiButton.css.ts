@@ -8,7 +8,7 @@ export const midiButton = style({
   border: `1px solid ${vars.overlays.border}`,
   cursor: 'pointer',
   borderRadius: vars.radii.md,
-  padding: `${vars.spacing.xs} ${vars.spacing.md}`,
+  padding: `${vars.spacing.xs} ${vars.spacing.sm}`,
   fontSize: vars.fontSizes.sm,
   fontFamily: vars.fonts.body,
   transition: `all ${vars.transitions.fast}`,
@@ -20,7 +20,12 @@ export const midiButton = style({
 });
 
 export const active = style({
-  backgroundColor: vars.colors.success,
+  backgroundColor: vars.colors.foreground,
   color: vars.colors.background,
-  borderColor: vars.colors.success,
+  borderColor: vars.colors.foreground,
+  
+  ':hover': {
+    backgroundColor: vars.colors.foreground,
+    borderColor: vars.colors.foreground,
+  },
 });

@@ -28,10 +28,18 @@ export const volumeSlider = style({
   width: '80px',
   height: '4px',
   margin: `0 ${vars.spacing.sm}`,
-  backgroundColor: vars.colors.secondary,
   borderRadius: '2px',
   outline: 'none',
   cursor: 'pointer',
+  background: vars.colors.foreground,
+  appearance: 'none',
+  
+  '::-webkit-slider-track': {
+    width: '100%',
+    height: '4px',
+    backgroundColor: vars.colors.foreground,
+    borderRadius: '2px',
+  },
   
   '::-webkit-slider-thumb': {
     appearance: 'none',
@@ -40,6 +48,14 @@ export const volumeSlider = style({
     borderRadius: '50%',
     backgroundColor: vars.colors.foreground,
     cursor: 'pointer',
+  },
+  
+  '::-moz-range-track': {
+    width: '100%',
+    height: '4px',
+    backgroundColor: vars.colors.foreground,
+    borderRadius: '2px',
+    border: 'none',
   },
   
   '::-moz-range-thumb': {
@@ -54,7 +70,6 @@ export const volumeSlider = style({
 
 export const volumeLabel = style({
   fontSize: vars.fontSizes.xs,
-  fontFamily: vars.fonts.body,
-  minWidth: '2.5rem',
+  minWidth: '1.75rem',
   textAlign: 'right',
 });

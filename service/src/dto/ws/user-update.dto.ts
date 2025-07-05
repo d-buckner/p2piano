@@ -16,6 +16,6 @@ export class UserUpdateDto {
   color: string;
 
   @IsString()
-  @IsIn(['PIANO'])
+  @IsIn(['PIANO', 'SYNTH', 'ELECTRIC_BASS'])
   instrument: string;
 }

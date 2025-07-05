@@ -8,7 +8,9 @@ export const [themeClass, vars] = createTheme({
     foreground: '#FFF',
     primary: '#FFF',
     muted: '#666',
-    success: '#059669',
+    success: '#3087cf',
+    successLight: '#5ba3db',
+    successDark: '#047857',
     danger: '#dc2626',
   },
   fonts: {
@@ -35,7 +37,7 @@ export const [themeClass, vars] = createTheme({
     lg: '1.25rem',
   },
   sizes: {
-    headerHeight: '2.75rem',
+    headerHeight: '2.25rem',
   },
   overlays: {
     subtle: 'rgba(255, 255, 255, 0.05)',

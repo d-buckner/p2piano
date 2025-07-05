@@ -39,7 +39,7 @@ export default class RealTimeController extends AbstractNetworkController {
     this.websocketController.off(eventType, handler);
   }
 
-  public broadcast<T extends Message>(action: string, message: T) {
+  public broadcast<T extends Message>(action: string, message?: T) {
     const websocketPeerIds: string[] = [];
 
     selectConnectedPeerIds(store).forEach((peerId: string) => {
@@ -56,7 +56,7 @@ export default class RealTimeController extends AbstractNetworkController {
   public sendToPeer<T extends Message>(
     peerId: string,
     action: string,
-    message: T,
+    message?: T,
   ) {
     this.sendWithFallback(peerId, action, message, () => {
       this.websocketController.sendToPeer(peerId, action, message);
@@ -66,7 +66,7 @@ export default class RealTimeController extends AbstractNetworkController {
   public sendToPeers<T extends Message>(
     peerIds: string[],
     action: string,
-    message: T,
+    message?: T,
   ) {
     const websocketPeerIds: string[] = [];
 
@@ -84,7 +84,7 @@ export default class RealTimeController extends AbstractNetworkController {
   private sendWithFallback<T extends Message>(
     peerId: string,
     action: string,
-    message: T,
+    message?: T,
     fallback: () => void,
   ) {
     if (selectPeerConnection(peerId)(store).transport === Transport.WEBRTC) {

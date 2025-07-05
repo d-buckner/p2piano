@@ -4,6 +4,7 @@ import { vars } from '../styles/theme.css';
 
 export const metronomeContainer = style({
   display: 'flex',
+  fontSize: vars.fontSizes.sm,
   alignItems: 'center',
   backgroundColor: vars.overlays.subtle,
   borderRadius: vars.radii.md,
@@ -16,11 +17,9 @@ export const metronomeButton = style({
   cursor: 'pointer',
   borderRadius: vars.radii.md,
   border: '1px solid transparent',
-  padding: `${vars.spacing.xs} ${vars.spacing.sm}`,
-  fontSize: vars.fontSizes.sm,
-  fontFamily: vars.fonts.body,
+  padding: `2px ${vars.spacing.sm}`,
+  margin: '1px',
   transition: `background-color ${vars.transitions.fast}`,
-  verticalAlign: 'top',
   
   ':hover': {
     backgroundColor: vars.colors.secondary,
@@ -30,6 +29,10 @@ export const metronomeButton = style({
 export const active = style({
   backgroundColor: vars.colors.danger,
   color: vars.colors.foreground,
+  
+  ':hover': {
+    backgroundColor: vars.colors.danger,
+  },
 });
 
 export const bpmControl = style({
@@ -41,12 +44,9 @@ export const bpmControl = style({
 });
 
 export const bpmInput = style({
-  padding: vars.spacing.xs,
   border: 'none',
   backgroundColor: 'transparent',
   color: vars.colors.foreground,
-  fontSize: vars.fontSizes.sm,
-  fontFamily: vars.fonts.body,
   textAlign: 'center',
   width: vars.spacing.xl,
   appearance: 'textfield',
@@ -67,10 +67,10 @@ export const bpmInput = style({
 export const bpmButton = style({
   padding: `${vars.spacing.xs} ${vars.spacing.sm}`,
   border: 'none',
+  borderRight: `1px solid ${vars.overlays.border}`,
+  borderLeft: `1px solid ${vars.overlays.border}`,
   backgroundColor: 'transparent',
   color: vars.colors.foreground,
-  fontSize: vars.fontSizes.md,
-  fontFamily: vars.fonts.body,
   cursor: 'pointer',
   transition: `all ${vars.transitions.fast}`,
   
@@ -79,7 +79,7 @@ export const bpmButton = style({
   },
   
   ':active': {
-    backgroundColor: vars.overlays.active,
+    backgroundColor: vars.overlays.active
   },
 });
 
@@ -93,6 +93,5 @@ export const bpmButtonPlus = style({
 
 export const bpmLabel = style({
   fontSize: vars.fontSizes.xs,
-  fontFamily: vars.fonts.body,
   padding: `0 ${vars.spacing.xs}`,
 });

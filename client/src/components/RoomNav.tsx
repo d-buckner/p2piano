@@ -1,4 +1,5 @@
 import { useNavigate } from '@solidjs/router';
+import clsx from 'clsx';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
 import * as styles from './RoomNav.css';
 import Toolbar from './Toolbar';
@@ -31,9 +32,11 @@ function RoomNav(props: Props) {
 
   return (
     <nav class={styles.roomNav}>
-      <a onClick={navigateHome} class={styles.navLink}>p2piano</a>
-      <Toolbar />
-      <a onClick={shareRoom} class={styles.navLink}>
+      <a onClick={navigateHome} class={clsx(styles.navLink, styles.navLeft)}>p2piano</a>
+      <div class={styles.navCenter}>
+        <Toolbar />
+      </div>
+      <a onClick={shareRoom} class={clsx(styles.navLink, styles.navRight)}>
         room: <span class={styles.roomId}>{props.workspace.roomId}</span>
       </a>
     </nav>
