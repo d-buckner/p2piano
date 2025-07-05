@@ -50,4 +50,10 @@ export const [themeClass, vars] = createTheme({
   transitions: {
     fast: '0.2s ease',
   },
+  breakpoints: {
+    mobile: '550px',
+    tablet: '768px',
+    desktop: '1024px',
+    wide: '1280px',
+  },
 });

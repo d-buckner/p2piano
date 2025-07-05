@@ -3,8 +3,8 @@ import HuMIDI from 'humidi';
 import { setMidiEnabled } from '../actions/MidiActions';
 import { useAppSelector } from '../app/hooks';
 import { selectMidi } from '../selectors/midiSelectors';
-import UsbIcon from './UsbIcon';
 import * as styles from './MidiButton.css';
+import UsbIcon from './UsbIcon';
 
 
 function MidiButton() {

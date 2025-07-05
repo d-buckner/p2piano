@@ -17,6 +17,12 @@ export const midiButton = style({
     backgroundColor: vars.overlays.hover,
     borderColor: vars.overlays.borderHover,
   },
+  
+  '@media': {
+    'screen and (max-width: 768px)': {
+      display: 'none',
+    },
+  },
 });
 
 export const active = style({

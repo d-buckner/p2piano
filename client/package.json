@@ -35,6 +35,8 @@
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@eslint/js": "^9.25.0",
     "@rollup/plugin-replace": "^6.0.2",
+    "@solidjs/testing-library": "^0.8.10",
+    "@testing-library/jest-dom": "^6.6.3",
     "@types/node": "^24.0.4",
     "@types/simple-peer": "^9.11.5",
     "@vanilla-extract/css": "^1.17.4",

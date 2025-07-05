@@ -1,7 +1,7 @@
 import { setStore, store } from '../app/store';
+import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import { getRoom } from '../clients/RoomClient';
 import { Transport } from '../constants';
-import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import ClientPreferences from '../lib/ClientPreferences';
 import * as EventCoordinator from '../lib/EventCoordinator';
 import WebRtcController from '../networking/transports/WebRtcController';

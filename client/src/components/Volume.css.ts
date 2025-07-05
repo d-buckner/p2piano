@@ -9,6 +9,12 @@ export const volumeContainer = style({
   borderRadius: vars.radii.md,
   border: `1px solid ${vars.overlays.border}`,
   padding: `0 ${vars.spacing.xs}`,
+  
+  '@media': {
+    'screen and (max-width: 550px)': {
+      display: 'none',
+    },
+  },
 });
 
 export const muteButton = style({
