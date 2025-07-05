@@ -68,6 +68,7 @@ function SettingsModal(props: Props) {
             name={displayName()}
             hasError={hasDisplayNameError()}
             onChange={onDisplayNameChange}
+            onSubmit={onSubmit}
           />
           <fieldset class={styles.fieldset}>
             <Label label='midi' />

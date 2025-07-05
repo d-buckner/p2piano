@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as NoteActions from '../actions/NoteActions';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import AudioSyncCoordinator from '../audio/syncronization/AudioSyncCoordinator';
+import MetronomeHandlers from '../handlers/MetronomeHandlers';
 import RoomHandlers from '../handlers/RoomHandlers';
 import { register, destroy } from './EventCoordinator';
 
@@ -185,17 +186,30 @@ describe('EventCoordinator', () => {
       register();
 
       // MIDI handlers
-      expect(mockRealTimeController.on).toHaveBeenCalledTimes(2);
+      expect(HuMIDI.on).toHaveBeenCalledWith('noteon', RoomHandlers.keyDownHandler);
+      expect(HuMIDI.on).toHaveBeenCalledWith('noteoff', RoomHandlers.keyUpHandler);
       
-      // WebSocket handlers  
-      expect(mockWebsocketController.on).toHaveBeenCalledTimes(5);
+      // RTC handlers
+      expect(mockRealTimeController.on).toHaveBeenCalledWith('KEY_DOWN', RoomHandlers.keyDownHandler);
+      expect(mockRealTimeController.on).toHaveBeenCalledWith('KEY_UP', RoomHandlers.keyUpHandler);
+      expect(mockRealTimeController.on).toHaveBeenCalledWith('METRONOME_TICK', MetronomeHandlers.tickHandler);
+      expect(mockRealTimeController.on).toHaveBeenCalledWith('METRONOME_START', MetronomeHandlers.startHandler);
+      expect(mockRealTimeController.on).toHaveBeenCalledWith('METRONOME_STOP', MetronomeHandlers.stopHandler);
+      expect(mockRealTimeController.on).toHaveBeenCalledWith('SET_BPM', MetronomeHandlers.bpmHandler);
+      
+      // WebSocket handlers
+      expect(mockWebsocketController.on).toHaveBeenCalledWith('ROOM_JOIN', RoomHandlers.roomJoinHandler);
+      expect(mockWebsocketController.on).toHaveBeenCalledWith('USER_CONNECT', RoomHandlers.userConnectHandler);
+      expect(mockWebsocketController.on).toHaveBeenCalledWith('USER_DISCONNECT', RoomHandlers.userDisconnectHandler);
+      expect(mockWebsocketController.on).toHaveBeenCalledWith('USER_UPDATE', RoomHandlers.userUpdateHandler);
+      expect(mockWebsocketController.on).toHaveBeenCalledWith('disconnect', RoomHandlers.roomDisconnectHandler);
 
       // Window event handlers
-      expect(window.addEventListener).toHaveBeenCalledTimes(1);
+      expect(window.addEventListener).toHaveBeenCalledWith('blur', RoomHandlers.blurHandler);
 
       // Keyboard handlers
-      expect(mockKeyboardController.registerKeyDownHandler).toHaveBeenCalledTimes(1);
-      expect(mockKeyboardController.registerKeyUpHandler).toHaveBeenCalledTimes(1);
+      expect(mockKeyboardController.registerKeyDownHandler).toHaveBeenCalledWith(NoteActions.keyDown);
+      expect(mockKeyboardController.registerKeyUpHandler).toHaveBeenCalledWith(NoteActions.keyUp);
     });
   });
 

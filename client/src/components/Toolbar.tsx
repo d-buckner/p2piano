@@ -1,16 +1,16 @@
-import HuMIDI from 'humidi';
-import Icon from './Icon';
+import Metronome from './Metronome';
+import MidiButton from './MidiButton';
 import * as styles from './Toolbar.css';
+import Volume from './Volume';
 
 
 function Toolbar() {
   return (
-    <button
-      class={styles.toolbarButton}
-      onClick={HuMIDI.requestAccess}
-    >
-      <Icon name='usb-cable' />
-    </button>
+    <div class={styles.toolbar}>
+      <MidiButton />
+      <Metronome />
+      <Volume />
+    </div>
   );
 }
 

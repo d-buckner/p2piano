@@ -48,6 +48,26 @@ describe('UserUpdateDto', () => {
       const errors = await validate(dto);
       expect(errors).toHaveLength(0);
     });
+
+    it('should pass validation for SYNTH instrument', async () => {
+      dto.userId = '550e8400-e29b-41d4-a716-446655440000';
+      dto.displayName = 'John';
+      dto.color = '#FF0000';
+      dto.instrument = 'SYNTH';
+      
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should pass validation for ELECTRIC_BASS instrument', async () => {
+      dto.userId = '550e8400-e29b-41d4-a716-446655440000';
+      dto.displayName = 'John';
+      dto.color = '#FF0000';
+      dto.instrument = 'ELECTRIC_BASS';
+      
+      const errors = await validate(dto);
+      expect(errors).toHaveLength(0);
+    });
   });
 
   describe('invalid user updates', () => {

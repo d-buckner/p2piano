@@ -32,15 +32,15 @@ export default abstract class AbstractNetworkController {
     this.messageHandlers.get(eventType)?.delete(handler);
   }
 
-  public broadcast(action: string, message: Message) {
+  public broadcast(action: string, message?: Message) {
     throw new Error('Not implemented');    
   }
 
-  public sendToPeer(peerId: string, action: string, message: Message) {
+  public sendToPeer(peerId: string, action: string, message?: Message) {
     throw new Error('Not implemented');
   }
 
-  public sendToPeers(peerIds: string[], action: string, message: Message) {
+  public sendToPeers(peerIds: string[], action: string, message?: Message) {
     throw new Error('Not implemented');
   }
 }
