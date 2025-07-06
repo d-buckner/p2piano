@@ -8,7 +8,7 @@ import type { SignalPayloadDto } from '../../dto/ws/signal.dto';
 // Mock dependencies
 vi.mock('../utils', () => ({
   getSocketSessionId: vi.fn(),
-  defaultWebSocketGatewayOptions: {}
+  getWebSocketGatewayOptions: () => {}
 }));
 
 vi.mock('../SessionRegistry', () => ({

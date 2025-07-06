@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Room from './entities/Room';
+import { getErrorInfo } from './utils/ErrorUtils';
 
 
 type RoomResponse = {
@@ -19,7 +20,8 @@ export class AppService {
       return result;
     } catch (error) {
       const duration = Date.now() - startTime;
-      this.logger.error(`Failed to create room after ${duration}ms: ${error.message}`, error.stack);
+      const { message, stack } = getErrorInfo(error);
+      this.logger.error(`Failed to create room after ${duration}ms: ${message}`, stack);
       throw error;
     }
   }
@@ -34,7 +36,8 @@ export class AppService {
       return result;
     } catch (error) {
       const duration = Date.now() - startTime;
-      this.logger.error(`Failed to get room ${roomId} after ${duration}ms: ${error.message}`, error.stack);
+      const { message, stack } = getErrorInfo(error);
+      this.logger.error(`Failed to get room ${roomId} after ${duration}ms: ${message}`, stack);
       throw error;
     }
   }

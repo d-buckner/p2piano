@@ -3,11 +3,12 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { SessionValidatorService } from '../services/session-validator.service';
 import type { INestApplicationContext} from '@nestjs/common';
 import type { ServerOptions, Server } from 'socket.io';
+import type { RawHttpRequest } from '../types/raw-request';
 
 
 export class SessionIoAdapter extends IoAdapter {
   private readonly logger = new Logger(SessionIoAdapter.name);
-  private sessionValidator: SessionValidatorService;
+  private sessionValidator!: SessionValidatorService;
 
   constructor(private app: INestApplicationContext) {
     super(app);
@@ -19,14 +20,14 @@ export class SessionIoAdapter extends IoAdapter {
 
     const server = super.createIOServer(port, {
       ...options,
-      allowRequest: async (req, callback) => {
+      allowRequest: async (req: RawHttpRequest, callback: (err: Error | null, success: boolean) => void) => {
         try {
           // Validate session using the shared validator
           const session = await this.sessionValidator.validateRawRequest(req);
           
           if (!session) {
             this.logger.warn('WebSocket connection rejected - invalid or missing session');
-            callback('Session required', false);
+            callback(new Error('Session required'), false);
             return;
           }
 
@@ -35,7 +36,7 @@ export class SessionIoAdapter extends IoAdapter {
           callback(null, true);
         } catch (error) {
           this.logger.error('WebSocket authentication error:', error);
-          callback('Authentication error', false);
+          callback(new Error('Authentication error'), false);
         }
       },
     });

@@ -48,9 +48,9 @@ describe('WebRtcController', () => {
       sendToPeer: vi.fn(),
     };
     
-    global.TextDecoder = vi.fn(() => ({
+    vi.stubGlobal('TextDecoder', vi.fn(() => ({
       decode: vi.fn(() => JSON.stringify({ action: 'KEY_DOWN', payload: { midi: 60 } })),
-    })) as unknown as typeof TextDecoder;
+    })));
     
     (WebRtcController as unknown as { instance: undefined }).instance = undefined;
     
@@ -59,6 +59,7 @@ describe('WebRtcController', () => {
 
   afterEach(() => {
     WebRtcController.destroy();
+    vi.unstubAllGlobals();
   });
 
   describe('singleton pattern', () => {

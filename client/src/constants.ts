@@ -1,7 +1,3 @@
-// TODO: move off of Payload and Message for better types
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Payload = Record<string, any>;
-
 export interface PeerConnections {
   [peerId: string]: {
     latency: number,

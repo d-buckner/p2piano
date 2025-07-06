@@ -135,6 +135,29 @@ describe('RealTimeController', () => {
       expect(mockWebrtcInstance.sendToPeer).toHaveBeenCalledWith('user1', 'KEY_DOWN', { midi: 60 });
       expect(mockWebsocketInstance.sendToPeers).toHaveBeenCalledWith(['user2'], 'KEY_DOWN', { midi: 60 });
     });
+
+    it('should send to multiple peers using sendToPeers', () => {
+      const controller = RealTimeController.getInstance();
+      
+      controller.sendToPeers(['user1', 'user2'], 'KEY_DOWN', { midi: 60 });
+      
+      expect(mockWebrtcInstance.sendToPeer).toHaveBeenCalledWith('user1', 'KEY_DOWN', { midi: 60 });
+      expect(mockWebsocketInstance.sendToPeers).toHaveBeenCalledWith(['user2'], 'KEY_DOWN', { midi: 60 });
+    });
+
+    it('should handle mixed peer types in sendToPeers', () => {
+      const controller = RealTimeController.getInstance();
+      
+      // Mock WebRTC to fail for user1, should fallback to websocket
+      mockWebrtcInstance.sendToPeer.mockImplementation(() => {
+        throw new Error('WebRTC failed');
+      });
+      
+      controller.sendToPeers(['user1', 'user2'], 'KEY_DOWN', { midi: 60 });
+      
+      expect(mockWebrtcInstance.sendToPeer).toHaveBeenCalledWith('user1', 'KEY_DOWN', { midi: 60 });
+      expect(mockWebsocketInstance.sendToPeers).toHaveBeenCalledWith(['user1', 'user2'], 'KEY_DOWN', { midi: 60 });
+    });
   });
 
   describe('cleanup', () => {

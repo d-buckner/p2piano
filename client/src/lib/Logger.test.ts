@@ -1,24 +1,29 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-// Mock window object
-const mockWindow = {
-  location: { search: '' },
-  LOG_LEVEL: undefined,
-};
-
-vi.stubGlobal('window', mockWindow);
-vi.stubGlobal('location', mockWindow.location);
 
 describe('Logger', () => {
   beforeEach(() => {
     // Clear modules to get fresh Logger instance
     vi.resetModules();
-    mockWindow.location.search = '';
-    mockWindow.LOG_LEVEL = undefined;
+    vi.clearAllMocks();
+    
+    // Mock window object
+    vi.stubGlobal('window', {
+      location: { search: '' },
+      LOG_LEVEL: undefined,
+    });
+    vi.stubGlobal('location', { search: '' });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it('should respect DEBUG level from window.LOG_LEVEL', async () => {
-    mockWindow.LOG_LEVEL = 'debug';
+    vi.stubGlobal('window', {
+      location: { search: '' },
+      LOG_LEVEL: 'debug',
+    });
     const Logger = (await import('./Logger')).default;
     
     const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
@@ -35,7 +40,11 @@ describe('Logger', () => {
   });
 
   it('should respect INFO level from URL parameter', async () => {
-    mockWindow.location.search = '?log=info';
+    vi.stubGlobal('location', { search: '?log=info' });
+    vi.stubGlobal('window', {
+      location: { search: '?log=info' },
+      LOG_LEVEL: undefined,
+    });
     const Logger = (await import('./Logger')).default;
     
     const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});
@@ -52,7 +61,10 @@ describe('Logger', () => {
   });
 
   it('should respect NONE level to disable all logging', async () => {
-    mockWindow.LOG_LEVEL = 'none';
+    vi.stubGlobal('window', {
+      location: { search: '' },
+      LOG_LEVEL: 'none',
+    });
     const Logger = (await import('./Logger')).default;
     
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -65,8 +77,11 @@ describe('Logger', () => {
   });
 
   it('should prioritize URL parameter over window.LOG_LEVEL', async () => {
-    mockWindow.LOG_LEVEL = 'debug';
-    mockWindow.location.search = '?log=error';
+    vi.stubGlobal('location', { search: '?log=error' });
+    vi.stubGlobal('window', {
+      location: { search: '?log=error' },
+      LOG_LEVEL: 'debug',
+    });
     const Logger = (await import('./Logger')).default;
     
     const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => {});

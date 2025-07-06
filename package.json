@@ -10,7 +10,6 @@
     "dev": "node scripts/dev.js",
     "servers:dev": "concurrently \"npm run client:dev\" \"npm run service:dev\"",
     "bootstrap": "npm install && cd client && npm install && cd ../service && npm install",
-    "prepare": "husky",
     "test": "npm run test:service && npm run test:client",
     "test:service": "cd service && npm run test",
     "test:client": "cd client && npm run test",

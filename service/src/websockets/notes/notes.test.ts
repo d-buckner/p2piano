@@ -6,7 +6,7 @@ import { Notes } from './notes';
 // Mock dependencies
 vi.mock('../utils', () => ({
   broadcastToSubset: vi.fn(),
-  defaultWebSocketGatewayOptions: {},
+  getWebSocketGatewayOptions: () => {},
 }));
 
 describe('Notes WebSocket Gateway', () => {

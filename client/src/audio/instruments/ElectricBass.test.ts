@@ -2,28 +2,34 @@ import { describe, it, expect, vi } from 'vitest';
 import ElectricBass from './ElectricBass';
 import Sampler from './Sampler';
 
-
-vi.mock('./Sampler', () => ({
-  default: vi.fn().mockImplementation(() => ({
-    keyDown: vi.fn(),
-    keyUp: vi.fn(),
+// Mock only the Tone.js dependency that Sampler uses
+vi.mock('tone', () => ({
+  Sampler: vi.fn().mockImplementation(() => ({
+    toDestination: vi.fn(),
+    triggerAttack: vi.fn(),
+    triggerRelease: vi.fn(),
+    releaseAll: vi.fn(),
   })),
 }));
 
 describe('ElectricBass', () => {
-  it('should initialize Sampler with bass-electric configuration', () => {
-    new ElectricBass();
+  it('should apply -24 semitone MIDI offset for bass range', () => {
+    // Mock the parent class methods directly on the prototype
+    const mockKeyDown = vi.spyOn(Sampler.prototype, 'keyDown').mockImplementation(vi.fn());
+    const mockKeyUp = vi.spyOn(Sampler.prototype, 'keyUp').mockImplementation(vi.fn());
     
-    expect(Sampler).toHaveBeenCalledWith('bass-electric', [
-      'G2',
-      'E3',
-      'G3',
-      'E4',
-      'G4',
-    ]);
-  });
-
-  it('should instantiate without errors', () => {
-    expect(() => new ElectricBass()).not.toThrow();
+    const bass = new ElectricBass();
+    
+    // Test keyDown with MIDI offset
+    bass.keyDown(60, 0, 127); // Middle C (C4)
+    expect(mockKeyDown).toHaveBeenCalledWith(36, 0, 127); // C2 (36 = 60 - 24)
+    
+    // Test keyUp with MIDI offset  
+    bass.keyUp(72, 100); // C5
+    expect(mockKeyUp).toHaveBeenCalledWith(48, 100); // C3 (48 = 72 - 24)
+    
+    // Clean up
+    mockKeyDown.mockRestore();
+    mockKeyUp.mockRestore();
   });
 });

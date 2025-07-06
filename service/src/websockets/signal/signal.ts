@@ -2,14 +2,15 @@ import { UseGuards, Logger } from '@nestjs/common';
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { SignalThrottlerGuard } from '../../guards/signalthrottler.guard';
 import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
+import { getErrorMessage } from '../../utils/ErrorUtils';
 import SessionRegistry from '../SessionRegistry';
-import { defaultWebSocketGatewayOptions, getSocketSessionId } from '../utils';
+import { getWebSocketGatewayOptions, getSocketSessionId } from '../utils';
 import { SignalEvents } from './events';
 import type { SignalPayloadDto } from '../../dto/ws/signal.dto';
 import type { AuthenticatedSocket } from '../../types/socket';
 
 
-@WebSocketGateway(defaultWebSocketGatewayOptions)
+@WebSocketGateway(getWebSocketGatewayOptions())
 export class Signal {
   private readonly logger = new Logger(Signal.name);
 
@@ -47,7 +48,7 @@ export class Signal {
 
     } catch (error) {
       this.logger.error('Error processing WebRTC signal', {
-        error: error.message,
+        error: getErrorMessage(error),
         socketId: socket.id,
         targetUserId: payload.userId,
         signalType: payload.signalData.type

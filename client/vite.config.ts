@@ -93,6 +93,7 @@ export default defineConfig(({ mode }) => {
           '**/index.tsx',
           '**/index.ts',
           'src/styles/**',
+          'src/test-utils/**',
           'src/workers/serviceWorker.ts',
           '**/*.test.ts',
           '**/*.test.tsx',

@@ -30,12 +30,16 @@ export class WsThrottlerGuard extends ThrottlerGuard {
     // This helps distinguish between multiple users on the same network
     const ip = client.session.ipAddress || 'unknown';
     const sessionId = getSocketSessionId(client);
+    if (!sessionId) {
+      throw new Error('Socket session ID is required for throttling');
+    }
     const tracker = `${ip}:${sessionId}`;
     
-    const key = generateKey(context, tracker, throttler.name);
+    const throttlerName = throttler.name ?? 'default';
+    const key = generateKey(context, tracker, throttlerName);
     
     const { totalHits, timeToExpire, isBlocked, timeToBlockExpire } = 
-      await this.storageService.increment(key, ttl, limit, blockDuration, throttler.name);
+      await this.storageService.increment(key, ttl, limit, blockDuration, throttlerName);
     
     if (isBlocked) {
       await this.throwThrottlingException(context, {
