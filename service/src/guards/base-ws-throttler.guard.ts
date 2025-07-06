@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import type { Logger, ExecutionContext } from '@nestjs/common';
+import type { Socket } from 'socket.io';
 
 
 @Injectable()
@@ -27,7 +28,7 @@ export abstract class BaseWsThrottlerGuard extends ThrottlerGuard {
     return Promise.resolve();
   }
 
-  protected getClientIdentifier(client: any): string {
+  protected getClientIdentifier(client: Socket): string {
     return client.handshake?.address || client.id || 'unknown';
   }
 

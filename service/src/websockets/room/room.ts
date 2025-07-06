@@ -22,6 +22,7 @@ import {
 import { RoomEvents, SocketEvents } from './events';
 import type { UserUpdateDto } from '../../dto/ws/user-update.dto';
 import type { AuthenticatedSocket } from '../../types/socket';
+import type { Room as IRoom } from '../../utils/workspaceTypes';
 import type { Server } from 'socket.io';
 
 // Socket interface is now extended in types/socket.ts
@@ -143,7 +144,7 @@ export class Room {
     }
   }
 
-  private async retryRoomJoin(roomEntity: RoomEntity, sessionId: string, displayName: string, maxRetries: number): Promise<any> {
+  private async retryRoomJoin(roomEntity: RoomEntity, sessionId: string, displayName: string, maxRetries: number): Promise<IRoom> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         return await roomEntity.join(sessionId, displayName);

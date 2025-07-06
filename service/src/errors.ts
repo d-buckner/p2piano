@@ -11,7 +11,7 @@ export abstract class AppError extends Error {
   abstract readonly code: string;
   abstract readonly statusCode: number;
   
-  constructor(message: string, public readonly context?: Record<string, any>) {
+  constructor(message: string, public readonly context?: Record<string, unknown>) {
     super(message);
     this.name = this.constructor.name;
     
@@ -29,7 +29,7 @@ export class RoomNotFoundError extends AppError {
   readonly code = 'ROOM_NOT_FOUND';
   readonly statusCode = 404;
   
-  constructor(message: string, context?: Record<string, any>) {
+  constructor(message: string, context?: Record<string, unknown>) {
     super(message, context);
   }
 }
@@ -41,7 +41,7 @@ export class SessionNotFoundError extends AppError {
   readonly code = 'SESSION_NOT_FOUND';
   readonly statusCode = 404;
   
-  constructor(message: string, context?: Record<string, any>) {
+  constructor(message: string, context?: Record<string, unknown>) {
     super(message, context);
   }
 }
@@ -53,7 +53,7 @@ export class AuthenticationError extends AppError {
   readonly code = 'AUTH_ERROR';
   readonly statusCode = 401;
   
-  constructor(message = 'Authentication failed', context?: Record<string, any>) {
+  constructor(message = 'Authentication failed', context?: Record<string, unknown>) {
     super(message, context);
   }
 }
@@ -65,7 +65,7 @@ export class RoomError extends AppError {
   readonly code = 'ROOM_ERROR';
   readonly statusCode = 400;
   
-  constructor(message: string, context?: Record<string, any>) {
+  constructor(message: string, context?: Record<string, unknown>) {
     super(message, context);
   }
 }
@@ -77,7 +77,7 @@ export class WebSocketError extends AppError {
   readonly code = 'WS_ERROR';
   readonly statusCode = 400;
   
-  constructor(message: string, context?: Record<string, any>) {
+  constructor(message: string, context?: Record<string, unknown>) {
     super(message, context);
   }
 }
@@ -89,7 +89,7 @@ export class DatabaseError extends AppError {
   readonly code = 'DATABASE_ERROR';
   readonly statusCode = 500;
   
-  constructor(message = 'Database operation failed', context?: Record<string, any>) {
+  constructor(message = 'Database operation failed', context?: Record<string, unknown>) {
     super(message, context);
   }
 }

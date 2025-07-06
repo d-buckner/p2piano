@@ -2,29 +2,37 @@ import { validate } from 'class-validator';
 import { ObjectId } from 'mongodb';
 import { vi } from 'vitest';
 import type { Session } from '../entities/Session';
-import type { Request } from '../types/request';
+import type { Request, Reply } from '../types/request';
+import type { AuthenticatedSocket } from '../types/socket';
 import type { ExecutionContext } from '@nestjs/common';
 import type { ValidationError } from 'class-validator';
+import type { IncomingHttpHeaders } from 'http';
 import type { WithId } from 'mongodb';
+import type { ParsedUrlQuery } from 'querystring';
 import type { Socket } from 'socket.io';
+
+
+interface MockSocket extends Partial<Socket> {
+  session?: Session;
+}
 
 
 type MockSessionOptions = Partial<Session>
 
 interface MockWsClientOptions {
-  handshake?: {
-    auth: Record<string, any>;
-    query: Record<string, any>;
-    headers: Record<string, any>;
+  handshake?: Partial<{
+    auth: Record<string, unknown>;
+    query: ParsedUrlQuery;
+    headers: IncomingHttpHeaders;
     time: string;
     address: string;
     xdomain: boolean;
     secure: boolean;
     issued: number;
     url: string;
-  };
-  disconnect?: any;
-  [key: string]: any;
+  }>;
+  disconnect?: (close?: boolean) => Socket;
+  [key: string]: unknown;
 }
 
 type MockHttpRequestOptions = Partial<Request>
@@ -145,8 +153,8 @@ export function createMockSessionWithId(overrides: MockSessionOptions = {}): Wit
 /**
  * Helper to create mock WebSocket client
  */
-export function createMockWsClient(overrides: MockWsClientOptions = {}): Partial<Socket> {
-  return {
+export function createMockWsClient(overrides: MockWsClientOptions = {}): MockSocket {
+  const mockSocket: MockSocket = {
     handshake: {
       auth: {},
       query: {},
@@ -158,10 +166,28 @@ export function createMockWsClient(overrides: MockWsClientOptions = {}): Partial
       issued: Date.now(),
       url: '/',
       ...overrides.handshake,
-    },
-    disconnect: vi.fn(),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any,
+    disconnect: vi.fn().mockImplementation(() => mockSocket),
     ...overrides,
   };
+  return mockSocket;
+}
+
+/**
+ * Helper to create mock authenticated WebSocket client
+ */
+export function createMockAuthenticatedSocket(session: Session, overrides: MockWsClientOptions = {}): AuthenticatedSocket {
+  const baseSocket = createMockWsClient(overrides);
+  return {
+    ...baseSocket,
+    session,
+    id: 'mock-socket-id',
+    to: vi.fn().mockReturnThis(),
+    emit: vi.fn(),
+    join: vi.fn(),
+    leave: vi.fn(),
+  } as unknown as AuthenticatedSocket;
 }
 
 /**
@@ -182,7 +208,7 @@ export function createMockHttpRequest(overrides: MockHttpRequestOptions = {}): P
  */
 export function createMockHttpExecutionContext(
   request: MockHttpRequestOptions = {},
-  reply: any = { cookie: vi.fn() }
+  reply: Partial<Reply> = { cookie: vi.fn() }
 ): ExecutionContext {
   const mockRequest = createMockHttpRequest(request);
   return {

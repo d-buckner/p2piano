@@ -181,7 +181,7 @@ export class SessionValidatorService {
         if (cookies.sessionId) {
           return cookies.sessionId;
         }
-      } catch (error) {
+      } catch {
         // Invalid cookie format, continue to other methods
       }
     }
@@ -218,7 +218,7 @@ export class SessionValidatorService {
         if (cookies.sessionId) {
           return cookies.sessionId;
         }
-      } catch (error) {
+      } catch {
         // Invalid cookie format, continue
       }
     }

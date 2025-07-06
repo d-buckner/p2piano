@@ -1,4 +1,6 @@
 
+import type { BroadcastOperator } from 'socket.io';
+
 /**
  * Interface for raw Node.js HTTP requests used in Socket.io allowRequest callbacks
  * This replaces the unsafe 'any' type with proper type definitions
@@ -82,8 +84,8 @@ export interface SocketWithHandshake {
   handshake: SocketHandshake;
   conn?: SocketConnection;
   disconnect: () => void;
-  emit: (event: string, data?: any) => void;
-  to: (room: string) => any;
+  emit: (event: string, data?: unknown) => boolean;
+  to: (room: string) => BroadcastOperator<unknown, unknown>;
   join: (room: string) => void;
   leave: (room: string) => void;
 }

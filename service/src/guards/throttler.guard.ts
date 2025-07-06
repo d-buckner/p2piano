@@ -6,6 +6,18 @@ import type { ExecutionContext } from '@nestjs/common';
 import type { ThrottlerRequest } from '@nestjs/throttler';
 
 
+interface ThrottlerLimitDetail {
+  tracker: string;
+  limit?: number;
+  ttl?: number;
+  key?: string;
+  totalHits?: number;
+  timeToExpire?: number;
+  isBlocked?: boolean;
+  timeToBlockExpire?: number;
+}
+
+
 @Injectable()
 export class WsThrottlerGuard extends ThrottlerGuard {
   private readonly logger = new Logger(WsThrottlerGuard.name);
@@ -35,7 +47,7 @@ export class WsThrottlerGuard extends ThrottlerGuard {
     return true;
   }
 
-  protected async throwThrottlingException(context: ExecutionContext, throttlerLimitDetail: any): Promise<void> {
+  protected async throwThrottlingException(context: ExecutionContext, throttlerLimitDetail: ThrottlerLimitDetail): Promise<void> {
     const client = context.switchToWs().getClient<AuthenticatedSocket>();
     const eventName = context.getHandler().name;
     const ip = throttlerLimitDetail.tracker;

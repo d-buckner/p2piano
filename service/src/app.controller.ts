@@ -6,8 +6,6 @@ import {
   Param,
   Post,
   UseGuards,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { 
   ApiTags, 

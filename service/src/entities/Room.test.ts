@@ -1,5 +1,4 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-
 // Import after mocks are set up
 import { RoomNotFoundError } from '../errors';
 import { createUUID } from '../test-utils/validation.helpers';

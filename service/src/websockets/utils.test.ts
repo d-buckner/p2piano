@@ -10,6 +10,7 @@ import {
   broadcastToSubset,
 } from './utils';
 import type { Session } from '../entities/Session';
+import type { AuthenticatedSocket } from '../types/socket';
 import type { Socket } from 'socket.io';
 
 // Mock dependencies
@@ -17,7 +18,7 @@ vi.mock('./SessionRegistry');
 vi.mock('../config/ConfigProvider');
 
 describe('WebSocket Utils', () => {
-  let mockSocket: Partial<Socket>;
+  let mockSocket: Partial<Socket> & { session?: Session };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -61,7 +62,7 @@ describe('WebSocket Utils', () => {
 
   describe('getSocketSessionId', () => {
     it('should return session ID when session exists', () => {
-      const sessionId = getSocketSessionId(mockSocket as Socket);
+      const sessionId = getSocketSessionId(mockSocket as AuthenticatedSocket);
       
       expect(sessionId).toBe('session-789');
     });
@@ -69,7 +70,7 @@ describe('WebSocket Utils', () => {
     it('should return null when session is undefined', () => {
       mockSocket.session = undefined;
       
-      const sessionId = getSocketSessionId(mockSocket as Socket);
+      const sessionId = getSocketSessionId(mockSocket as AuthenticatedSocket);
       
       expect(sessionId).toBeNull();
     });
@@ -77,7 +78,7 @@ describe('WebSocket Utils', () => {
     it('should return null when session exists but sessionId is undefined', () => {
       mockSocket.session = { sessionId: undefined } as any;
       
-      const sessionId = getSocketSessionId(mockSocket as Socket);
+      const sessionId = getSocketSessionId(mockSocket as AuthenticatedSocket);
       
       expect(sessionId).toBeNull();
     });
@@ -85,7 +86,7 @@ describe('WebSocket Utils', () => {
 
   describe('getSocketRoomId', () => {
     it('should extract room ID from handshake query', () => {
-      const roomId = getSocketRoomId(mockSocket as Socket);
+      const roomId = getSocketRoomId(mockSocket as AuthenticatedSocket);
       
       expect(roomId).toBe('room-456');
     });
@@ -95,7 +96,7 @@ describe('WebSocket Utils', () => {
         mockSocket.handshake.query = {};
       }
       
-      const roomId = getSocketRoomId(mockSocket as Socket);
+      const roomId = getSocketRoomId(mockSocket as AuthenticatedSocket);
       
       expect(roomId).toBeUndefined();
     });
@@ -103,7 +104,7 @@ describe('WebSocket Utils', () => {
 
   describe('getSocketDisplayName', () => {
     it('should extract display name from handshake query', () => {
-      const displayName = getSocketDisplayName(mockSocket as Socket);
+      const displayName = getSocketDisplayName(mockSocket as AuthenticatedSocket);
       
       expect(displayName).toBe('Test User');
     });
@@ -113,7 +114,7 @@ describe('WebSocket Utils', () => {
         mockSocket.handshake.query = {};
       }
       
-      const displayName = getSocketDisplayName(mockSocket as Socket);
+      const displayName = getSocketDisplayName(mockSocket as AuthenticatedSocket);
       
       expect(displayName).toBeUndefined();
     });
@@ -121,7 +122,7 @@ describe('WebSocket Utils', () => {
 
   describe('getSocketMetadata', () => {
     it('should return complete socket metadata', () => {
-      const metadata = getSocketMetadata(mockSocket as Socket);
+      const metadata = getSocketMetadata(mockSocket as AuthenticatedSocket);
       
       expect(metadata).toEqual({
         displayName: 'Test User',
@@ -136,7 +137,7 @@ describe('WebSocket Utils', () => {
         mockSocket.handshake.query = { roomId: 'room-456' };
       }
       
-      const metadata = getSocketMetadata(mockSocket as Socket);
+      const metadata = getSocketMetadata(mockSocket as AuthenticatedSocket);
       
       expect(metadata).toEqual({
         displayName: undefined,
@@ -150,7 +151,7 @@ describe('WebSocket Utils', () => {
     it('should broadcast message to room with decorated payload', () => {
       const payload = { type: 'NOTE_PLAYED', note: 'C4' };
       
-      broadcast(mockSocket as Socket, 'note', payload);
+      broadcast(mockSocket as AuthenticatedSocket, 'note', payload);
       
       expect(mockSocket.to).toHaveBeenCalledWith('room-456');
       expect(mockSocket.emit).toHaveBeenCalledWith('note', {
@@ -163,7 +164,7 @@ describe('WebSocket Utils', () => {
     it('should handle payload with existing userId by overriding it', () => {
       const payload = { type: 'NOTE_PLAYED', note: 'C4', userId: 'old-user' };
       
-      broadcast(mockSocket as Socket, 'note', payload);
+      broadcast(mockSocket as AuthenticatedSocket, 'note', payload);
       
       expect(mockSocket.emit).toHaveBeenCalledWith('note', {
         type: 'NOTE_PLAYED',
@@ -176,7 +177,7 @@ describe('WebSocket Utils', () => {
       mockSocket.session = undefined;
       const payload = { type: 'USER_LEFT' };
       
-      broadcast(mockSocket as Socket, 'user-event', payload);
+      broadcast(mockSocket as AuthenticatedSocket, 'user-event', payload);
       
       expect(mockSocket.emit).toHaveBeenCalledWith('user-event', {
         type: 'USER_LEFT',
@@ -187,7 +188,7 @@ describe('WebSocket Utils', () => {
     it('should handle empty payload', () => {
       const payload = {};
       
-      broadcast(mockSocket as Socket, 'heartbeat', payload);
+      broadcast(mockSocket as AuthenticatedSocket, 'heartbeat', payload);
       
       expect(mockSocket.emit).toHaveBeenCalledWith('heartbeat', {
         userId: 'session-789',
@@ -208,7 +209,7 @@ describe('WebSocket Utils', () => {
         },
       };
       
-      broadcast(mockSocket as Socket, 'complex', payload);
+      broadcast(mockSocket as AuthenticatedSocket, 'complex', payload);
       
       expect(mockSocket.emit).toHaveBeenCalledWith('complex', {
         ...payload,
@@ -226,7 +227,7 @@ describe('WebSocket Utils', () => {
           'user-2': { id: 'socket-2' },
           'user-3': { id: 'socket-3' },
         };
-        return socketMap[userId] as Socket || null;
+        return socketMap[userId] as AuthenticatedSocket || null;
       });
     });
 
@@ -234,7 +235,7 @@ describe('WebSocket Utils', () => {
       const targetUsers = ['user-1', 'user-2'];
       const payload = { type: 'PRIVATE_MESSAGE', content: 'Hello specific users' };
       
-      broadcastToSubset(mockSocket as Socket, targetUsers, 'private-message', payload);
+      broadcastToSubset(mockSocket as AuthenticatedSocket, targetUsers, 'private-message', payload);
       
       expect(mockSocket.to).toHaveBeenCalledTimes(2);
       expect(mockSocket.to).toHaveBeenCalledWith('socket-1');
@@ -250,7 +251,7 @@ describe('WebSocket Utils', () => {
     it('should handle empty user list', () => {
       const payload = { type: 'EMPTY_BROADCAST' };
       
-      broadcastToSubset(mockSocket as Socket, [], 'empty', payload);
+      broadcastToSubset(mockSocket as AuthenticatedSocket, [], 'empty', payload);
       
       expect(mockSocket.to).not.toHaveBeenCalled();
       expect(mockSocket.emit).not.toHaveBeenCalled();
@@ -258,13 +259,13 @@ describe('WebSocket Utils', () => {
 
     it('should handle mix of valid and invalid users gracefully', () => {
       vi.mocked(SessionRegistry.getSocket).mockImplementation((userId: string) => {
-        return userId === 'valid-user' ? { id: 'socket-1' } as Socket : null;
+        return userId === 'valid-user' ? { id: 'socket-1' } as AuthenticatedSocket : null;
       });
       
       const targetUsers = ['valid-user', 'invalid-user'];
       const payload = { type: 'MIXED_BROADCAST' };
       
-      broadcastToSubset(mockSocket as Socket, targetUsers, 'mixed', payload);
+      broadcastToSubset(mockSocket as AuthenticatedSocket, targetUsers, 'mixed', payload);
       
       // Should attempt broadcast to all users, valid or not
       expect(mockSocket.to).toHaveBeenCalledWith('socket-1');
@@ -277,7 +278,7 @@ describe('WebSocket Utils', () => {
       const targetUsers = ['user-1'];
       const payload = { type: 'NULL_SOCKET_TEST' };
       
-      broadcastToSubset(mockSocket as Socket, targetUsers, 'null-test', payload);
+      broadcastToSubset(mockSocket as AuthenticatedSocket, targetUsers, 'null-test', payload);
       
       // Should attempt to call .to() with undefined socketId
       expect(mockSocket.to).toHaveBeenCalledWith(undefined);
@@ -292,7 +293,7 @@ describe('WebSocket Utils', () => {
         array: [1, 2, 3],
       };
       
-      broadcastToSubset(mockSocket as Socket, targetUsers, 'complex-subset', payload);
+      broadcastToSubset(mockSocket as AuthenticatedSocket, targetUsers, 'complex-subset', payload);
       
       expect(mockSocket.emit).toHaveBeenCalledWith('complex-subset', {
         type: 'COMPLEX_SUBSET',
@@ -306,7 +307,7 @@ describe('WebSocket Utils', () => {
       const targetUsers = ['user-1'];
       const payload = { type: 'SINGLE_USER_MESSAGE' };
       
-      broadcastToSubset(mockSocket as Socket, targetUsers, 'single', payload);
+      broadcastToSubset(mockSocket as AuthenticatedSocket, targetUsers, 'single', payload);
       
       expect(mockSocket.to).toHaveBeenCalledTimes(1);
       expect(mockSocket.to).toHaveBeenCalledWith('socket-1');
@@ -318,14 +319,14 @@ describe('WebSocket Utils', () => {
     it('should handle missing session across all functions', () => {
       mockSocket.session = undefined;
       
-      const sessionId = getSocketSessionId(mockSocket as Socket);
-      const metadata = getSocketMetadata(mockSocket as Socket);
+      const sessionId = getSocketSessionId(mockSocket as AuthenticatedSocket);
+      const metadata = getSocketMetadata(mockSocket as AuthenticatedSocket);
       
       expect(sessionId).toBeNull();
       expect(metadata.sessionId).toBeNull();
       
       // Should still work for broadcasting
-      broadcast(mockSocket as Socket, 'test', { data: 'test' });
+      broadcast(mockSocket as AuthenticatedSocket, 'test', { data: 'test' });
       expect(mockSocket.emit).toHaveBeenCalledWith('test', {
         data: 'test',
         userId: null,
@@ -348,9 +349,9 @@ describe('WebSocket Utils', () => {
         } as any,
       };
       
-      const roomId = getSocketRoomId(socketWithEmptyQuery as Socket);
-      const displayName = getSocketDisplayName(socketWithEmptyQuery as Socket);
-      const metadata = getSocketMetadata(socketWithEmptyQuery as Socket);
+      const roomId = getSocketRoomId(socketWithEmptyQuery as AuthenticatedSocket);
+      const displayName = getSocketDisplayName(socketWithEmptyQuery as AuthenticatedSocket);
+      const metadata = getSocketMetadata(socketWithEmptyQuery as AuthenticatedSocket);
       
       expect(roomId).toBeUndefined();
       expect(displayName).toBeUndefined();
@@ -365,7 +366,7 @@ describe('WebSocket Utils', () => {
         targetPeerId: 'peer-123',
       };
       
-      broadcast(mockSocket as Socket, 'webrtc-signal', signalingPayload);
+      broadcast(mockSocket as AuthenticatedSocket, 'webrtc-signal', signalingPayload);
       
       expect(mockSocket.emit).toHaveBeenCalledWith('webrtc-signal', {
         type: 'offer',
@@ -383,7 +384,7 @@ describe('WebSocket Utils', () => {
         instrumentType: 'piano',
       };
       
-      broadcast(mockSocket as Socket, 'note-on', notePayload);
+      broadcast(mockSocket as AuthenticatedSocket, 'note-on', notePayload);
       
       expect(mockSocket.emit).toHaveBeenCalledWith('note-on', {
         note: 'C4',

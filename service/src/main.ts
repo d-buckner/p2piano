@@ -18,13 +18,13 @@ async function bootstrap() {
   app.useWebSocketAdapter(new SessionIoAdapter(app));
 
   // Cookie support for sessions
-   
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   await app.register(require('@fastify/cookie'), {
     secret: ConfigProvider.getCookieSecret(),
   });
 
   // Security headers
-   
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   await app.register(require('@fastify/helmet'), {
     contentSecurityPolicy: {
       directives: {

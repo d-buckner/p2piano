@@ -21,7 +21,7 @@ export class AutoSessionGuard implements CanActivate {
       
       await this.sessionValidator.getOrCreateSession(request, reply);
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

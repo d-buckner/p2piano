@@ -15,7 +15,7 @@ class SignalDataDto {
 
   // ICE candidate fields
   @IsOptional()
-  candidate?: any;
+  candidate?: string;
 
   @IsOptional()
   sdpMLineIndex?: number;

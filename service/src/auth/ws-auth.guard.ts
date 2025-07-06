@@ -24,7 +24,7 @@ export class WsAuthGuard implements CanActivate {
       }
 
       return true;
-    } catch (error) {
+    } catch {
       client?.disconnect();
       return false;
     }
