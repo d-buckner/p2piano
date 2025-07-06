@@ -29,7 +29,7 @@ describe('ClickSampler', () => {
     };
 
     const { Sampler } = await import('tone');
-    vi.mocked(Sampler).mockImplementation(() => mockSampler as any);
+    vi.mocked(Sampler).mockImplementation(() => mockSampler as unknown as InstanceType<typeof Sampler>);
   });
 
   afterEach(() => {

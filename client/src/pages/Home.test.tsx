@@ -8,7 +8,7 @@ vi.mock('../components/HomeContent', () => ({
 }));
 
 vi.mock('../components/PageLayout', () => ({
-  default: (props: { children: any }) => <div data-testid="page-layout">{props.children}</div>
+  default: (props: { children: unknown }) => <div data-testid="page-layout">{props.children}</div>
 }));
 
 describe('Home', () => {

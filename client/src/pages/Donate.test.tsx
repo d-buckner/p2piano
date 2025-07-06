@@ -2,8 +2,9 @@ import { render } from '@solidjs/testing-library';
 import { describe, expect, it, vi } from 'vitest';
 import Donate from './Donate';
 
+
 vi.mock('../components/PageLayout', () => ({
-  default: (props: { children: any }) => <div data-testid="page-layout">{props.children}</div>
+  default: (props: { children: unknown }) => <div data-testid="page-layout">{props.children}</div>
 }));
 
 describe('Donate', () => {

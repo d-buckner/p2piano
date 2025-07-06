@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import RealTimeController from '../networking/RealTimeController';
-import type { TickType } from '../constants/metronome';
 import MetronomeClient from './MetronomeClient';
+import type { TickType } from '../constants/metronome';
 
 
 vi.mock('../networking/RealTimeController', () => ({
