@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
+
 describe('Logger', () => {
   beforeEach(() => {
     // Clear modules to get fresh Logger instance

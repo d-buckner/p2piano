@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { getWebSocketGatewayOptions, getSocketSessionId, getSocketRoomId, getSocketDisplayName, getSocketMetadata, broadcast, broadcastToSubset } from './utils';
-import SessionRegistry from './SessionRegistry';
 import ConfigProvider from '../config/ConfigProvider';
+import SessionRegistry from './SessionRegistry';
+import { getWebSocketGatewayOptions, getSocketSessionId, getSocketRoomId, getSocketDisplayName, getSocketMetadata, broadcast, broadcastToSubset } from './utils';
 import type { AuthenticatedSocket } from '../types/socket';
 
 // Mock ConfigProvider

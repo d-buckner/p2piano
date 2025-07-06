@@ -1,13 +1,14 @@
 import { UseGuards, Logger } from '@nestjs/common';
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { SignalThrottlerGuard } from '../../guards/signalthrottler.guard';
-import { SignalEvents } from './events';
-import { getWebSocketGatewayOptions, getSocketSessionId } from '../utils';
-import SessionRegistry from '../SessionRegistry';
-import type { SignalPayloadDto } from '../../dto/ws/signal.dto';
 import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
-import type { AuthenticatedSocket } from '../../types/socket';
 import { getErrorMessage } from '../../utils/ErrorUtils';
+import SessionRegistry from '../SessionRegistry';
+import { getWebSocketGatewayOptions, getSocketSessionId } from '../utils';
+import { SignalEvents } from './events';
+import type { SignalPayloadDto } from '../../dto/ws/signal.dto';
+import type { AuthenticatedSocket } from '../../types/socket';
+
 
 @WebSocketGateway(getWebSocketGatewayOptions())
 export class Signal {

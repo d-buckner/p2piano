@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import AbstractNetworkController, { type MessageHandler } from './AbstractNetworkController';
 
+
 class TestNetworkController extends AbstractNetworkController {
   constructor() {
     super();

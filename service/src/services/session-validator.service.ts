@@ -1,12 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as cookie from 'cookie';
-import { getErrorMessage } from '../utils/ErrorUtils';
 import { SessionConfigService } from '../config/session-config.service';
 import SessionProvider from '../entities/Session';
+import { getErrorMessage } from '../utils/ErrorUtils';
 import type { Session } from '../entities/Session';
 import type { RawHttpRequest } from '../types/raw-request';
 import type { Request, Reply } from '../types/request';
 import type { AuthenticatedSocket } from '../types/socket';
+
 
 @Injectable()
 export class SessionValidatorService {

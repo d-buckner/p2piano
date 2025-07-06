@@ -1,6 +1,6 @@
 import { Injectable, ValidationPipe } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
-import { ValidationError } from 'class-validator';
+import type { ValidationError } from 'class-validator';
 
 
 @Injectable()

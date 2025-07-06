@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import getRoomId from './getRoomId';
 
+
 describe('getRoomId', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -9,7 +10,7 @@ describe('getRoomId', () => {
   it('should extract room ID from pathname', () => {
     vi.spyOn(window, 'location', 'get').mockReturnValue({
       pathname: '/room123',
-    } as any);
+    } as Location);
 
     const roomId = getRoomId();
     expect(roomId).toBe('room123');
@@ -18,7 +19,7 @@ describe('getRoomId', () => {
   it('should handle root path', () => {
     vi.spyOn(window, 'location', 'get').mockReturnValue({
       pathname: '/',
-    } as any);
+    } as Location);
 
     const roomId = getRoomId();
     expect(roomId).toBe('');
@@ -27,7 +28,7 @@ describe('getRoomId', () => {
   it('should handle nested paths', () => {
     vi.spyOn(window, 'location', 'get').mockReturnValue({
       pathname: '/abc123/something',
-    } as any);
+    } as Location);
 
     const roomId = getRoomId();
     expect(roomId).toBe('abc123/something');

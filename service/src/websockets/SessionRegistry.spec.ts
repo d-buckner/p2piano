@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import SessionRegistry from './SessionRegistry';
 import type { Socket } from 'socket.io';
 
+
 describe('SessionRegistry', () => {
   const mockSocket = {
     id: 'socket-id',

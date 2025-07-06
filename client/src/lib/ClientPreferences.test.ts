@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import ClientPreferences from './ClientPreferences';
 
+
 describe('ClientPreferences', () => {
   const mockLocalStorage = {
     getItem: vi.fn(),

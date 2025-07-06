@@ -2,10 +2,10 @@ import { UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { WsThrottlerGuard } from '../../guards/throttler.guard';
-import { NoteEvents } from './events';
-import { broadcastToSubset, getWebSocketGatewayOptions } from '../utils';
-import type { NoteOnDto, NoteOffDto } from '../../dto/ws/note.dto';
 import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
+import { broadcastToSubset, getWebSocketGatewayOptions } from '../utils';
+import { NoteEvents } from './events';
+import type { NoteOnDto, NoteOffDto } from '../../dto/ws/note.dto';
 import type { AuthenticatedSocket } from '../../types/socket';
 
 

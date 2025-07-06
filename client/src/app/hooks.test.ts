@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createMemo } from 'solid-js';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useAppSelector, useAppDispatch } from './hooks';
 
 // Mock dependencies

@@ -1,6 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AppService } from './app.service';
+import { Test } from '@nestjs/testing';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { AppService } from './app.service';
+import type { TestingModule } from '@nestjs/testing';
 
 // Hoist the mock functions
 const mockRoomCreate = vi.hoisted(() => vi.fn());

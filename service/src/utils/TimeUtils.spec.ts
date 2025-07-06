@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { getTtlInHoursFromNow } from './TimeUtils';
 
+
 describe('TimeUtils', () => {
   describe('getTtlInHoursFromNow', () => {
     it('should return correct timestamp for 1 hour from now', () => {

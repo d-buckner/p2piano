@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
 import { render } from 'solid-js/web';
+import { describe, it, expect } from 'vitest';
 import Icon from './Icon';
+
 
 describe('Icon', () => {
   it('should render icon component', () => {

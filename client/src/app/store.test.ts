@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { store, setStore, useStore } from './store';
 
+
 describe('store', () => {
   describe('initial state', () => {
     it('should have correct initial workspace state', () => {

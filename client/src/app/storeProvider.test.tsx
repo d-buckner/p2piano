@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest';
 import { render } from 'solid-js/web';
+import { describe, it, expect } from 'vitest';
 import { StoreProvider } from './storeProvider';
+
 
 describe('StoreProvider', () => {
   it('should render children', () => {

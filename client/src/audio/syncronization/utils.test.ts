@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getAudioDelay } from './utils';
 import { MIN_LATENCY_CUTOFF_MS } from './constants';
+import { getAudioDelay } from './utils';
 
 // Mock the store and selectors
 const mockSelectWorkspace = vi.hoisted(() => vi.fn());

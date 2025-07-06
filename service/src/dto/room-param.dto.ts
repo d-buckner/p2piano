@@ -1,5 +1,6 @@
 import { IsString, Length, Matches } from 'class-validator';
 
+
 export class RoomParamDto {
   @IsString()
   @Length(5, 5)

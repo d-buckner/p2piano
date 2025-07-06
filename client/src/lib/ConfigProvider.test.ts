@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import ConfigProvider from './ConfigProvider';
 
+
 describe('ConfigProvider', () => {
   beforeEach(() => {
     // Reset environment variables

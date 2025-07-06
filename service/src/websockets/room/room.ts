@@ -12,6 +12,7 @@ import { WebSocketError, RoomError } from '../../errors';
 import { WsThrottlerGuard } from '../../guards/throttler.guard';
 import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
 import { SessionValidatorService } from '../../services/session-validator.service';
+import { getErrorMessage } from '../../utils/ErrorUtils';
 import SessionRegistry from '../SessionRegistry';
 import {
   broadcast,
@@ -22,7 +23,6 @@ import {
 import { RoomEvents, SocketEvents } from './events';
 import type { UserUpdateDto } from '../../dto/ws/user-update.dto';
 import type { AuthenticatedSocket } from '../../types/socket';
-import { getErrorMessage } from '../../utils/ErrorUtils';
 import type { Room as IRoom } from '../../utils/workspaceTypes';
 import type { Server } from 'socket.io';
 
@@ -64,7 +64,7 @@ export class Room {
   }
 
   onModuleInit() {
-    this.server.on(SocketEvents.CONNECTION, (socket: any) => this.bootstrapConnection(socket));
+    this.server.on(SocketEvents.CONNECTION, (socket: AuthenticatedSocket) => this.bootstrapConnection(socket));
   }
 
   onModuleDestroy() {

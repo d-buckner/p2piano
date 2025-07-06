@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { getNextColor } from './ColorUtils';
 
+
 describe('ColorUtils', () => {
   describe('getNextColor', () => {
     it('should return middle color when all colors are available', () => {

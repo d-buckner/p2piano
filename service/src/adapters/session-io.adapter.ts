@@ -19,7 +19,7 @@ export class SessionIoAdapter extends IoAdapter {
 
     const server = super.createIOServer(port, {
       ...options,
-      allowRequest: async (req: any, callback: any) => {
+      allowRequest: async (req: RawHttpRequest, callback: (err: Error | null, success: boolean) => void) => {
         try {
           // Validate session using the shared validator
           const session = await this.sessionValidator.validateRawRequest(req);

@@ -7,9 +7,6 @@ const mockRemoveEventListener: ReturnType<typeof vi.fn> = vi.fn();
 const mockDocumentAddEventListener: ReturnType<typeof vi.fn> = vi.fn();
 const mockDocumentRemoveEventListener: ReturnType<typeof vi.fn> = vi.fn();
 
-// Store original implementations
-const originalWindow = global.window;
-const originalDocument = global.document;
 
 describe('KeyboardController', () => {
   let controller: KeyboardController;
