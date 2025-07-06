@@ -132,7 +132,7 @@ describe('SessionIoAdapter', () => {
       await capturedOptions.allowRequest(mockRequest, callback);
 
       expect(mockSessionValidator.validateRawRequest).toHaveBeenCalledWith(mockRequest);
-      expect(callback).toHaveBeenCalledWith('Session required', false);
+      expect(callback).toHaveBeenCalledWith(new Error('Session required'), false);
     });
 
     it('should handle session validation errors gracefully', async () => {
@@ -164,7 +164,7 @@ describe('SessionIoAdapter', () => {
       const callback = vi.fn();
       await capturedOptions.allowRequest(mockRequest, callback);
 
-      expect(callback).toHaveBeenCalledWith('Authentication error', false);
+      expect(callback).toHaveBeenCalledWith(new Error('Authentication error'), false);
     });
 
     it('should preserve original options while adding allowRequest', () => {

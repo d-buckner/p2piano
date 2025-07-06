@@ -71,7 +71,7 @@ describe('registerServiceWorker', () => {
   });
 
   it('should wait for service worker to be ready', async () => {
-    let readyResolver: any;
+    let readyResolver: (value: unknown) => void;
     const mockReady = new Promise((resolve) => {
       readyResolver = resolve;
     });

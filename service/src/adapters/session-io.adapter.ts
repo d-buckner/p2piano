@@ -3,6 +3,7 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 import { SessionValidatorService } from '../services/session-validator.service';
 import type { INestApplicationContext} from '@nestjs/common';
 import type { ServerOptions, Server } from 'socket.io';
+import type { RawHttpRequest } from '../types/raw-request';
 
 
 export class SessionIoAdapter extends IoAdapter {
@@ -26,7 +27,7 @@ export class SessionIoAdapter extends IoAdapter {
           
           if (!session) {
             this.logger.warn('WebSocket connection rejected - invalid or missing session');
-            callback('Session required', false);
+            callback(new Error('Session required'), false);
             return;
           }
 
@@ -35,7 +36,7 @@ export class SessionIoAdapter extends IoAdapter {
           callback(null, true);
         } catch (error) {
           this.logger.error('WebSocket authentication error:', error);
-          callback('Authentication error', false);
+          callback(new Error('Authentication error'), false);
         }
       },
     });

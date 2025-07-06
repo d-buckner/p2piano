@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import AbstractNetworkController, { type MessageHandler } from './AbstractNetworkController';
+import AbstractNetworkController from './AbstractNetworkController';
 
 
 class TestNetworkController extends AbstractNetworkController {
@@ -12,15 +12,15 @@ class TestNetworkController extends AbstractNetworkController {
   }
 
   // Implement abstract methods for testing
-  public broadcast(action: string, message: any) {
+  public broadcast(action: string, message: unknown) {
     super.broadcast(action, message);
   }
 
-  public sendToPeer(peerId: string, action: string, message: any) {
+  public sendToPeer(peerId: string, action: string, message: unknown) {
     super.sendToPeer(peerId, action, message);
   }
 
-  public sendToPeers(peerIds: string[], action: string, message: any) {
+  public sendToPeers(peerIds: string[], action: string, message: unknown) {
     super.sendToPeers(peerIds, action, message);
   }
 }

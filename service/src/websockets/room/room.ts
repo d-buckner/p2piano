@@ -64,7 +64,7 @@ export class Room {
   }
 
   onModuleInit() {
-    this.server.on(SocketEvents.CONNECTION, (socket: AuthenticatedSocket) => this.bootstrapConnection(socket));
+    this.server.on(SocketEvents.CONNECTION, (socket) => this.bootstrapConnection(socket as AuthenticatedSocket));
   }
 
   onModuleDestroy() {
@@ -159,6 +159,8 @@ export class Room {
         Logger.warn(`Room join attempt ${attempt} failed for session ${sessionId}, retrying in ${delay}ms`);
       }
     }
+    // This should never be reached since we throw on maxRetries, but TypeScript requires it
+    throw new Error('Failed to join room after maximum retries');
   }
 
   async destroyConnection(socket: AuthenticatedSocket, reason: string): Promise<void> {

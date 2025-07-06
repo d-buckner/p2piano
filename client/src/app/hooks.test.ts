@@ -2,6 +2,12 @@ import { createMemo } from 'solid-js';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useAppSelector, useAppDispatch } from './hooks';
 
+
+interface TestState {
+  workspace: { roomId: string };
+  connection: { isConnected: boolean };
+}
+
 // Mock dependencies
 vi.mock('solid-js', () => ({
   createMemo: vi.fn((fn) => fn),
@@ -29,7 +35,7 @@ describe('hooks', () => {
 
   describe('useAppSelector', () => {
     it('should create a memo with the selector function', () => {
-      const selector = (state: any) => state.workspace.roomId;
+      const selector = (state: TestState) => state.workspace.roomId;
       const result = useAppSelector(selector);
       
       expect(createMemo).toHaveBeenCalledWith(expect.any(Function));
@@ -37,14 +43,14 @@ describe('hooks', () => {
     });
 
     it('should return selected state value', () => {
-      const selector = (state: any) => state.connection.isConnected;
+      const selector = (state: TestState) => state.connection.isConnected;
       const result = useAppSelector(selector);
       
       expect(result()).toBe(true);
     });
 
     it('should handle complex selectors', () => {
-      const selector = (state: any) => ({
+      const selector = (state: TestState) => ({
         roomId: state.workspace.roomId,
         isConnected: state.connection.isConnected,
       });
