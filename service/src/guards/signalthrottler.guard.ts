@@ -1,6 +1,9 @@
-import { Injectable, Logger, ExecutionContext } from '@nestjs/common';
-import { ThrottlerGuard, ThrottlerRequest } from '@nestjs/throttler';
-import { AuthenticatedSocket } from '../types/socket';
+import { Injectable, Logger } from '@nestjs/common';
+import { ThrottlerGuard } from '@nestjs/throttler';
+import type { AuthenticatedSocket } from '../types/socket';
+import type { ExecutionContext } from '@nestjs/common';
+import type { ThrottlerRequest } from '@nestjs/throttler';
+
 
 @Injectable()
 export class SignalThrottlerGuard extends ThrottlerGuard {

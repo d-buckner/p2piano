@@ -63,7 +63,7 @@ export default class WebRtcController extends AbstractNetworkController {
   public sendToPeers<T extends Message>(peerIds: string[], action: string, message?: T) {
     peerIds.forEach(peerId => {
       this.sendToPeer(peerId, action, message);
-    })
+    });
   }
 
   public sendToPeer<T extends Message>(peerId: string, action: string, message?: T) {

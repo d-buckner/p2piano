@@ -75,5 +75,5 @@ export function keyUp(midi: number, peerId?: string): string | undefined {
 
 function getResolvedUserId(userId?: string): string | undefined {
   return userId
-    || selectWorkspace(store).userId
+    || selectWorkspace(store).userId;
 }

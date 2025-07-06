@@ -1,10 +1,13 @@
-import { validate, ValidationError } from 'class-validator';
-import { ExecutionContext } from '@nestjs/common';
-import { ObjectId, WithId } from 'mongodb';
-import { Session } from '../entities/Session';
-import { Socket } from 'socket.io';
-import { Request } from '../types/request';
+import { validate } from 'class-validator';
+import { ObjectId } from 'mongodb';
 import { vi } from 'vitest';
+import type { Session } from '../entities/Session';
+import type { Request } from '../types/request';
+import type { ExecutionContext } from '@nestjs/common';
+import type { ValidationError } from 'class-validator';
+import type { WithId } from 'mongodb';
+import type { Socket } from 'socket.io';
+
 
 type MockSessionOptions = Partial<Session>
 

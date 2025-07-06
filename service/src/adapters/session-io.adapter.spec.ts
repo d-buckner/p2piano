@@ -1,12 +1,12 @@
-import { INestApplicationContext } from '@nestjs/common';
-import { SessionIoAdapter } from './session-io.adapter';
+import { vi } from 'vitest';
 import { SessionValidatorService } from '../services/session-validator.service';
 import { 
   createMockSessionWithId,
   createUUID 
 } from '../test-utils/validation.helpers';
+import { SessionIoAdapter } from './session-io.adapter';
+import type { INestApplicationContext } from '@nestjs/common';
 
-import { vi } from 'vitest';
 
 describe('SessionIoAdapter', () => {
   let adapter: SessionIoAdapter;

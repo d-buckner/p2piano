@@ -1,12 +1,11 @@
-import { Test } from '@nestjs/testing';
 import { UnauthorizedException } from '@nestjs/common';
-import { AuthGuard } from './auth.guard';
+import { Test } from '@nestjs/testing';
+import { vi } from 'vitest';
 import { SessionValidatorService } from '../services/session-validator.service';
 import { 
   createMockHttpExecutionContext
 } from '../test-utils/validation.helpers';
-
-import { vi } from 'vitest';
+import { AuthGuard } from './auth.guard';
 
 // Mock SessionValidatorService
 vi.mock('../services/session-validator.service');

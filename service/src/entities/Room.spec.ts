@@ -1,5 +1,11 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
+// Import after mocks are set up
+import { RoomNotFoundError } from '../errors';
+import { createUUID } from '../test-utils/validation.helpers';
+import { getNextColor } from '../utils/ColorUtils';
+import Room from './Room';
+
 // Mock Database with hoisted function to ensure it's available before module imports
 const mockCollection = vi.hoisted(() => ({
   insertOne: vi.fn(),
@@ -26,12 +32,6 @@ const mockCustomAlphabet = vi.hoisted(() => vi.fn(() => mockNanoidGenerator));
 vi.mock('nanoid', () => ({
   customAlphabet: mockCustomAlphabet,
 }));
-
-// Import after mocks are set up
-import Room from './Room';
-import { RoomNotFoundError } from '../errors';
-import { getNextColor } from '../utils/ColorUtils';
-import { createUUID } from '../test-utils/validation.helpers';
 
 describe('Room Entity', () => {
   let mockGetNextColor: any;
@@ -400,7 +400,7 @@ describe('Room Entity', () => {
         { roomId },
         {
           $unset: {
-            [`users.${userId}`]: "",
+            [`users.${userId}`]: '',
           },
         },
         { returnDocument: 'after' }
@@ -443,7 +443,7 @@ describe('Room Entity', () => {
         { roomId },
         {
           $unset: {
-            [`users.non-member`]: "",
+            ['users.non-member']: '',
           },
         },
         { returnDocument: 'after' }

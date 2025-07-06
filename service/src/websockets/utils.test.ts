@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import SessionRegistry from './SessionRegistry';
 import {
   defaultWebSocketGatewayOptions,
   getSocketSessionId,
@@ -8,9 +9,8 @@ import {
   broadcast,
   broadcastToSubset,
 } from './utils';
-import SessionRegistry from './SessionRegistry';
-import type { Socket } from 'socket.io';
 import type { Session } from '../entities/Session';
+import type { Socket } from 'socket.io';
 
 // Mock dependencies
 vi.mock('./SessionRegistry');

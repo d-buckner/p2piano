@@ -1,6 +1,7 @@
-import { SessionNotFoundError } from '../errors';
 import Database from '../clients/Database';
 import ConfigProvider from '../config/ConfigProvider';
+import { SessionNotFoundError } from '../errors';
+
 
 export type Session = {
   sessionId: string,
@@ -17,7 +18,7 @@ SessionCollection.createIndex({ lastActivity: 1 }, { expireAfterSeconds: 86400 }
 
 
 export default class SessionProvider {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+   
   private constructor() { }
 
   static async create(ipAddress?: string, userAgent?: string) {

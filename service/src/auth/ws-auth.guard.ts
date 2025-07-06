@@ -1,6 +1,8 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { AuthenticatedSocket } from '../types/socket';
-import { SessionValidatorService } from '../services/session-validator.service';
+import { Injectable } from '@nestjs/common';
+import type { SessionValidatorService } from '../services/session-validator.service';
+import type { AuthenticatedSocket } from '../types/socket';
+import type { CanActivate, ExecutionContext } from '@nestjs/common';
+
 
 @Injectable()
 export class WsAuthGuard implements CanActivate {

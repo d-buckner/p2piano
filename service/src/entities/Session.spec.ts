@@ -1,8 +1,9 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import SessionProvider, { Session } from './Session';
 import Database from '../clients/Database';
-import { SessionNotFoundError } from '../errors';
 import ConfigProvider from '../config/ConfigProvider';
+import { SessionNotFoundError } from '../errors';
+import SessionProvider from './Session';
+import type { Session } from './Session';
 
 // Mock ConfigProvider to test IP validation
 vi.mock('../config/ConfigProvider', () => ({

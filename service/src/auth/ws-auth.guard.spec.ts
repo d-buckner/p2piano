@@ -1,12 +1,13 @@
 import { Test } from '@nestjs/testing';
 import { vi } from 'vitest';
-import { ExecutionContext } from '@nestjs/common';
-import { WsAuthGuard } from './ws-auth.guard';
 import { SessionValidatorService } from '../services/session-validator.service';
 import { 
   createMockWsExecutionContext,
   createUUID
 } from '../test-utils/validation.helpers';
+import { WsAuthGuard } from './ws-auth.guard';
+import type { ExecutionContext } from '@nestjs/common';
+
 
 describe('WsAuthGuard', () => {
   let guard: WsAuthGuard;

@@ -1,5 +1,5 @@
 import { Test } from '@nestjs/testing';
-import { SessionValidatorService } from './session-validator.service';
+import { vi } from 'vitest';
 import { SessionConfigService } from '../config/session-config.service';
 import SessionProvider from '../entities/Session';
 import { 
@@ -8,8 +8,7 @@ import {
   createMockWsClient,
   createUUID 
 } from '../test-utils/validation.helpers';
-
-import { vi } from 'vitest';
+import { SessionValidatorService } from './session-validator.service';
 
 // Mock dependencies
 vi.mock('../entities/Session');

@@ -1,10 +1,10 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { Signal } from './signal';
-import { SignalEvents } from './events';
-import { SignalPayloadDto } from '../../dto/ws/signal.dto';
 import SessionRegistry from '../SessionRegistry';
 import { getSocketSessionId } from '../utils';
-import { Socket } from 'socket.io';
+import { SignalEvents } from './events';
+import { Signal } from './signal';
+import type { SignalPayloadDto } from '../../dto/ws/signal.dto';
+import type { Socket } from 'socket.io';
 
 // Mock dependencies
 vi.mock('../SessionRegistry');

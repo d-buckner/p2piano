@@ -1,6 +1,7 @@
-import { validate } from 'class-validator';
 import { plainToClass } from 'class-transformer';
+import { validate } from 'class-validator';
 import { SignalPayloadDto } from './signal.dto';
+
 
 describe('SignalPayloadDto', () => {
   let dto: SignalPayloadDto;

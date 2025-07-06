@@ -2,9 +2,10 @@ import { Module } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { WebsocketsModule } from './websockets/websockets.module';
-import { HealthController } from './health/health.controller';
 import { AuthModule } from './auth/auth.module';
+import { HealthController } from './health/health.controller';
+import { WebsocketsModule } from './websockets/websockets.module';
+
 
 @Module({
   imports: [

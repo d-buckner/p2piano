@@ -1,7 +1,5 @@
 import { Test } from '@nestjs/testing';
 import { vi } from 'vitest';
-import { ExecutionContext } from '@nestjs/common';
-import { AutoSessionGuard } from './auto-session.guard';
 import { SessionValidatorService } from '../services/session-validator.service';
 import { 
   createMockSessionWithId,
@@ -11,6 +9,9 @@ import {
   createConcurrentSessionMocks,
   createUUID
 } from '../test-utils/validation.helpers';
+import { AutoSessionGuard } from './auto-session.guard';
+import type { ExecutionContext } from '@nestjs/common';
+
 
 describe('AutoSessionGuard', () => {
   let guard: AutoSessionGuard;

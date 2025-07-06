@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { Notes } from './notes';
-import { NoteEvents } from './events';
 import { createUUID } from '../../test-utils/validation.helpers';
+import { NoteEvents } from './events';
+import { Notes } from './notes';
 
 // Mock dependencies
 vi.mock('../utils', () => ({

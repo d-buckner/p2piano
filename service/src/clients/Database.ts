@@ -1,6 +1,8 @@
-import { MongoClient, Db } from 'mongodb';
 import { Logger } from '@nestjs/common';
+import { MongoClient } from 'mongodb';
 import ConfigProvider from '../config/ConfigProvider';
+import type { Db } from 'mongodb';
+
 
 class DatabaseManager {
   private client: MongoClient;

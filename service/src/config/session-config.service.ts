@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import ConfigProvider from './ConfigProvider';
 
+
 export interface SessionSecurityConfig {
   trustedDomain: string | null;
   enableIpValidation: boolean;

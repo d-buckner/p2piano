@@ -1,6 +1,7 @@
-import { ArgumentMetadata } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 import { WsValidationPipe } from './ws-validation.pipe';
+import type { ArgumentMetadata } from '@nestjs/common';
+
 
 describe('WsValidationPipe', () => {
   let pipe: WsValidationPipe;

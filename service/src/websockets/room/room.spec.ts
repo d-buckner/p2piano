@@ -1,11 +1,11 @@
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { Logger } from '@nestjs/common';
-import { Room } from './room';
-import { RoomEvents, SocketEvents } from './events';
+import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import RoomEntity from '../../entities/Room';
 import SessionProvider from '../../entities/Session';
-import SessionRegistry from '../SessionRegistry';
 import { createMockSessionWithId, createUUID } from '../../test-utils/validation.helpers';
+import SessionRegistry from '../SessionRegistry';
+import { RoomEvents, SocketEvents } from './events';
+import { Room } from './room';
 
 // Mock dependencies
 vi.mock('../../entities/Room');

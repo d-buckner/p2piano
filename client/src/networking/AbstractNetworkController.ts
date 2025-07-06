@@ -14,17 +14,17 @@ export default abstract class AbstractNetworkController {
 
   public on<T extends MessageHandler>(eventType: string, handler: T) {
     if (!this.messageHandlers.get(eventType)) {
-      this.messageHandlers.set(eventType, new Set())
+      this.messageHandlers.set(eventType, new Set());
     }
 
-    this.messageHandlers.get(eventType)!.add(handler)
+    this.messageHandlers.get(eventType)!.add(handler);
   }
 
   public once<T extends MessageHandler>(eventType: string, handler: T) {
     const wrapper: MessageHandler = (event) => {
       handler(event);
       this.off(eventType, wrapper);
-    }
+    };
     this.on(eventType, wrapper);
   }
 

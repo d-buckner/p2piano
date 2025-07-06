@@ -97,7 +97,7 @@ class AudioSyncCoordinator {
     const realTimeController = RealTimeController.getInstance();
     realTimeController.on(SYNC_EVENT.LATENCY_PING, this.onPing);
     realTimeController.on(SYNC_EVENT.LATENCY_PONG, this.onPong);
-    realTimeController.on(ACTION.USER_DISCONNECT, this.onPeerLeft)
+    realTimeController.on(ACTION.USER_DISCONNECT, this.onPeerLeft);
     realTimeController.once(ACTION.SIGNAL, this.tick);
   }
 

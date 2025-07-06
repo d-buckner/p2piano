@@ -1,5 +1,5 @@
-import SessionRegistry from './SessionRegistry';
 import ConfigProvider from '../config/ConfigProvider';
+import SessionRegistry from './SessionRegistry';
 import type { AuthenticatedSocket } from '../types/socket';
 
 
@@ -35,7 +35,7 @@ export function getSocketMetadata(socket: AuthenticatedSocket) {
     displayName: getSocketDisplayName(socket),
     sessionId: getSocketSessionId(socket),
     roomId: getSocketRoomId(socket),
-  }
+  };
 }
 
 export function broadcast<T>(socket: AuthenticatedSocket, eventType: string, payload: T) {

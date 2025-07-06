@@ -1,5 +1,6 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import { Session } from '../entities/Session';
+import type { Session } from '../entities/Session';
+import type { FastifyRequest, FastifyReply } from 'fastify';
+
 
 export interface Request extends FastifyRequest {
   session?: Session;

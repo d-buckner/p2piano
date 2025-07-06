@@ -1,13 +1,12 @@
 import { Test } from '@nestjs/testing';
-import { SessionValidatorService } from '../services/session-validator.service';
+import { vi } from 'vitest';
 import { AuthModule } from '../auth/auth.module';
 import SessionProvider from '../entities/Session';
+import { SessionValidatorService } from '../services/session-validator.service';
 import { 
   createMockHttpRequest,
   createUUID 
 } from '../test-utils/validation.helpers';
-
-import { vi } from 'vitest';
 
 // Mock external dependencies
 vi.mock('../entities/Session');
@@ -39,7 +38,7 @@ describe('Security Regression Tests', () => {
         "' OR '1'='1",
         "admin'/*",
         "' UNION SELECT * FROM users --",
-        "1; DELETE FROM sessions; --"
+        '1; DELETE FROM sessions; --'
       ];
 
       for (const maliciousId of maliciousSessionIds) {

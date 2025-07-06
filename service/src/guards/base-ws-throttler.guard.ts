@@ -1,5 +1,7 @@
-import { Injectable, Logger, ExecutionContext } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import type { Logger, ExecutionContext } from '@nestjs/common';
+
 
 @Injectable()
 export abstract class BaseWsThrottlerGuard extends ThrottlerGuard {

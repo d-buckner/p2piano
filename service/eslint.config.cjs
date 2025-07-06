@@ -1,21 +1,19 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import importPlugin from 'eslint-plugin-import'
-import solidPlugin from 'eslint-plugin-solid'
-import tseslint from 'typescript-eslint'
+const js = require('@eslint/js');
+const globals = require('globals');
+const importPlugin = require('eslint-plugin-import');
+const tseslint = require('typescript-eslint');
 
-export default tseslint.config(
-  { ignores: ['dist', 'coverage'] },
+module.exports = tseslint.config(
+  { ignores: ['dist', 'coverage', 'docs'] },
   {
     extends: [
       js.configs.recommended,
       ...tseslint.configs.recommended,
-      solidPlugin.configs['flat/typescript']
     ],
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.{ts,js}'],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
+      globals: globals.node,
     },
     plugins: {
       'import': importPlugin,
@@ -49,4 +47,17 @@ export default tseslint.config(
       'import/no-duplicates': 'error'
     },
   },
-)
+  {
+    files: ['**/*.spec.ts', '**/*.test.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off'
+    },
+  },
+  {
+    files: ['**/*.service.ts', '**/*.guard.ts', '**/*.controller.ts', '**/room/*.ts', '**/signal/*.ts', '**/notes/*.ts'],
+    rules: {
+      '@typescript-eslint/consistent-type-imports': 'off'
+    },
+  },
+);

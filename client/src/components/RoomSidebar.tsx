@@ -42,7 +42,7 @@ function InstrumentSelect(props: InstrumentSelectProps) {
       class={styles.instrumentSelect}
       value={props.instrument ?? InstrumentType.PIANO}
       onChange={e => {
-        updateInstrument(e.target.value as InstrumentType)
+        updateInstrument(e.target.value as InstrumentType);
       }}
     >
       <For each={Object.entries(INSTRUMENTS)}>

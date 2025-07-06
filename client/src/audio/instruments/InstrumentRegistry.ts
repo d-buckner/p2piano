@@ -18,7 +18,7 @@ export default class InstrumentRegistry {
         IR.get(userId)?.releaseAll();
         IR.userInstruments.set(userId, instrument);
       }
-    })
+    });
   }
 
   static get(userId: string): Instrument | null {

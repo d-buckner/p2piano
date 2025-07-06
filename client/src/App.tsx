@@ -2,7 +2,7 @@ import { Route } from '@solidjs/router';
 import { lazy } from 'solid-js';
 
 
-const RoomEntryGuard = lazy(() => import('./pages/RoomEntryGuard'))
+const RoomEntryGuard = lazy(() => import('./pages/RoomEntryGuard'));
 const Home = lazy(() => import('./pages/Home'));
 const Donate = lazy(() => import('./pages/Donate'));
 

@@ -1,5 +1,6 @@
 import { IsString, IsIn, IsUUID, MaxLength, MinLength, Matches } from 'class-validator';
 
+
 export class UserUpdateDto {
   @IsUUID(4)
   userId: string;

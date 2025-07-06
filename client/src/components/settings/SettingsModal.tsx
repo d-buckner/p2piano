@@ -53,7 +53,7 @@ function SettingsModal(props: Props) {
   };
 
   return (
-    <div class={styles.modalOverlay}>
+    <div class={styles.modalOverlay} onMouseDown={AudioManager.activate}>
       <div class={styles.modalContent}>
         <button 
           class={styles.modalCloseButton}
@@ -107,7 +107,7 @@ function SettingsModal(props: Props) {
         </div>
       </div>
     </div>
-  )
+  );
 
   function Label(props: LabelProps) {
     return (

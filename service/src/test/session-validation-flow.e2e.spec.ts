@@ -1,21 +1,20 @@
 import { Test } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { vi } from 'vitest';
+import { SessionIoAdapter } from '../adapters/session-io.adapter';
 import { AuthGuard } from '../auth/auth.guard';
+import { AuthModule } from '../auth/auth.module';
 import { AutoSessionGuard } from '../auth/auto-session.guard';
 import { WsAuthGuard } from '../auth/ws-auth.guard';
-import { SessionValidatorService } from '../services/session-validator.service';
-import { SessionIoAdapter } from '../adapters/session-io.adapter';
-import { AuthModule } from '../auth/auth.module';
 import SessionProvider from '../entities/Session';
+import { SessionValidatorService } from '../services/session-validator.service';
 import { 
   createMockSessionWithId,
   createMockHttpRequest,
   createMockWsClient,
   createUUID 
 } from '../test-utils/validation.helpers';
-
-import { vi } from 'vitest';
+import type { INestApplication } from '@nestjs/common';
 
 // Mock external dependencies
 vi.mock('../entities/Session');

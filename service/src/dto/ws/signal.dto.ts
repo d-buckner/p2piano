@@ -1,5 +1,6 @@
-import { IsString, IsUUID, ValidateNested, IsObject, MaxLength, IsOptional, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsString, IsUUID, ValidateNested, IsObject, MaxLength, IsOptional, IsIn } from 'class-validator';
+
 
 class SignalDataDto {
   @IsString()

@@ -1,3 +1,5 @@
+import { Logger, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ConnectedSocket,
   MessageBody,
@@ -5,9 +7,12 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Logger, UseGuards } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
+import RoomEntity from '../../entities/Room';
+import { WebSocketError, RoomError } from '../../errors';
 import { WsThrottlerGuard } from '../../guards/throttler.guard';
+import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
+import { SessionValidatorService } from '../../services/session-validator.service';
+import SessionRegistry from '../SessionRegistry';
 import {
   broadcast,
   defaultWebSocketGatewayOptions,
@@ -15,15 +20,9 @@ import {
   getSocketRoomId,
 } from '../utils';
 import { RoomEvents, SocketEvents } from './events';
-import RoomEntity from '../../entities/Room';
-import SessionRegistry from '../SessionRegistry';
-import { UserUpdateDto } from '../../dto/ws/user-update.dto';
-import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
-import { SessionValidatorService } from '../../services/session-validator.service';
-import { WebSocketError, RoomError } from '../../errors';
-
-import type { Server } from 'socket.io';
+import type { UserUpdateDto } from '../../dto/ws/user-update.dto';
 import type { AuthenticatedSocket } from '../../types/socket';
+import type { Server } from 'socket.io';
 
 // Socket interface is now extended in types/socket.ts
 
@@ -74,7 +73,7 @@ export class Room {
     const { displayName, roomId } = getSocketMetadata(socket);
 
     if (!roomId) {
-      Logger.warn(`User denied connection due to missing roomId`);
+      Logger.warn('User denied connection due to missing roomId');
       socket.disconnect();
       return;
     }
@@ -86,7 +85,7 @@ export class Room {
       
       // This should always succeed since the adapter already validated it
       if (!isValid) {
-        Logger.error(`Unexpected: session validation failed after adapter validation`);
+        Logger.error('Unexpected: session validation failed after adapter validation');
         socket.disconnect();
         return;
       }

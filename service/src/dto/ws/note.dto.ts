@@ -1,5 +1,6 @@
 import { IsNumber, IsArray, IsUUID, Min, Max, ArrayMaxSize } from 'class-validator';
 
+
 export class NoteOnDto {
   @IsNumber()
   @Min(0)
