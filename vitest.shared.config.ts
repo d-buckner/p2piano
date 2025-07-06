@@ -92,6 +92,7 @@ export const configs = {
     coverageInclude: ['src/**/*.{js,ts,tsx}'],
     coverageExclude: [
       'src/**/*.{test,spec}.{js,ts,tsx}',
+      'src/**/test-utils/**',
       'src/**/*.d.ts',
       '**/*.config.*',
       '**/*.css.ts',
