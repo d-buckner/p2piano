@@ -1,4 +1,4 @@
-# 🎹 p2piano
+# p2piano
 
 [![CI](https://img.shields.io/github/actions/workflow/status/d-buckner/p2piano/test-coverage.yml?branch=main&label=CI)](https://github.com/d-buckner/p2piano/actions)
 [![Client Coverage](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/d-buckner/p2piano/main/client/coverage.thresholds.json&label=Client%20Coverage&query=$.lines&suffix=%25&colorB=green&valColorA=red&valColorB=yellow&valColorC=green&valThresholdA=50&valThresholdB=70)](https://github.com/d-buckner/p2piano/tree/main/client/coverage)

@@ -6,8 +6,6 @@ import {
   Param,
   Post,
   UseGuards,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { 
   ApiTags, 
@@ -17,11 +15,10 @@ import {
   ApiBearerAuth,
   ApiCookieAuth,
 } from '@nestjs/swagger';
-import { AppService } from './app.service';
-import { RoomNotFoundError } from './errors';
 import { Throttle } from '@nestjs/throttler';
-import { RoomParamDto } from './dto/room-param.dto';
+import { AppService } from './app.service';
 import { AutoSessionGuard } from './auth/auto-session.guard';
+import { RoomNotFoundError } from './errors';
 
 
 
@@ -86,9 +83,7 @@ export class AppController {
   @Throttle({ default: { limit: 30, ttl: 60 } })
   @Get('/api/room/:id')
   @UseGuards(AutoSessionGuard)
-  @UsePipes(new ValidationPipe({ transform: true }))
-  async getRoom(@Param() param: RoomParamDto) {
-    const roomId = param.id;
+  async getRoom(@Param('id') roomId: string) {
     try {
       const room = await this.appService.getRoom(roomId);
       return room;

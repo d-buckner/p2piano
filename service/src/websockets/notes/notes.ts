@@ -1,12 +1,13 @@
-import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
+import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
 import { WsThrottlerGuard } from '../../guards/throttler.guard';
 import { NoteEvents } from './events';
 import { broadcastToSubset, getWebSocketGatewayOptions } from '../utils';
-import { NoteOnDto, NoteOffDto } from '../../dto/ws/note.dto';
+import type { NoteOnDto, NoteOffDto } from '../../dto/ws/note.dto';
 import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
-import { AuthenticatedSocket } from '../../types/socket';
+import type { AuthenticatedSocket } from '../../types/socket';
+
 
 @WebSocketGateway(getWebSocketGatewayOptions())
 export class Notes {

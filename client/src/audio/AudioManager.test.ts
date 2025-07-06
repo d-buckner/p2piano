@@ -5,11 +5,18 @@ import AudioManager from './AudioManager';
 const mockToneStart = vi.fn();
 const mockToneContext = vi.fn();
 const mockSetContext = vi.fn();
+const mockGetDestination = vi.fn();
+const mockDestinationVolume = { value: 0 };
+const mockDestination = { 
+  volume: mockDestinationVolume,
+  mute: false 
+};
 
 vi.mock('tone', () => ({
   start: mockToneStart,
   Context: mockToneContext,
   setContext: mockSetContext,
+  getDestination: mockGetDestination,
 }));
 
 describe('AudioManager', () => {
@@ -20,9 +27,23 @@ describe('AudioManager', () => {
     AudioManager.state = 'inactive';
     // @ts-expect-error private property
     AudioManager.activeCallbacks = [];
+    // @ts-expect-error private property
+    AudioManager.tone = null;
     
     mockToneStart.mockResolvedValue(undefined);
     mockToneContext.mockImplementation(() => ({}));
+    mockGetDestination.mockReturnValue(mockDestination);
+    mockDestinationVolume.value = 0;
+    mockDestination.mute = false;
+    
+    // Mock the imported tone module structure
+    const mockToneModule = {
+      start: mockToneStart,
+      Context: mockToneContext,
+      setContext: mockSetContext,
+      getDestination: mockGetDestination,
+    };
+    vi.doMock('tone', () => mockToneModule);
   });
 
   afterEach(() => {
@@ -187,6 +208,106 @@ describe('AudioManager', () => {
       
       expect(manager1.active).toBe(true);
       expect(manager2.active).toBe(true);
+    });
+  });
+
+  describe('volume control', () => {
+    beforeEach(async () => {
+      // Mock the Tone module for the activate call
+      // @ts-expect-error private property
+      AudioManager.tone = {
+        start: mockToneStart,
+        Context: mockToneContext,
+        setContext: mockSetContext,
+        getDestination: mockGetDestination,
+      };
+      // @ts-expect-error private property
+      AudioManager.state = 'active';
+    });
+
+    describe('setVolume()', () => {
+      it('should convert 0-1 range to logarithmic dB values', () => {
+        AudioManager.setVolume(0);
+        expect(mockDestinationVolume.value).toBe(-60);
+
+        AudioManager.setVolume(1);
+        expect(mockDestinationVolume.value).toBe(0);
+
+        AudioManager.setVolume(0.5);
+        expect(mockDestinationVolume.value).toBeCloseTo(-6.02, 1);
+      });
+
+      it('should not call setVolume when inactive', () => {
+        // @ts-expect-error private property
+        AudioManager.state = 'inactive';
+        
+        AudioManager.setVolume(0.5);
+        
+        expect(mockGetDestination).not.toHaveBeenCalled();
+      });
+
+      it('should not call setVolume when tone is null', () => {
+        // @ts-expect-error private property
+        AudioManager.tone = null;
+        
+        AudioManager.setVolume(0.5);
+        
+        expect(mockGetDestination).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('mute()', () => {
+      it('should set destination mute to true', () => {
+        AudioManager.mute();
+        
+        expect(mockGetDestination).toHaveBeenCalled();
+        expect(mockDestination.mute).toBe(true);
+      });
+
+      it('should not call mute when inactive', () => {
+        // @ts-expect-error private property
+        AudioManager.state = 'inactive';
+        
+        AudioManager.mute();
+        
+        expect(mockGetDestination).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('unmute()', () => {
+      it('should set destination mute to false', () => {
+        mockDestination.mute = true;
+        
+        AudioManager.unmute();
+        
+        expect(mockGetDestination).toHaveBeenCalled();
+        expect(mockDestination.mute).toBe(false);
+      });
+
+      it('should not call unmute when inactive', () => {
+        // @ts-expect-error private property
+        AudioManager.state = 'inactive';
+        
+        AudioManager.unmute();
+        
+        expect(mockGetDestination).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe('destroy()', () => {
+    it('should reset state and clear cached tone', async () => {
+      await AudioManager.activate();
+      const callback = vi.fn();
+      AudioManager.whenActive(callback);
+      
+      AudioManager.destroy();
+      
+      expect(AudioManager.active).toBe(false);
+      // @ts-expect-error private property
+      expect(AudioManager.tone).toBe(null);
+      // @ts-expect-error private property
+      expect(AudioManager.activeCallbacks).toEqual([]);
     });
   });
 });

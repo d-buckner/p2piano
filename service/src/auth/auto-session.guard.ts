@@ -1,6 +1,8 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { Request, Reply } from '../types/request';
+import { Injectable } from '@nestjs/common';
 import { SessionValidatorService } from '../services/session-validator.service';
+import type { Request, Reply } from '../types/request';
+import type { CanActivate, ExecutionContext } from '@nestjs/common';
+
 
 @Injectable()
 export class AutoSessionGuard implements CanActivate {
@@ -19,7 +21,7 @@ export class AutoSessionGuard implements CanActivate {
       
       await this.sessionValidator.getOrCreateSession(request, reply);
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

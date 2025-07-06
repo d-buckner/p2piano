@@ -1,3 +1,4 @@
-import { User } from '../../utils/workspaceTypes';
+import type { User } from '../../utils/workspaceTypes';
+
 
 export type UserUpdatePayload = User;

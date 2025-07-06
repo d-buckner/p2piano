@@ -6,8 +6,8 @@ export const navbar = style({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  height: '2em',
-  padding: '0 1em',
+  height: vars.sizes.headerHeight,
+  padding: `0 ${vars.spacing.md}`,
 });
 
 export const link = style({

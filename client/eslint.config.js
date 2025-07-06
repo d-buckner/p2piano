@@ -22,6 +22,8 @@ export default tseslint.config(
     },
     rules: {
       'quotes': ['error', 'single', { avoidEscape: true }],
+      'semi': ['error', 'always'],
+      'eol-last': ['error', 'always'],
       'import/newline-after-import': ['error', { count: 2 }],
       '@typescript-eslint/consistent-type-imports': [
         'error',

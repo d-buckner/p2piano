@@ -14,17 +14,17 @@ export default abstract class AbstractNetworkController {
 
   public on<T extends MessageHandler>(eventType: string, handler: T) {
     if (!this.messageHandlers.get(eventType)) {
-      this.messageHandlers.set(eventType, new Set())
+      this.messageHandlers.set(eventType, new Set());
     }
 
-    this.messageHandlers.get(eventType)!.add(handler)
+    this.messageHandlers.get(eventType)!.add(handler);
   }
 
   public once<T extends MessageHandler>(eventType: string, handler: T) {
     const wrapper: MessageHandler = (event) => {
       handler(event);
       this.off(eventType, wrapper);
-    }
+    };
     this.on(eventType, wrapper);
   }
 
@@ -32,15 +32,15 @@ export default abstract class AbstractNetworkController {
     this.messageHandlers.get(eventType)?.delete(handler);
   }
 
-  public broadcast(action: string, message: Message) {
+  public broadcast(action: string, message?: Message) {
     throw new Error('Not implemented');    
   }
 
-  public sendToPeer(peerId: string, action: string, message: Message) {
+  public sendToPeer(peerId: string, action: string, message?: Message) {
     throw new Error('Not implemented');
   }
 
-  public sendToPeers(peerIds: string[], action: string, message: Message) {
+  public sendToPeers(peerIds: string[], action: string, message?: Message) {
     throw new Error('Not implemented');
   }
 }

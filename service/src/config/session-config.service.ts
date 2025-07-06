@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import ConfigProvider from './ConfigProvider';
 
+
 export interface SessionSecurityConfig {
   trustedDomain: string | null;
   enableIpValidation: boolean;
@@ -99,7 +100,7 @@ export class SessionConfigService {
       
       const hostnames = await reverseLookup(ip);
       return hostnames[0] || null;
-    } catch (error) {
+    } catch {
       // Reverse DNS failed - this is normal for many IPs
       return null;
     }

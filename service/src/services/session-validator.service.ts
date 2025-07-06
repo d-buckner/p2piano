@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Request, Reply } from '../types/request';
-import { AuthenticatedSocket } from '../types/socket';
-import { RawHttpRequest } from '../types/raw-request';
-import { Session } from '../entities/Session';
-import SessionProvider from '../entities/Session';
-import { SessionConfigService } from '../config/session-config.service';
 import * as cookie from 'cookie';
 import { getErrorMessage } from '../utils/ErrorUtils';
+import { SessionConfigService } from '../config/session-config.service';
+import SessionProvider from '../entities/Session';
+import type { Session } from '../entities/Session';
+import type { RawHttpRequest } from '../types/raw-request';
+import type { Request, Reply } from '../types/request';
+import type { AuthenticatedSocket } from '../types/socket';
 
 @Injectable()
 export class SessionValidatorService {
@@ -182,7 +182,7 @@ export class SessionValidatorService {
         if (cookies.sessionId) {
           return cookies.sessionId;
         }
-      } catch (error) {
+      } catch {
         // Invalid cookie format, continue to other methods
       }
     }
@@ -219,7 +219,7 @@ export class SessionValidatorService {
         if (cookies.sessionId) {
           return cookies.sessionId;
         }
-      } catch (error) {
+      } catch {
         // Invalid cookie format, continue
       }
     }

@@ -1,9 +1,9 @@
 import { customAlphabet } from 'nanoid';
-import { getNextColor } from '../utils/ColorUtils';
 import Database from '../clients/Database';
 import { RoomNotFoundError } from '../errors';
-
+import { getNextColor } from '../utils/ColorUtils';
 import type { Room as IRoom, User } from '../utils/workspaceTypes';
+
 
 const generateRoomId = customAlphabet('abcdefghjkmnpqrstuvwxyz23456789', 5);
 const RoomCollection = Database.collection<IRoom>('room');
@@ -92,7 +92,7 @@ export default class Room {
       { roomId: this.roomId },
       {
         $unset: {
-          [`users.${userId}`]: "",
+          [`users.${userId}`]: '',
         },
       },
       { returnDocument: 'after' }

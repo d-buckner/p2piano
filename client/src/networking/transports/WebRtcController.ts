@@ -54,19 +54,19 @@ export default class WebRtcController extends AbstractNetworkController {
     return WebRtcController.instance;
   }
 
-  public broadcast<T extends Message>(action: string, message: T) {
+  public broadcast<T extends Message>(action: string, message?: T) {
     this.activePeerIds.forEach(peerId => {
       this.sendToPeer(peerId, action, message);
     });
   }
 
-  public sendToPeers<T extends Message>(peerIds: string[], action: string, message: T) {
+  public sendToPeers<T extends Message>(peerIds: string[], action: string, message?: T) {
     peerIds.forEach(peerId => {
       this.sendToPeer(peerId, action, message);
-    })
+    });
   }
 
-  public sendToPeer<T extends Message>(peerId: string, action: string, message: T) {
+  public sendToPeer<T extends Message>(peerId: string, action: string, message?: T) {
     const peer = this.peers.get(peerId);
 
     if (!peer || !this.activePeerIds.has(peerId)) {

@@ -74,7 +74,7 @@ export default class KeyboardController {
     if (document.hidden) {
       this.activeMidi.forEach(midi => {
         this.onKeyUp?.(midi);
-      })
+      });
     }
   }
 

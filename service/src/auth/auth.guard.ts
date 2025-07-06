@@ -1,6 +1,7 @@
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { Request } from '../types/request';
-import { SessionValidatorService } from '../services/session-validator.service';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import type { SessionValidatorService } from '../services/session-validator.service';
+import type { Request } from '../types/request';
+import type { CanActivate, ExecutionContext} from '@nestjs/common';
 
 /**
  * Authentication guard that validates user sessions for HTTP requests.

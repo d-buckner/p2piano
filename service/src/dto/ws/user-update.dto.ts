@@ -1,5 +1,6 @@
 import { IsString, IsIn, IsUUID, MaxLength, MinLength, Matches } from 'class-validator';
 
+
 export class UserUpdateDto {
   @IsUUID(4)
   userId!: string;
@@ -16,6 +17,6 @@ export class UserUpdateDto {
   color!: string;
 
   @IsString()
-  @IsIn(['PIANO'])
+  @IsIn(['PIANO', 'SYNTH', 'ELECTRIC_BASS'])
   instrument!: string;
 }

@@ -1,7 +1,8 @@
 import type { Socket } from 'socket.io';
 
+
 export default class SessionRegistry {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+   
   private constructor() { }
   private static registry = new Map<string, Socket>();
 

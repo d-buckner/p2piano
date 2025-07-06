@@ -1,7 +1,9 @@
+import { Logger } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import { ServerOptions } from 'socket.io';
-import { INestApplicationContext, Logger } from '@nestjs/common';
 import { SessionValidatorService } from '../services/session-validator.service';
+import type { INestApplicationContext} from '@nestjs/common';
+import type { ServerOptions, Server } from 'socket.io';
+
 
 export class SessionIoAdapter extends IoAdapter {
   private readonly logger = new Logger(SessionIoAdapter.name);
@@ -11,7 +13,7 @@ export class SessionIoAdapter extends IoAdapter {
     super(app);
   }
 
-  createIOServer(port: number, options?: ServerOptions): any {
+  createIOServer(port: number, options?: ServerOptions): Server {
     // Get the SessionValidatorService from the application context
     this.sessionValidator = this.app.get(SessionValidatorService);
 

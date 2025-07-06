@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import Room from './entities/Room';
 import { getErrorInfo } from './utils/ErrorUtils';
 
+
 type RoomResponse = {
   roomId: string,
 };

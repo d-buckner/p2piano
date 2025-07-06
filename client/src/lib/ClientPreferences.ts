@@ -12,6 +12,6 @@ const ClientPreferences = {
   hasDisplayName(): boolean {
     return Boolean(this.getDisplayName());
   },
-}
+};
 
 export default ClientPreferences;

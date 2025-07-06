@@ -9,8 +9,6 @@ const colors = [
 export function getNextColor(usedColors: string[]): string {
   const usedColorSet = new Set(usedColors);
   const availableColors = colors.filter(c => !usedColorSet.has(c));
-  if (availableColors.length === 0) {
-    return colors[Math.floor(Math.random() * colors.length)]!;
-  }
-  return availableColors[Math.floor(availableColors.length / 2)]!;
+  const midColor = availableColors[Math.floor(availableColors.length / 2)];
+  return midColor || colors[Math.floor(Math.random() * colors.length)]!;
 }

@@ -55,7 +55,7 @@ export const errorLink = style({
 export const roomGrid = style({
   display: 'grid',
   gridTemplateAreas: '"header" "visual"',
-  gridTemplateRows: '32px minmax(0, 1fr)',
+  gridTemplateRows: `${vars.sizes.headerHeight} minmax(0, 1fr)`,
   height: '100%',
 });
 
