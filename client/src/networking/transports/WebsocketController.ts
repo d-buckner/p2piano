@@ -1,12 +1,12 @@
 import { io } from 'socket.io-client';
 import { addPeerConnection, removePeerConnection } from '../../actions/ConnectionActions';
 import { store } from '../../app/store';
-import { Transport, type Payload } from '../../constants';
+import { Transport } from '../../constants';
 import ClientPreferences from '../../lib/ClientPreferences';
 import ConfigProvider from '../../lib/ConfigProvider';
 import Logger from '../../lib/Logger';
 import { selectRoomId } from '../../selectors/workspaceSelectors';
-import AbstractNetworkController from '../AbstractNetworkController';
+import AbstractNetworkController, { type Message } from '../AbstractNetworkController';
 import type { Socket } from 'socket.io-client';
 
 
@@ -59,18 +59,18 @@ export default class WebsocketController extends AbstractNetworkController {
     this.socket.off(action, callback);
   }
 
-  public broadcast(action: string, payload?: Payload): void {
+  public broadcast(action: string, payload?: Message): void {
     this.socket.emit(action, payload);
   }
 
-  public sendToPeer(peerId: string, action: string, payload?: Payload): void {
+  public sendToPeer(peerId: string, action: string, payload?: Message): void {
     this.broadcast(action, {
       ...payload,
       targetUserIds: [peerId],
     });
   }
 
-  public sendToPeers(peerIds: string[], action: string, payload?: Payload): void {
+  public sendToPeers(peerIds: string[], action: string, payload?: Message): void {
     this.broadcast(action, {
       ...payload,
       targetUserIds: peerIds,
