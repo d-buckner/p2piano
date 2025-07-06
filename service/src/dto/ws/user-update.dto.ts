@@ -2,20 +2,20 @@ import { IsString, IsIn, IsUUID, MaxLength, MinLength, Matches } from 'class-val
 
 export class UserUpdateDto {
   @IsUUID(4)
-  userId: string;
+  userId!: string;
 
   @IsString()
   @MinLength(1)
   @MaxLength(50)
-  displayName: string;
+  displayName!: string;
 
   @IsString()
   @Matches(/^#[0-9A-Fa-f]{3}$|^#[0-9A-Fa-f]{6}$/, { 
     message: 'Color must be a valid hex color code (e.g., #fff or #ffffff)' 
   })
-  color: string;
+  color!: string;
 
   @IsString()
   @IsIn(['PIANO'])
-  instrument: string;
+  instrument!: string;
 }

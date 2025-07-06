@@ -6,6 +6,7 @@ import { Session } from '../entities/Session';
 import SessionProvider from '../entities/Session';
 import { SessionConfigService } from '../config/session-config.service';
 import * as cookie from 'cookie';
+import { getErrorMessage } from '../utils/ErrorUtils';
 
 @Injectable()
 export class SessionValidatorService {
@@ -123,7 +124,8 @@ export class SessionValidatorService {
       const session = await SessionProvider.get(sessionId, ipAddress);
       return session;
     } catch (error) {
-      this.logger.debug(`Session validation failed for ${sessionId}: ${error.message}`);
+      const errorMessage = getErrorMessage(error);
+      this.logger.debug(`Session validation failed for ${sessionId}: ${errorMessage}`);
       return null;
     }
   }
@@ -243,7 +245,7 @@ export class SessionValidatorService {
       if (isFromTrustedDomain) {
         // Use the first IP in x-forwarded-for chain (original client)
         if (forwardedFor) {
-          const firstIp = forwardedFor.split(',')[0].trim();
+          const firstIp = forwardedFor.split(',')[0]!.trim();
           return this.isValidIp(firstIp) ? firstIp : directIp;
         }
         
@@ -276,19 +278,19 @@ export class SessionValidatorService {
       if (isFromTrustedDomain) {
         // Use the first IP in x-forwarded-for chain (original client)
         if (forwardedFor) {
-          const firstIp = forwardedFor.split(',')[0].trim();
-          return this.isValidIp(firstIp) ? firstIp : directIp;
+          const firstIp = forwardedFor.split(',')[0]!.trim();
+          return this.isValidIp(firstIp) ? firstIp : directIp || 'unknown';
         }
         
         // Use x-real-ip if available
         if (realIp) {
-          return this.isValidIp(realIp) ? realIp : directIp;
+          return this.isValidIp(realIp) ? realIp : directIp || 'unknown';
         }
       }
     }
     
     // Fall back to handshake address or direct connection
-    return socket.handshake?.address || directIp;
+    return socket.handshake?.address || directIp || 'unknown';
   }
 
   /**
@@ -309,18 +311,18 @@ export class SessionValidatorService {
       if (isFromTrustedDomain) {
         // Use the first IP in x-forwarded-for chain (original client)
         if (forwardedFor) {
-          const firstIp = forwardedFor.split(',')[0].trim();
-          return this.isValidIp(firstIp) ? firstIp : directIp;
+          const firstIp = forwardedFor.split(',')[0]!.trim();
+          return this.isValidIp(firstIp) ? firstIp : directIp || 'unknown';
         }
         
         // Use x-real-ip if available
         if (realIp) {
-          return this.isValidIp(realIp) ? realIp : directIp;
+          return this.isValidIp(realIp) ? realIp : directIp || 'unknown';
         }
       }
     }
     
-    return directIp;
+    return directIp || 'unknown';
   }
 
   /**

@@ -25,10 +25,10 @@ class SignalDataDto {
 
 export class SignalPayloadDto {
   @IsUUID(4)
-  userId: string;
+  userId!: string;
 
   @ValidateNested()
   @Type(() => SignalDataDto)
   @IsObject()
-  signalData: SignalDataDto;
+  signalData!: SignalDataDto;
 }

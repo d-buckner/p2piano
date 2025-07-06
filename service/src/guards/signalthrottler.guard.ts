@@ -10,10 +10,14 @@ export class SignalThrottlerGuard extends ThrottlerGuard {
     const { context, limit, ttl, throttler, blockDuration, generateKey } = requestProps;
     const client = context.switchToWs().getClient<AuthenticatedSocket>();
     const tracker = client.session?.ipAddress || client.id;
-    const key = generateKey(context, tracker, throttler.name);
+    if (!tracker) {
+      throw new Error('Client identifier is required for throttling');
+    }
+    const throttlerName = throttler.name ?? 'default';
+    const key = generateKey(context, tracker, throttlerName);
     
     const { totalHits, timeToExpire, isBlocked, timeToBlockExpire } = 
-      await this.storageService.increment(key, ttl, limit, blockDuration, throttler.name);
+      await this.storageService.increment(key, ttl, limit, blockDuration, throttlerName);
     
     if (isBlocked) {
       this.throwThrottlingException(context, {

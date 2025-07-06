@@ -3,12 +3,12 @@ import { UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { WsThrottlerGuard } from '../../guards/throttler.guard';
 import { NoteEvents } from './events';
-import { broadcastToSubset, defaultWebSocketGatewayOptions } from '../utils';
+import { broadcastToSubset, getWebSocketGatewayOptions } from '../utils';
 import { NoteOnDto, NoteOffDto } from '../../dto/ws/note.dto';
 import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
 import { AuthenticatedSocket } from '../../types/socket';
 
-@WebSocketGateway(defaultWebSocketGatewayOptions)
+@WebSocketGateway(getWebSocketGatewayOptions())
 export class Notes {
     @Throttle({ default: { limit: 1000, ttl: 10000 } }) // 100 notes/second allows for fast passages, glissandos, and complex chords
     @UseGuards(WsThrottlerGuard)

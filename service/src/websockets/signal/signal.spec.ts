@@ -8,7 +8,7 @@ import { getSocketSessionId } from '../utils';
 // Mock dependencies
 vi.mock('../utils', () => ({
   getSocketSessionId: vi.fn(),
-  defaultWebSocketGatewayOptions: {}
+  getWebSocketGatewayOptions: () => {}
 }));
 
 vi.mock('../SessionRegistry', () => ({

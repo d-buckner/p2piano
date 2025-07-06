@@ -47,11 +47,13 @@ class DatabaseManager {
         this.logger.log('Successfully connected to MongoDB');
         return this.db;
       } catch (error) {
-        this.logger.error(`Failed to connect to MongoDB (attempt ${attempt}/${this.maxRetries}): ${error.message}`);
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        this.logger.error(`Failed to connect to MongoDB (attempt ${attempt}/${this.maxRetries}): ${errorMessage}`);
         
         if (attempt === this.maxRetries) {
           this.logger.error('Max retries reached. Unable to connect to MongoDB');
-          throw new Error(`Failed to connect to MongoDB after ${this.maxRetries} attempts: ${error.message}`);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          throw new Error(`Failed to connect to MongoDB after ${this.maxRetries} attempts: ${errorMessage}`);
         }
         
         await this.sleep(this.retryDelay * attempt); // Exponential backoff

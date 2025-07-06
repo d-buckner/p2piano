@@ -39,15 +39,15 @@ vi.mock('../app/store', () => ({
   store: {},
 }));
 
-// Mock window.location
-Object.defineProperty(window, 'location', {
-  value: { pathname: '' },
-  writable: true,
-});
-
 describe('RoomHandlers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Mock window.location using vi.stubGlobal
+    vi.stubGlobal('location', { pathname: '' });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   describe('keyDownHandler', () => {

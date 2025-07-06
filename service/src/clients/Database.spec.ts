@@ -121,6 +121,46 @@ describe('Database', () => {
     });
   });
 
+  describe('DatabaseManager functionality', () => {
+    it('should test basic database manager methods', async () => {
+      // Mock successful MongoDB setup
+      const mockConnect = vi.fn().mockResolvedValue(undefined);
+      const mockDb = vi.fn().mockReturnValue({
+        collection: vi.fn().mockReturnValue({
+          insertOne: vi.fn(),
+          findOne: vi.fn(),
+        }),
+      });
+      const mockClose = vi.fn().mockResolvedValue(undefined);
+
+      vi.doMock('mongodb', () => ({
+        MongoClient: vi.fn().mockImplementation(() => ({
+          connect: mockConnect,
+          db: mockDb,
+          close: mockClose,
+        })),
+      }));
+
+      // Import fresh module to test DatabaseManager methods
+      const { default: DatabaseModule } = await import('./Database');
+      
+      expect(DatabaseModule).toBeDefined();
+      expect(typeof DatabaseModule.collection).toBe('function');
+    });
+
+    it('should handle database operations', async () => {
+      // Test that database instance provides expected interface
+      const { default: database } = await import('./Database');
+      
+      expect(database).toBeDefined();
+      expect(typeof database.collection).toBe('function');
+      
+      // Test collection creation
+      const collection = database.collection('testCollection');
+      expect(collection).toBeDefined();
+    });
+  });
+
   describe('Resilience', () => {
     it('should not throw during module initialization', async () => {
       // Test module import without any mocking (using real dependencies)

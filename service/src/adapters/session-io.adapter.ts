@@ -5,7 +5,7 @@ import { SessionValidatorService } from '../services/session-validator.service';
 
 export class SessionIoAdapter extends IoAdapter {
   private readonly logger = new Logger(SessionIoAdapter.name);
-  private sessionValidator: SessionValidatorService;
+  private sessionValidator!: SessionValidatorService;
 
   constructor(private app: INestApplicationContext) {
     super(app);
@@ -17,7 +17,7 @@ export class SessionIoAdapter extends IoAdapter {
 
     const server = super.createIOServer(port, {
       ...options,
-      allowRequest: async (req, callback) => {
+      allowRequest: async (req: any, callback: any) => {
         try {
           // Validate session using the shared validator
           const session = await this.sessionValidator.validateRawRequest(req);

@@ -15,7 +15,7 @@ vi.mock('../../errors');
 vi.mock('@nestjs/common');
 vi.mock('../utils', () => ({
   broadcast: vi.fn(),
-  defaultWebSocketGatewayOptions: {},
+  getWebSocketGatewayOptions: () => {},
   getSocketMetadata: vi.fn(),
   getSocketRoomId: vi.fn(),
 }));
@@ -113,7 +113,7 @@ describe('Room WebSocket Gateway', () => {
 
       expect(mockServer.on).toHaveBeenCalledWith(
         SocketEvents.CONNECTION,
-        roomGateway.bootstrapConnection
+        expect.any(Function)
       );
     });
 

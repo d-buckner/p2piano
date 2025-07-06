@@ -10,7 +10,7 @@ import { Throttle } from '@nestjs/throttler';
 import { WsThrottlerGuard } from '../../guards/throttler.guard';
 import {
   broadcast,
-  defaultWebSocketGatewayOptions,
+  getWebSocketGatewayOptions,
   getSocketMetadata,
   getSocketRoomId,
 } from '../utils';
@@ -24,6 +24,7 @@ import { WebSocketError, RoomError } from '../../errors';
 
 import type { Server } from 'socket.io';
 import type { AuthenticatedSocket } from '../../types/socket';
+import { getErrorMessage } from '../../utils/ErrorUtils';
 
 // Socket interface is now extended in types/socket.ts
 
@@ -39,10 +40,10 @@ import type { AuthenticatedSocket } from '../../types/socket';
  * - Automatic reconnection handling
  * - Room state synchronization
  */
-@WebSocketGateway(defaultWebSocketGatewayOptions)
+@WebSocketGateway(getWebSocketGatewayOptions())
 export class Room {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   constructor(private readonly sessionValidator: SessionValidatorService) {
     this.bootstrapConnection = this.bootstrapConnection.bind(this);
@@ -63,7 +64,7 @@ export class Room {
   }
 
   onModuleInit() {
-    this.server.on(SocketEvents.CONNECTION, this.bootstrapConnection);
+    this.server.on(SocketEvents.CONNECTION, (socket: any) => this.bootstrapConnection(socket));
   }
 
   onModuleDestroy() {
@@ -126,7 +127,7 @@ export class Room {
         const roomError = new RoomError(`Failed to join room ${roomId}`, {
           sessionId: socket.session.sessionId,
           roomId,
-          originalError: err.message,
+          originalError: getErrorMessage(err),
         });
         Logger.error(roomError);
         SessionRegistry.destroySession(socket.session.sessionId);
@@ -136,7 +137,7 @@ export class Room {
       const wsError = new WebSocketError('Session authentication failed', {
         roomId,
         clientIP: socket.session?.ipAddress || 'unknown',
-        originalError: error.message,
+        originalError: getErrorMessage(error),
       });
       Logger.warn(wsError);
       socket.disconnect();

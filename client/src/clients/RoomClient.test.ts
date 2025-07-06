@@ -9,13 +9,16 @@ vi.mock('../lib/ConfigProvider', () => ({
   },
 }));
 
-// Mock fetch globally
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
-
 describe('RoomClient', () => {
+  const mockFetch = vi.fn();
+  
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal('fetch', mockFetch);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   describe('createNewRoom', () => {

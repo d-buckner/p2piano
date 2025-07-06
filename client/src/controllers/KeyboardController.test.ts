@@ -21,24 +21,17 @@ describe('KeyboardController', () => {
     
     (KeyboardController as { instance: undefined }).instance = undefined;
     
-    Object.defineProperty(global, 'window', {
-      value: {
-        addEventListener: mockAddEventListener,
-        removeEventListener: mockRemoveEventListener,
-      },
-      writable: true,
+    vi.stubGlobal('window', {
+      addEventListener: mockAddEventListener,
+      removeEventListener: mockRemoveEventListener,
     });
 
-    Object.defineProperty(global, 'document', {
-      value: {
-        addEventListener: mockDocumentAddEventListener,
-        removeEventListener: mockDocumentRemoveEventListener,
-        hidden: false,
-        activeElement: null,
-      },
-      writable: true,
+    vi.stubGlobal('document', {
+      addEventListener: mockDocumentAddEventListener,
+      removeEventListener: mockDocumentRemoveEventListener,
+      hidden: false,
+      activeElement: null,
     });
-
 
     keyDownHandler = vi.fn();
     keyUpHandler = vi.fn();
@@ -51,8 +44,7 @@ describe('KeyboardController', () => {
       // Ignore cleanup errors
     }
     
-    global.window = originalWindow;
-    global.document = originalDocument;
+    vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 

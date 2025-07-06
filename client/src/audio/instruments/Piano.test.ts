@@ -16,16 +16,14 @@ type MockDPiano = {
 vi.mock('d-piano');
 vi.mock('./getDelayTime');
 
-// Mock requestIdleCallback
-const mockRequestIdleCallback = vi.fn();
-global.requestIdleCallback = mockRequestIdleCallback;
-
 describe('Piano', () => {
   let mockDPiano: MockDPiano;
   let piano: Piano;
+  const mockRequestIdleCallback = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubGlobal('requestIdleCallback', mockRequestIdleCallback);
     
     // Mock DPiano instance
     mockDPiano = {
@@ -46,6 +44,7 @@ describe('Piano', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   describe('constructor and initialization', () => {

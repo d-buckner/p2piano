@@ -3,15 +3,17 @@ import ConfigProvider from '../config/ConfigProvider';
 import type { AuthenticatedSocket } from '../types/socket';
 
 
-export const defaultWebSocketGatewayOptions = {
-  namespace: 'api',
-  cors: ConfigProvider.isProduction()
-    ? false
-    : {
-      credentials: true,
-      origin: 'http://localhost:5173',
-    },
-};
+export function getWebSocketGatewayOptions() {
+  return {
+    namespace: 'api',
+    cors: ConfigProvider.isProduction()
+      ? false
+      : {
+        credentials: true,
+        origin: 'http://localhost:5173',
+      }
+  };
+}
 
 export function getSocketSessionId(socket: AuthenticatedSocket) {
   // Get sessionId from the session attached by auth guard
@@ -41,6 +43,9 @@ export function getSocketMetadata(socket: AuthenticatedSocket) {
 export function broadcast<T>(socket: AuthenticatedSocket, eventType: string, payload: T) {
   const roomId = getSocketRoomId(socket);
   const userId = getSocketSessionId(socket);
+  if (!userId) {
+    throw new Error('Socket session ID is required for broadcasting');
+  }
   const decoratedPayload: T & { userId: string } = {
     ...payload,
     userId,
@@ -50,13 +55,18 @@ export function broadcast<T>(socket: AuthenticatedSocket, eventType: string, pay
 
 export function broadcastToSubset<T>(socket: AuthenticatedSocket, userIds: string[], eventType: string, payload: T) {
   const userId = getSocketSessionId(socket);
+  if (!userId) {
+    throw new Error('Socket session ID is required for broadcasting');
+  }
   const decoratedPayload: T & { userId: string } = {
     ...payload,
     userId,
   };
 
-  userIds.forEach(userId => {
-    const socketId = SessionRegistry.getSocket(userId)?.id;
-    socket.to(socketId).emit(eventType, decoratedPayload);
+  userIds.forEach(targetUserId => {
+    const socketId = SessionRegistry.getSocket(targetUserId)?.id;
+    if (socketId) {
+      socket.to(socketId).emit(eventType, decoratedPayload);
+    }
   });
 }
