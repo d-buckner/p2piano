@@ -13,18 +13,17 @@ p2piano enables instant musical collaboration through your web browser. Create a
 
 ![P2Piano Demo](docs/demo-screenshot.png)
 
-## ✨ Features
+## Features
 
-- 🎹 **Multiple Instruments** - Piano, electric bass, acoustic and electric guitar
-- ⚡ **Real-Time Sync** - Advanced audio synchronization keeps everyone in time
-- 🎮 **MIDI Support** - Connect your MIDI keyboard for the full experience
-- 🌐 **Works Everywhere** - Any modern browser on desktop, tablet, or mobile
-- 🔗 **Instant Sharing** - Just share a 5-letter room code to invite others
-- 🎵 **Visual Feedback** - See notes as they're played by you and collaborators
-- 🚫 **No Registration** - Start playing immediately, no account needed
-- 📱 **Cross-Platform** - Seamless experience across all devices
+- **Multiple Instruments** - Piano, electric bass, acoustic and electric guitar
+- **Real-Time Sync** - Advanced audio synchronization keeps everyone in time
+- **MIDI Support** - Connect your MIDI keyboard for the full experience
+- **Works Everywhere** - Any modern browser on desktop, tablet, or mobile
+- **Instant Sharing** - Just share a 5-letter room code to invite others
+- **Visual Feedback** - See notes as they're played by you and collaborators
+- **No Registration** - Start playing immediately, no account needed
 
-## 🚀 Quick Start Guide
+## Quick Start Guide
 
 ### For Users
 
@@ -32,12 +31,12 @@ p2piano enables instant musical collaboration through your web browser. Create a
 2. **Click "Create New Room"** or **enter a 5-letter room code**
 3. **Choose your instrument** from the dropdown menu
 4. **Set your display name** so others can identify you
-5. **Start playing!** Use your keyboard, touch, mouse, or MIDI controller
+5. **Start playing** - Use your keyboard, touch, mouse, or MIDI controller
 
-#### Tips
-- Avoid wireless headphones and keyboards if possible, these add considerable latency
-- Unmute your iOS device to enable sound
-- Piano keys map to your computer keyboard (A-K for white keys, W-O for black keys)
+### Important Tips for Best Performance
+- **Avoid wireless headphones and keyboards** - These add considerable latency that affects timing
+- **Unmute your iOS device** to enable sound
+- **Piano keys map to your computer keyboard** (A-K for white keys, W-O for black keys)
 
 ### For Developers
 
@@ -52,6 +51,87 @@ npm run dev        # Start development environment
 
 The application will be available at `http://localhost:5173`
 
+## Project Structure
+
+```
+p2piano/
+├── client/              # Frontend (SolidJS + TypeScript)
+│   ├── src/
+│   │   ├── actions/     # State management actions
+│   │   ├── app/         # Store configuration
+│   │   ├── audio/       # Audio engine & instruments
+│   │   ├── clients/     # API communication
+│   │   ├── components/  # UI components
+│   │   ├── controllers/ # Input handling (keyboard, MIDI)
+│   │   ├── networking/  # WebRTC & WebSocket
+│   │   ├── pages/       # Route components
+│   │   └── styles/      # Styling & themes
+├── service/            # Backend (NestJS + TypeScript)
+│   ├── src/
+│   │   ├── clients/    # Database layer
+│   │   ├── entities/   # Data models
+│   │   ├── websockets/ # Real-time communication
+│   │   ├── auth/       # Authentication & authorization
+│   │   └── utils/      # Shared utilities
+├── docker-compose.yml  # Container orchestration
+├── package.json        # Workspace configuration
+└── docs/               # Documentation & assets
+```
+
+### Key Technologies
+
+- **Frontend**: SolidJS, TypeScript, Vanilla Extract CSS, Vite
+- **Backend**: NestJS, Fastify, MongoDB, Socket.IO
+- **Audio**: Web Audio API, Tone.js for synthesis
+- **Networking**: WebRTC for P2P, WebSocket fallback
+- **Testing**: Vitest, comprehensive unit & integration tests
+- **DevOps**: Docker, GitHub Actions, automated testing & coverage
+
+## Development Commands
+
+```bash
+# Install dependencies for all packages
+npm run bootstrap
+
+# Start development servers (client + service)
+npm run dev
+
+# Run individual services
+npm run client:dev    # Frontend only
+npm run service:dev   # Backend only
+
+# Testing
+npm run test          # Run all tests
+npm run test:coverage # Generate coverage reports
+npm run test:watch    # Watch mode for development
+
+# Code quality
+npm run lint          # Check code style
+npm run lint:fix      # Auto-fix issues
+npm run typecheck     # TypeScript validation
+
+# Production builds
+npm run build         # Build all packages
+npm run container     # Build and run with Docker
+```
+
+### Environment Variables
+
+Copy `.env.example` to `.env` and configure the required settings:
+
+```bash
+# Required: Database connection
+MONGO_URI=mongodb://localhost:27017/p2piano
+MONGO_USERNAME=your_username
+MONGO_PASSWORD=your_password
+
+# Required: Security
+COOKIE_SECRET=your_secure_random_string
+
+# Optional: Additional settings
+NODE_ENV=development          # Defaults to 'development'
+PORT=3001                     # Defaults to 3001
+```
 
 ## Architecture
 
@@ -87,97 +167,15 @@ p2piano implements an audio synchronization system that measures network latency
 - **WebSocket**: Room changes, server-mediated connections for signaling and fallback
 - **Transport selection**: Automatic selection based on connection availability
 
-## 📂 Project Structure
+## Contributing
 
-```
-p2piano/
-├── 🎨 client/              # Frontend (SolidJS + TypeScript)
-│   ├── src/
-│   │   ├── 🎬 actions/     # State management actions
-│   │   ├── 🏪 app/         # Store configuration
-│   │   ├── 🎵 audio/       # Audio engine & instruments
-│   │   ├── 🌐 clients/      # API communication
-│   │   ├── 🧩 components/  # UI components
-│   │   ├── 🎮 controllers/ # Input handling (keyboard, MIDI)
-│   │   ├── 📡 networking/  # WebRTC & WebSocket
-│   │   ├── 📄 pages/       # Route components
-│   │   └── 🎨 styles/      # Styling & themes
-├── ⚙️  service/            # Backend (NestJS + TypeScript)
-│   ├── src/
-│   │   ├── 🗄️  clients/    # Database layer
-│   │   ├── 📊 entities/    # Data models
-│   │   ├── 🚪 websockets/  # Real-time communication
-│   │   ├── 🛡️  auth/       # Authentication & authorization
-│   │   └── 🔧 utils/       # Shared utilities
-├── 🐳 docker-compose.yml   # Container orchestration
-├── 📋 package.json         # Workspace configuration
-└── 📚 docs/                # Documentation & assets
-```
+Contributions are welcome from developers, musicians, and anyone with ideas to improve the platform:
 
-### Key Technologies
-
-- **Frontend**: SolidJS, TypeScript, Vanilla Extract CSS, Vite
-- **Backend**: NestJS, Fastify, MongoDB, Socket.IO
-- **Audio**: Web Audio API, Tone.js for synthesis
-- **Networking**: WebRTC for P2P, WebSocket fallback
-- **Testing**: Vitest, comprehensive unit & integration tests
-- **DevOps**: Docker, GitHub Actions, automated testing & coverage
-
-### Development Commands
-
-```bash
-# Install dependencies for all packages
-npm run bootstrap
-
-# Start development servers (client + service)
-npm run dev
-
-# Run individual services
-npm run client:dev    # Frontend only
-npm run service:dev   # Backend only
-
-# Testing
-npm run test          # Run all tests
-npm run test:coverage # Generate coverage reports
-npm run test:watch    # Watch mode for development
-
-# Code quality
-npm run lint          # Check code style
-npm run lint:fix      # Auto-fix issues
-npm run typecheck     # TypeScript validation
-
-# Production builds
-npm run build         # Build all packages
-npm run container     # Build and run with Docker
-```
-
-### Environment Variables
-
-Copy `.env.example` to `.env` and configure:
-
-```bash
-# Database
-MONGO_URI=mongodb://localhost:27017/p2piano
-MONGO_USERNAME=your_username
-MONGO_PASSWORD=your_password
-
-# Security
-COOKIE_SECRET=your_secure_random_string
-
-# Optional: Production settings
-NODE_ENV=development
-PORT=3001
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Whether you're a developer, musician, or just someone with ideas:
-
-- **🐛 Report bugs** using the [issue tracker](https://github.com/d-buckner/p2piano/issues)
-- **💡 Suggest features** that would improve the experience
-- **🔧 Submit pull requests** for bug fixes or enhancements
-- **📖 Improve documentation** to help others understand and use the project
-- **🎵 Share your music** and experiences using P2Piano
+- **Report bugs** using the [issue tracker](https://github.com/d-buckner/p2piano/issues)
+- **Suggest features** that would improve the experience
+- **Submit pull requests** for bug fixes or enhancements
+- **Improve documentation** to help others understand and use the project
+- **Share your music** and experiences using P2Piano
 
 ### Development Contributions
 

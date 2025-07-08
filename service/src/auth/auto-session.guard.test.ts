@@ -10,8 +10,8 @@ import {
   createUUID
 } from '../test-utils/validation.helpers';
 import { AutoSessionGuard } from './auto-session.guard';
-import type { ExecutionContext } from '@nestjs/common';
 import type { Request, Reply } from '../types/request';
+import type { ExecutionContext } from '@nestjs/common';
 
 
 describe('AutoSessionGuard', () => {
