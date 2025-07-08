@@ -87,7 +87,8 @@ export default class RealTimeController extends AbstractNetworkController {
     message?: T,
     fallback: () => void,
   ) {
-    if (selectPeerConnection(peerId)(store).transport === Transport.WEBRTC) {
+    const peerConnection = selectPeerConnection(peerId)(store);
+    if (peerConnection?.transport === Transport.WEBRTC) {
       try {
         this.webrtcController.sendToPeer(peerId, action, message);
         return;

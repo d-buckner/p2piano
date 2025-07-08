@@ -115,10 +115,10 @@ export default defineConfig(({ mode }) => {
             if (chunkInfo.name === 'serviceWorker') {
               return 'assets/serviceWorker.js';
             }
-            return 'assets/[name].js';
+            return 'assets/[name]-[hash].js';
           },
-          chunkFileNames: 'assets/[name].js',
-          assetFileNames: 'assets/[name].[ext]'
+          chunkFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash].[ext]'
         },
         // DANGER: this is simple string replacement in build, use with extreme caution
         plugins: replace({

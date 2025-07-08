@@ -35,9 +35,12 @@ vi.mock('../app/store', () => ({
 
 vi.mock('../selectors/connectionSelectors', () => ({
   selectConnectedPeerIds: vi.fn(() => ['user1', 'user2']),
-  selectPeerConnection: vi.fn((peerId: string) => () => ({
-    transport: peerId === 'user1' ? 'WEBRTC' : 'WEBSOCKET'
-  })),
+  selectPeerConnection: vi.fn((peerId: string) => () => {
+    if (peerId === 'disconnected') return undefined;
+    return {
+      transport: peerId === 'user1' ? 'WEBRTC' : 'WEBSOCKET'
+    };
+  }),
 }));
 
 vi.mock('../lib/Logger', () => ({
@@ -157,6 +160,16 @@ describe('RealTimeController', () => {
       
       expect(mockWebrtcInstance.sendToPeer).toHaveBeenCalledWith('user1', 'KEY_DOWN', { midi: 60 });
       expect(mockWebsocketInstance.sendToPeers).toHaveBeenCalledWith(['user1', 'user2'], 'KEY_DOWN', { midi: 60 });
+    });
+
+    it('should handle disconnected peer gracefully', () => {
+      const controller = RealTimeController.getInstance();
+      
+      controller.sendToPeer('disconnected', 'KEY_DOWN', { midi: 60 });
+      
+      // Should fallback to websocket when peer connection is undefined
+      expect(mockWebrtcInstance.sendToPeer).not.toHaveBeenCalled();
+      expect(mockWebsocketInstance.sendToPeer).toHaveBeenCalledWith('disconnected', 'KEY_DOWN', { midi: 60 });
     });
   });
 

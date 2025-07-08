@@ -39,3 +39,8 @@ export const userColorIndicator = style({
   width: '8px',
   margin: '4px 4px 0 0',
 });
+
+export const warningIcon = style({
+  marginLeft: '8px',
+  display: 'inline-block',
+});

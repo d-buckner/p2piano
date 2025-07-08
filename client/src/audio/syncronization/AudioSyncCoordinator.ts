@@ -119,7 +119,16 @@ class AudioSyncCoordinator {
       return;
     }
 
-    selectConnectedPeerIds(store).forEach(peerId => {
+    const connectedPeerIds = selectConnectedPeerIds(store);
+    
+    // Clean up disconnected peers from peerLatencyWindows
+    Object.keys(this.peerLatencyWindows).forEach(peerId => {
+      if (!connectedPeerIds.includes(peerId)) {
+        delete this.peerLatencyWindows[peerId];
+      }
+    });
+
+    connectedPeerIds.forEach(peerId => {
       const pingTime = performance.now();
       try {
         this.verifyMyUserId();
@@ -131,13 +140,13 @@ class AudioSyncCoordinator {
             peerId: this.myUserId!,
           }
         );
+        
+        if (!this.peerLatencyWindows[peerId]) {
+          this.peerLatencyWindows[peerId] = new RollingAvg(WINDOW_SIZE);
+        }
       } catch {
         // gracefully handle sample failure, we'll keep trying at the sample rate
         return;
-      }
-
-      if (!this.peerLatencyWindows[peerId]) {
-        this.peerLatencyWindows[peerId] = new RollingAvg(WINDOW_SIZE);
       }
     });
 

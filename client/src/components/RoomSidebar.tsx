@@ -1,9 +1,13 @@
+import clsx from 'clsx';
 import { For } from 'solid-js';
 import { updateInstrument } from '../actions/WorkspaceActions';
 import { useAppSelector } from '../app/hooks';
 import { InstrumentType } from '../audio/instruments/Instrument';
+import { MAX_LATENCY_CUTOFF_MS } from '../audio/syncronization/constants';
+import { selectPeerConnections } from '../selectors/connectionSelectors';
 import { selectMyUser, selectUsers } from '../selectors/workspaceSelectors';
 import * as styles from './RoomSidebar.css';
+import type { PeerConnections } from '../constants';
 import type { User } from '../lib/workspaceTypes';
 
 
@@ -21,17 +25,19 @@ interface InstrumentSelectProps {
 
 interface UserListProps {
   users?: Users,
+  peerConnections: () => PeerConnections | undefined,
 }
 
 export default function RoomSidebar() {
   const user = useAppSelector(selectMyUser);
   const users = useAppSelector(selectUsers);
+  const peerConnections = useAppSelector(selectPeerConnections);
   const { instrument } = user() || {};
 
   return (
     <div class={styles.roomSidebar}>
       <InstrumentSelect instrument={instrument} />
-      <UsersList users={users()} />
+      <UsersList users={users()} peerConnections={peerConnections} />
     </div>
   );
 }
@@ -67,6 +73,11 @@ function UsersList(props: UserListProps) {
               style={{ 'background-color': user.color }}
             />
             <span>{user.displayName}</span>
+            {(props.peerConnections()?.[user.userId]?.latency ?? 0) > MAX_LATENCY_CUTOFF_MS && (
+              <span class={clsx(styles.warningIcon, '.fade-in')}>
+                ⚠️
+              </span>
+            )}
           </li>
         )}
       </For>

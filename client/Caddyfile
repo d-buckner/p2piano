@@ -6,6 +6,14 @@ http://:8345 {
 		path /assets/samples/**/*.mp3
 	}
 
+	@js_assets {
+		path /assets/*.js
+	}
+
+	@html {
+		path *.html /
+	}
+
 	handle @audio_samples {
 		header {
 			# Cache audio samples for 1 year
@@ -17,6 +25,26 @@ http://:8345 {
 			Accept-Ranges "bytes"
 			# Set proper MIME type
 			Content-Type "audio/mpeg"
+		}
+		file_server
+	}
+
+	handle @js_assets {
+		header {
+			# Cache JS assets for 1 week (balances performance with deployment frequency)
+			Cache-Control "public, max-age=604800"
+			# Set proper MIME type
+			Content-Type "application/javascript"
+		}
+		file_server
+	}
+
+	handle @html {
+		header {
+			# Minimal caching for HTML to ensure fresh asset references
+			Cache-Control "public, max-age=300, must-revalidate"
+			# Set proper MIME type
+			Content-Type "text/html"
 		}
 		file_server
 	}
