@@ -1,5 +1,4 @@
 import ConfigProvider from '../config/ConfigProvider';
-import SessionRegistry from './SessionRegistry';
 import type { AuthenticatedSocket } from '../types/socket';
 
 
@@ -53,34 +52,31 @@ export function broadcast<T>(socket: AuthenticatedSocket, eventType: string, pay
   socket.to(roomId).emit(eventType, decoratedPayload);
 }
 
-export function broadcastToSubset<T>(socket: AuthenticatedSocket, userIds: string[], eventType: string, payload: T) {
-  const userId = getSocketSessionId(socket);
-  if (!userId) {
+/**
+ * Broadcasts a message to specific users by their session IDs.
+ * 
+ * ARCHITECTURE NOTE:
+ * - Each user joins two rooms on connection: roomId (shared) + sessionId (personal)
+ * - sessionId serves as both the user identifier AND their personal room name
+ * 
+ * @param socket - The authenticated socket sending the message
+ * @param sessionIds - Array of session IDs (user identifiers) to target
+ * @param eventType - WebSocket event type to emit
+ * @param payload - Data payload to send
+ */
+export function broadcastToSubset<T>(socket: AuthenticatedSocket, sessionIds: string[], eventType: string, payload: T) {
+  const sessionId = getSocketSessionId(socket);
+  if (!sessionId) {
     throw new Error('Socket session ID is required for broadcasting');
   }
   const decoratedPayload: T & { userId: string } = {
     ...payload,
-    userId,
+    userId: sessionId, // Keep "userId" in payload for client compatibility
   };
 
-  // Process each target user ID
-  userIds.forEach(async (targetUserId) => {
-    try {
-      const socketMetadata = await SessionRegistry.getSocketMetadata(targetUserId);
-      if (!socketMetadata) {
-        return; // User not found
-      }
-
-      if (socketMetadata.serverId === SessionRegistry.getServerId()) {
-        // Local server - route directly to socket
-        socket.to(socketMetadata.socketId).emit(eventType, decoratedPayload);
-      } else {
-        // Different server - use Socket.IO adapter for cross-server communication
-        socket.to(targetUserId).emit(eventType, decoratedPayload);
-      }
-    } catch (error) {
-      // Log error but don't throw - broadcasting to other users should continue
-      console.warn(`Failed to route message to user ${targetUserId}:`, error);
-    }
+  // Direct room targeting - each user has their own room named after their sessionId
+  // Redis adapter handles cross-server routing automatically
+  sessionIds.forEach((targetSessionId) => {
+    socket.to(targetSessionId).emit(eventType, decoratedPayload);
   });
 }

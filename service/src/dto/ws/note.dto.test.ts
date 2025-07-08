@@ -127,8 +127,8 @@ describe('NoteOnDto', () => {
       });
     });
 
-    describe('targetUserIds validation', () => {
-      it('should fail validation for non-array targetUserIds', async () => {
+    describe('targetSessionIds validation', () => {
+      it('should fail validation for non-array targetSessionIds', async () => {
         dto.note = 60;
         dto.velocity = 64;
         dto.targetUserIds = 'not-an-array' as any;

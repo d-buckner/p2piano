@@ -81,7 +81,7 @@ describe('Signal Gateway Message Flow', () => {
 
       await gateway.onSignal(offerPayload, mockSocket);
 
-      expect(mockSocket.to).toHaveBeenCalledWith(targetSocket.id);
+      expect(mockSocket.to).toHaveBeenCalledWith('user-2');
       expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
         signalData: offerPayload.signalData,
         userId: senderUserId,
@@ -111,7 +111,7 @@ describe('Signal Gateway Message Flow', () => {
 
       await gateway.onSignal(answerPayload, mockSocket);
 
-      expect(mockSocket.to).toHaveBeenCalledWith(targetSocket.id);
+      expect(mockSocket.to).toHaveBeenCalledWith('user-1');
       expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
         signalData: answerPayload.signalData,
         userId: senderUserId,
@@ -143,7 +143,7 @@ describe('Signal Gateway Message Flow', () => {
 
       await gateway.onSignal(candidatePayload, mockSocket);
 
-      expect(mockSocket.to).toHaveBeenCalledWith(targetSocket.id);
+      expect(mockSocket.to).toHaveBeenCalledWith('user-2');
       expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
         signalData: candidatePayload.signalData,
         userId: senderUserId,
@@ -224,8 +224,8 @@ describe('Signal Gateway Message Flow', () => {
       // Should not throw
       await expect(gateway.onSignal(payload, mockSocket)).resolves.not.toThrow();
 
-      // Should not attempt to route signal
-      expect(mockSocket.to).not.toHaveBeenCalled();
+      // Should still emit to the user's room (Socket.IO handles if room is empty)
+      expect(mockSocket.to).toHaveBeenCalledWith('non-existent-user');
     });
 
     it('should handle missing sender user ID gracefully', async () => {

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import ConfigProvider from '../config/ConfigProvider';
-import SessionRegistry from './SessionRegistry';
 import { getWebSocketGatewayOptions, getSocketSessionId, getSocketRoomId, getSocketDisplayName, getSocketMetadata, broadcast, broadcastToSubset } from './utils';
 import type { AuthenticatedSocket } from '../types/socket';
 
@@ -11,13 +10,7 @@ vi.mock('../config/ConfigProvider', () => ({
   },
 }));
 
-// Mock SessionRegistry
-vi.mock('./SessionRegistry', () => ({
-  default: {
-    getSocketMetadata: vi.fn(),
-    getServerId: vi.fn(),
-  },
-}));
+// Note: SessionRegistry mocking removed as it's no longer used in utils.ts
 
 describe('websockets/utils', () => {
   const mockSocket = {
@@ -118,15 +111,27 @@ describe('websockets/utils', () => {
   });
 
   describe('broadcastToSubset', () => {
-    it('should broadcast to local user sockets', async () => {
-      const mockTargetSocketInfo = { 
-        serverId: 'current-server',
-        socketId: 'target-socket-1' 
-      };
-      
-      vi.mocked(SessionRegistry.getSocketMetadata).mockResolvedValue(mockTargetSocketInfo);
-      vi.mocked(SessionRegistry.getServerId).mockReturnValue('current-server');
+    it('should broadcast to user rooms directly', () => {
+      const mockEmit = vi.fn();
+      const mockTo = vi.fn(() => ({ emit: mockEmit }));
+      const mockSocketForBroadcast = {
+        ...mockSocket,
+        to: mockTo,
+      } as unknown as AuthenticatedSocket;
 
+      broadcastToSubset(mockSocketForBroadcast, ['user-1', 'user-2'], 'test-event', { data: 'test' });
+
+      // Should emit to each user's room directly (no async operations)
+      expect(mockTo).toHaveBeenCalledWith('user-1');
+      expect(mockTo).toHaveBeenCalledWith('user-2');
+      expect(mockEmit).toHaveBeenCalledTimes(2);
+      expect(mockEmit).toHaveBeenCalledWith('test-event', {
+        data: 'test',
+        userId: 'session-1',
+      });
+    });
+
+    it('should handle single user broadcast', () => {
       const mockEmit = vi.fn();
       const mockTo = vi.fn(() => ({ emit: mockEmit }));
       const mockSocketForBroadcast = {
@@ -136,49 +141,15 @@ describe('websockets/utils', () => {
 
       broadcastToSubset(mockSocketForBroadcast, ['user-1'], 'test-event', { data: 'test' });
 
-      // Wait a bit for async operations
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(SessionRegistry.getSocketMetadata).toHaveBeenCalledWith('user-1');
-      expect(mockTo).toHaveBeenCalledWith('target-socket-1');
+      // Should emit to user's room directly
+      expect(mockTo).toHaveBeenCalledWith('user-1');
       expect(mockEmit).toHaveBeenCalledWith('test-event', {
         data: 'test',
         userId: 'session-1',
       });
     });
 
-    it('should broadcast to remote user sockets', async () => {
-      const mockTargetSocketInfo = { 
-        serverId: 'different-server',
-        socketId: 'target-socket-1' 
-      };
-      
-      vi.mocked(SessionRegistry.getSocketMetadata).mockResolvedValue(mockTargetSocketInfo);
-      vi.mocked(SessionRegistry.getServerId).mockReturnValue('current-server');
-
-      const mockEmit = vi.fn();
-      const mockTo = vi.fn(() => ({ emit: mockEmit }));
-      const mockSocketForBroadcast = {
-        ...mockSocket,
-        to: mockTo,
-      } as unknown as AuthenticatedSocket;
-
-      broadcastToSubset(mockSocketForBroadcast, ['user-1'], 'test-event', { data: 'test' });
-
-      // Wait a bit for async operations
-      await new Promise(resolve => setTimeout(resolve, 0));
-
-      expect(SessionRegistry.getSocketMetadata).toHaveBeenCalledWith('user-1');
-      expect(mockTo).toHaveBeenCalledWith('user-1'); // Cross-server uses userId
-      expect(mockEmit).toHaveBeenCalledWith('test-event', {
-        data: 'test',
-        userId: 'session-1',
-      });
-    });
-
-    it('should handle missing target sockets gracefully', async () => {
-      vi.mocked(SessionRegistry.getSocketMetadata).mockResolvedValue(null);
-
+    it('should handle empty user list gracefully', () => {
       const mockEmit = vi.fn();
       const mockTo = vi.fn(() => ({ emit: mockEmit }));
       const mockSocketForBroadcast = {
@@ -188,13 +159,11 @@ describe('websockets/utils', () => {
 
       // Should not throw
       expect(() => {
-        broadcastToSubset(mockSocketForBroadcast, ['non-existent-user'], 'test-event', { data: 'test' });
+        broadcastToSubset(mockSocketForBroadcast, [], 'test-event', { data: 'test' });
       }).not.toThrow();
 
-      // Wait a bit for async operations
-      await new Promise(resolve => setTimeout(resolve, 0));
-
       // Should not emit anything
+      expect(mockTo).not.toHaveBeenCalled();
       expect(mockEmit).not.toHaveBeenCalled();
     });
   });
