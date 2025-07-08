@@ -81,9 +81,9 @@ p2piano/
 ### Key Technologies
 
 - **Frontend**: SolidJS, TypeScript, Vanilla Extract CSS, Vite
-- **Backend**: NestJS, Fastify, MongoDB, Socket.IO
+- **Backend**: NestJS, Fastify, MongoDB, Redis, Socket.IO
 - **Audio**: Web Audio API, Tone.js for synthesis
-- **Networking**: WebRTC for P2P, WebSocket fallback
+- **Networking**: WebRTC for P2P, WebSocket fallback with Redis pub/sub
 - **Testing**: Vitest, comprehensive unit & integration tests
 - **DevOps**: Docker, GitHub Actions, automated testing & coverage
 
@@ -125,6 +125,9 @@ MONGO_URI=mongodb://localhost:27017/p2piano
 MONGO_USERNAME=your_username
 MONGO_PASSWORD=your_password
 
+# Required: Redis connection for sessions and real-time coordination
+REDIS_URI=redis://localhost:6379
+
 # Required: Security
 COOKIE_SECRET=your_secure_random_string
 
@@ -144,10 +147,10 @@ PORT=3001                     # Defaults to 3001
 - **State Management**: Centralized application state with reactive updates
 
 **Server Architecture:**
-- **WebSocket Gateway**: Real-time communication hub for signaling and coordination
+- **WebSocket Gateway**: Real-time communication hub with Redis pub/sub for multi-server support
 - **Room Management**: Creates and manages collaborative sessions with unique room codes
-- **Session Handling**: User authentication and connection state management
-- **Database Layer**: Persistent storage for rooms and user sessions
+- **Session Handling**: Distributed session management using Redis for cross-deployment persistence
+- **Database Layer**: MongoDB for persistent storage, Redis for sessions and real-time coordination
 
 **Communication Flow:**
 1. **Initial Connection**: Clients connect via WebSocket to join/create rooms
