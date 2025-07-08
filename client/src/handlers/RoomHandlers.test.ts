@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import * as NoteActions from '../actions/NoteActions';
 import { setRoom, setUserId } from '../actions/RoomActions';
 import { InstrumentType } from '../audio/instruments/Instrument';
@@ -12,6 +12,8 @@ import RoomHandlers from './RoomHandlers';
 vi.mock('../actions/NoteActions', () => ({
   keyDown: vi.fn(),
   keyUp: vi.fn(),
+  sustainDown: vi.fn(),
+  sustainUp: vi.fn(),
 }));
 
 vi.mock('../actions/RoomActions', () => ({
@@ -95,6 +97,46 @@ describe('RoomHandlers', () => {
       RoomHandlers.keyUpHandler(payload);
 
       expect(NoteActions.keyUp).toHaveBeenCalledWith(72, undefined);
+    });
+  });
+
+  describe('sustainDownHandler', () => {
+    it('should call NoteActions.sustainDown with userId', () => {
+      const payload = {
+        userId: 'user123',
+      };
+
+      RoomHandlers.sustainDownHandler(payload);
+
+      expect(NoteActions.sustainDown).toHaveBeenCalledWith('user123');
+    });
+
+    it('should handle payload without userId', () => {
+      const payload = {};
+
+      RoomHandlers.sustainDownHandler(payload);
+
+      expect(NoteActions.sustainDown).toHaveBeenCalledWith(undefined);
+    });
+  });
+
+  describe('sustainUpHandler', () => {
+    it('should call NoteActions.sustainUp with userId', () => {
+      const payload = {
+        userId: 'user123',
+      };
+
+      RoomHandlers.sustainUpHandler(payload);
+
+      expect(NoteActions.sustainUp).toHaveBeenCalledWith('user123');
+    });
+
+    it('should handle payload without userId', () => {
+      const payload = {};
+
+      RoomHandlers.sustainUpHandler(payload);
+
+      expect(NoteActions.sustainUp).toHaveBeenCalledWith(undefined);
     });
   });
 

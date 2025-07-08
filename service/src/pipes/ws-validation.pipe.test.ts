@@ -1,6 +1,7 @@
 import { WsException } from '@nestjs/websockets';
 import { WsValidationPipe } from './ws-validation.pipe';
 import type { ArgumentMetadata } from '@nestjs/common';
+import type { ValidationError } from 'class-validator';
 
 
 describe('WsValidationPipe', () => {
@@ -13,7 +14,7 @@ describe('WsValidationPipe', () => {
   describe('exception creation', () => {
     it('should create WsException for validation errors', () => {
       const exceptionFactory = pipe.createExceptionFactory();
-      const validationErrors = [
+      const validationErrors: ValidationError[] = [
         {
           property: 'note',
           constraints: {
@@ -48,7 +49,7 @@ describe('WsValidationPipe', () => {
       });
       
       const exceptionFactory = pipeWithDisabledOutput.createExceptionFactory();
-      const validationErrors = [
+      const validationErrors: ValidationError[] = [
         {
           property: 'note',
           constraints: {
@@ -76,7 +77,7 @@ describe('WsValidationPipe', () => {
 
     it('should handle validation errors without constraints', () => {
       const exceptionFactory = pipe.createExceptionFactory();
-      const validationErrors = [
+      const validationErrors: ValidationError[] = [
         {
           property: 'note',
           constraints: undefined,
@@ -94,7 +95,7 @@ describe('WsValidationPipe', () => {
 
     it('should handle nested validation errors', () => {
       const exceptionFactory = pipe.createExceptionFactory();
-      const validationErrors = [
+      const validationErrors: ValidationError[] = [
         {
           property: 'signalData',
           constraints: undefined,
@@ -129,7 +130,7 @@ describe('WsValidationPipe', () => {
 
     it('should handle deeply nested validation errors', () => {
       const exceptionFactory = pipe.createExceptionFactory();
-      const validationErrors = [
+      const validationErrors: ValidationError[] = [
         {
           property: 'level1',
           constraints: undefined,
@@ -161,7 +162,7 @@ describe('WsValidationPipe', () => {
 
     it('should handle mixed direct and nested validation errors', () => {
       const exceptionFactory = pipe.createExceptionFactory();
-      const validationErrors = [
+      const validationErrors: ValidationError[] = [
         {
           property: 'userId',
           constraints: {
@@ -205,7 +206,7 @@ describe('WsValidationPipe', () => {
     it('should maintain ValidationPipe functionality', async () => {
       // Create a simple DTO class for testing
       class TestDto {
-        value: string;
+        value: string = '';
       }
 
       const metadata: ArgumentMetadata = {

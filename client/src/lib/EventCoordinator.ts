@@ -14,6 +14,8 @@ import type { MessageHandler } from '../networking/AbstractNetworkController';
 const RTC_HANDLERS = {
   KEY_DOWN: RoomHandlers.keyDownHandler,
   KEY_UP: RoomHandlers.keyUpHandler,
+  SUSTAIN_DOWN: RoomHandlers.sustainDownHandler,
+  SUSTAIN_UP: RoomHandlers.sustainUpHandler,
   METRONOME_TICK: MetronomeHandlers.tickHandler,
   METRONOME_START: MetronomeHandlers.startHandler,
   METRONOME_STOP: MetronomeHandlers.stopHandler,
@@ -29,17 +31,19 @@ const WEBSOCKET_HANDLERS = {
 const MIDI_HANDLERS = {
   noteon: RoomHandlers.keyDownHandler,
   noteoff: RoomHandlers.keyUpHandler,
+  sustainon: RoomHandlers.sustainDownHandler,
+  sustainoff: RoomHandlers.sustainUpHandler,
 } as const;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Subscribable = any & {
-  on: (action: string, handler: () => void) => void;
-};
+interface EventEmitter {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  on(event: string | symbol, listener: (...args: any[]) => void): any;
+}
 
 export function register() {
-  subscribe(HuMIDI, MIDI_HANDLERS);
-  subscribe(RealTimeController.getInstance(), RTC_HANDLERS);
-  subscribe(WebsocketController.getInstance(), WEBSOCKET_HANDLERS);
+  subscribe(HuMIDI as EventEmitter, MIDI_HANDLERS);
+  subscribe(RealTimeController.getInstance() as EventEmitter, RTC_HANDLERS);
+  subscribe(WebsocketController.getInstance() as EventEmitter, WEBSOCKET_HANDLERS);
   window.addEventListener('blur', RoomHandlers.blurHandler);
 
   const keyboardController = KeyboardController.getInstance();
@@ -58,7 +62,7 @@ export function destroy() {
 }
 
 function subscribe(
-  subscribable: Subscribable,
+  subscribable: EventEmitter,
   handlers: Record<string, MessageHandler>
 ) {
   Object.entries(handlers).forEach(([action, handler]) => {

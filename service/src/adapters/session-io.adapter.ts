@@ -1,9 +1,9 @@
 import { Logger } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { SessionValidatorService } from '../services/session-validator.service';
+import type { RawHttpRequest } from '../types/raw-request';
 import type { INestApplicationContext} from '@nestjs/common';
 import type { ServerOptions, Server } from 'socket.io';
-import type { RawHttpRequest } from '../types/raw-request';
 
 
 export class SessionIoAdapter extends IoAdapter {

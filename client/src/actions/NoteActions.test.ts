@@ -5,7 +5,7 @@ import { getAudioDelay } from '../audio/syncronization/utils';
 import PianoClient from '../clients/PianoClient';
 import { DEFAULT_VELOCITY, type Note } from '../constants';
 import { selectUser, selectWorkspace } from '../selectors/workspaceSelectors';
-import { keyDown, keyUp } from './NoteActions';
+import { keyDown, keyUp, sustainDown, sustainUp } from './NoteActions';
 
 // Mock dependencies
 vi.mock('../app/store', () => ({
@@ -27,6 +27,8 @@ vi.mock('../clients/PianoClient', () => ({
   default: {
     keyDown: vi.fn(),
     keyUp: vi.fn(),
+    sustainDown: vi.fn(),
+    sustainUp: vi.fn(),
   },
 }));
 
@@ -39,6 +41,8 @@ describe('NoteActions', () => {
   const mockInstrument = {
     keyDown: vi.fn(),
     keyUp: vi.fn(),
+    sustainDown: vi.fn(),
+    sustainUp: vi.fn(),
   };
 
   beforeEach(() => {
@@ -309,6 +313,126 @@ describe('NoteActions', () => {
       const result = keyDown(60);
       
       expect(result).toBeUndefined();
+    });
+  });
+
+  describe('sustainDown()', () => {
+    it('should send network message when no peerId provided', () => {
+      sustainDown();
+      
+      expect(PianoClient.sustainDown).toHaveBeenCalled();
+    });
+
+    it('should not send network message when peerId provided', () => {
+      const peerId = 'remote-user';
+      
+      sustainDown(peerId);
+      
+      expect(PianoClient.sustainDown).not.toHaveBeenCalled();
+    });
+
+    it('should trigger instrument sustainDown with current user', () => {
+      sustainDown();
+      
+      expect(InstrumentRegistry.get).toHaveBeenCalledWith('current-user-id');
+      expect(mockInstrument.sustainDown).toHaveBeenCalled();
+    });
+
+    it('should trigger instrument sustainDown with provided peerId', () => {
+      const peerId = 'remote-user';
+      
+      sustainDown(peerId);
+      
+      expect(InstrumentRegistry.get).toHaveBeenCalledWith(peerId);
+      expect(mockInstrument.sustainDown).toHaveBeenCalled();
+    });
+
+    it('should return early when no workspace userId available', () => {
+      vi.mocked(selectWorkspace).mockReturnValue({ userId: undefined });
+      
+      sustainDown();
+      
+      expect(InstrumentRegistry.get).not.toHaveBeenCalled();
+      expect(mockInstrument.sustainDown).not.toHaveBeenCalled();
+    });
+
+    it('should handle missing instrument gracefully', () => {
+      vi.mocked(InstrumentRegistry.get).mockReturnValue(null);
+      
+      expect(() => sustainDown()).not.toThrow();
+      
+      expect(InstrumentRegistry.get).toHaveBeenCalled();
+    });
+
+    it('should handle instrument without sustainDown method', () => {
+      const instrumentWithoutSustain = {
+        keyDown: vi.fn(),
+        keyUp: vi.fn(),
+        releaseAll: vi.fn(),
+      };
+      vi.mocked(InstrumentRegistry.get).mockReturnValue(instrumentWithoutSustain);
+      
+      expect(() => sustainDown()).not.toThrow();
+    });
+  });
+
+  describe('sustainUp()', () => {
+    it('should send network message when no peerId provided', () => {
+      sustainUp();
+      
+      expect(PianoClient.sustainUp).toHaveBeenCalled();
+    });
+
+    it('should not send network message when peerId provided', () => {
+      const peerId = 'remote-user';
+      
+      sustainUp(peerId);
+      
+      expect(PianoClient.sustainUp).not.toHaveBeenCalled();
+    });
+
+    it('should trigger instrument sustainUp with current user', () => {
+      sustainUp();
+      
+      expect(InstrumentRegistry.get).toHaveBeenCalledWith('current-user-id');
+      expect(mockInstrument.sustainUp).toHaveBeenCalled();
+    });
+
+    it('should trigger instrument sustainUp with provided peerId', () => {
+      const peerId = 'remote-user';
+      
+      sustainUp(peerId);
+      
+      expect(InstrumentRegistry.get).toHaveBeenCalledWith(peerId);
+      expect(mockInstrument.sustainUp).toHaveBeenCalled();
+    });
+
+    it('should return early when no workspace userId available', () => {
+      vi.mocked(selectWorkspace).mockReturnValue({ userId: undefined });
+      
+      sustainUp();
+      
+      expect(InstrumentRegistry.get).not.toHaveBeenCalled();
+      expect(mockInstrument.sustainUp).not.toHaveBeenCalled();
+    });
+
+    it('should handle missing instrument gracefully', () => {
+      vi.mocked(InstrumentRegistry.get).mockReturnValue(null);
+      
+      expect(() => sustainUp()).not.toThrow();
+      
+      expect(InstrumentRegistry.get).toHaveBeenCalled();
+    });
+
+    it('should handle instrument without sustainUp method', () => {
+      const instrumentWithoutSustain = {
+        keyDown: vi.fn(),
+        keyUp: vi.fn(),
+        releaseAll: vi.fn(),
+      };
+      vi.mocked(InstrumentRegistry.get).mockReturnValue(instrumentWithoutSustain);
+      
+      expect(() => sustainUp()).not.toThrow();
     });
   });
 });

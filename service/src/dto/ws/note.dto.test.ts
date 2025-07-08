@@ -71,7 +71,7 @@ describe('NoteOnDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.min).toBeDefined();
+        expect(errors[0]?.constraints?.min).toBeDefined();
       });
 
       it('should fail validation for note above MIDI range', async () => {
@@ -81,7 +81,7 @@ describe('NoteOnDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.max).toBeDefined();
+        expect(errors[0]?.constraints?.max).toBeDefined();
       });
 
       it('should fail validation for non-number note', async () => {
@@ -91,7 +91,7 @@ describe('NoteOnDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.isNumber).toBeDefined();
+        expect(errors[0]?.constraints?.isNumber).toBeDefined();
       });
     });
 
@@ -103,7 +103,7 @@ describe('NoteOnDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.min).toBeDefined();
+        expect(errors[0]?.constraints?.min).toBeDefined();
       });
 
       it('should fail validation for velocity above MIDI range', async () => {
@@ -113,7 +113,7 @@ describe('NoteOnDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.max).toBeDefined();
+        expect(errors[0]?.constraints?.max).toBeDefined();
       });
 
       it('should fail validation for non-number velocity', async () => {
@@ -123,7 +123,7 @@ describe('NoteOnDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.isNumber).toBeDefined();
+        expect(errors[0]?.constraints?.isNumber).toBeDefined();
       });
     });
 
@@ -135,7 +135,7 @@ describe('NoteOnDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.isArray).toBeDefined();
+        expect(errors[0]?.constraints?.isArray).toBeDefined();
       });
 
       it('should fail validation for invalid UUID in array', async () => {
@@ -145,7 +145,7 @@ describe('NoteOnDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.isUuid).toContain('each value in targetUserIds must be a UUID');
+        expect(errors[0]?.constraints?.isUuid).toContain('each value in targetUserIds must be a UUID');
       });
 
       it('should fail validation for too many target users', async () => {
@@ -158,7 +158,7 @@ describe('NoteOnDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.arrayMaxSize).toBeDefined();
+        expect(errors[0]?.constraints?.arrayMaxSize).toBeDefined();
       });
 
       it('should fail validation for mixed valid and invalid UUIDs', async () => {
@@ -171,7 +171,7 @@ describe('NoteOnDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.isUuid).toContain('each value in targetUserIds must be a UUID');
+        expect(errors[0]?.constraints?.isUuid).toContain('each value in targetUserIds must be a UUID');
       });
     });
   });
@@ -217,7 +217,7 @@ describe('NoteOffDto', () => {
       
       const errors = await validate(dto);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.min).toBeDefined();
+      expect(errors[0]?.constraints?.min).toBeDefined();
     });
 
     it('should fail validation for note above MIDI range', async () => {
@@ -226,7 +226,7 @@ describe('NoteOffDto', () => {
       
       const errors = await validate(dto);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.max).toBeDefined();
+      expect(errors[0]?.constraints?.max).toBeDefined();
     });
 
     it('should fail validation for invalid targetUserIds', async () => {
@@ -235,7 +235,7 @@ describe('NoteOffDto', () => {
       
       const errors = await validate(dto);
       expect(errors).toHaveLength(1);
-      expect(errors[0].constraints?.isUuid).toContain('each value in targetUserIds must be a UUID');
+      expect(errors[0]?.constraints?.isUuid).toContain('each value in targetUserIds must be a UUID');
     });
   });
 });

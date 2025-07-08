@@ -40,6 +40,10 @@ type UserDisconnectPayload = {
   userId: string,
 };
 
+type SustainPayload = {
+  userId?: string;
+};
+
 export default class RoomHandlers {
   private constructor() { }
 
@@ -49,6 +53,14 @@ export default class RoomHandlers {
 
   static keyUpHandler(payload: KeyUpPayload) {
     NoteActions.keyUp(payload.note, payload.userId);
+  }
+
+  static sustainDownHandler(payload: SustainPayload) {
+    NoteActions.sustainDown(payload.userId);
+  }
+
+  static sustainUpHandler(payload: SustainPayload) {
+    NoteActions.sustainUp(payload.userId);
   }
 
   static roomJoinHandler(payload: RoomJoinPayload) {

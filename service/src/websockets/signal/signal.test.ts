@@ -237,7 +237,7 @@ describe('Signal Gateway', () => {
 
         gateway.onSignal(payload, mockSocket);
 
-        const emittedData = mockEmit.mock.calls[0][1];
+        const emittedData = mockEmit.mock.calls[0]?.[1];
         expect(emittedData).toHaveProperty('userId', senderUserId);
         expect(emittedData).toHaveProperty('signalData', payload.signalData);
       });
@@ -280,7 +280,7 @@ a=rtpmap:111 opus/48000/2`;
 
         gateway.onSignal(payload, mockSocket);
 
-        const emittedData = mockEmit.mock.calls[0][1];
+        const emittedData = mockEmit.mock.calls[0]?.[1];
         expect(emittedData.signalData.sdp).toBe(complexSdp);
       });
 
@@ -303,7 +303,7 @@ a=rtpmap:111 opus/48000/2`;
 
         gateway.onSignal(payload, mockSocket);
 
-        const emittedData = mockEmit.mock.calls[0][1];
+        const emittedData = mockEmit.mock.calls[0]?.[1];
         expect(emittedData.signalData).toEqual(candidate);
       });
     });

@@ -41,7 +41,7 @@ vi.mock('nanoid', () => ({
 }));
 
 // Global test utilities
-globalThis.testUtils = {
+(globalThis as any).testUtils = {
   createUUID: () => '550e8400-e29b-41d4-a716-446655440000',
   createInvalidUUID: () => 'not-a-valid-uuid',
   createStringOfLength: (length: number, char = 'A') => char.repeat(length),
