@@ -4,13 +4,27 @@ import RoomEntity from '../../entities/Room';
 import SessionProvider from '../../entities/Session';
 import { createMockSessionWithId, createUUID } from '../../test-utils/validation.helpers';
 import SessionRegistry from '../SessionRegistry';
+import * as utils from '../utils';
 import { RoomEvents, SocketEvents } from './events';
 import { Room } from './room';
+
+// Mock nanoid
+vi.mock('nanoid', () => ({
+  nanoid: vi.fn(() => 'test-server-id'),
+  customAlphabet: vi.fn(() => () => 'test-room-id'),
+}));
 
 // Mock dependencies
 vi.mock('../../entities/Room');
 vi.mock('../../entities/Session');
-vi.mock('../SessionRegistry');
+vi.mock('../SessionRegistry', () => ({
+  default: {
+    getSocketMetadata: vi.fn(),
+    getServerId: vi.fn(),
+    registerSession: vi.fn(),
+    destroySession: vi.fn(),
+  },
+}));
 vi.mock('../../errors');
 vi.mock('@nestjs/common');
 vi.mock('../utils', () => ({
@@ -31,13 +45,16 @@ describe('Room WebSocket Gateway', () => {
   let mockUtils: any;
   let mockSessionValidator: any;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     // Mock Server
     mockServer = {
       on: vi.fn(),
       off: vi.fn(),
       in: vi.fn().mockReturnThis(),
       emit: vi.fn(),
+      sockets: {
+        sockets: new Map(),
+      },
     };
 
     // Mock Socket
@@ -66,7 +83,8 @@ describe('Room WebSocket Gateway', () => {
 
     // Set up mock implementations
     mockSessionProvider.get = vi.fn();
-    mockSessionRegistry.getSocket = vi.fn();
+    mockSessionRegistry.getSocketMetadata = vi.fn();
+    mockSessionRegistry.getServerId = vi.fn(() => 'test-server');
     mockSessionRegistry.registerSession = vi.fn();
     mockSessionRegistry.destroySession = vi.fn();
     mockRoomEntity.mockImplementation(() => ({
@@ -82,14 +100,14 @@ describe('Room WebSocket Gateway', () => {
     mockLogger.debug = vi.fn();
 
     // Mock utils
-    mockUtils = await import('../utils');
-    mockUtils.getSocketMetadata.mockReturnValue({
+    mockUtils = utils;
+    vi.mocked(mockUtils.getSocketMetadata).mockReturnValue({
       sessionId: createUUID(),
       roomId: 'room-123',
       displayName: 'Test User',
     });
-    mockUtils.getSocketRoomId.mockReturnValue('room-123');
-    mockUtils.broadcast = vi.fn();
+    vi.mocked(mockUtils.getSocketRoomId).mockReturnValue('room-123');
+    vi.mocked(mockUtils.broadcast);
 
     // Mock SessionValidatorService
     mockSessionValidator = {
@@ -181,7 +199,7 @@ describe('Room WebSocket Gateway', () => {
       mockSessionValidator.validateAndAttachToSocket.mockResolvedValue(true);
       mockSocket.session = mockSession;
       
-      mockSessionRegistry.getSocket.mockReturnValue(null); // No previous socket
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue(null); // No previous socket
 
       const mockRoomInstance = {
         join: vi.fn().mockResolvedValue(mockRoomData),
@@ -207,13 +225,19 @@ describe('Room WebSocket Gateway', () => {
     it('should handle reconnection without broadcasting events', async () => {
       const mockSession = createMockSessionWithId({ sessionId });
       const mockRoomData = { users: { [sessionId]: { displayName } } };
-      const prevSocket = { disconnect: vi.fn() };
+      const prevSocket = { id: 'prev-socket-id', disconnect: vi.fn() };
+
+      // Add the previous socket to the server's socket map
+      mockServer.sockets.sockets.set(prevSocket.id, prevSocket);
 
       // Mock session validation
       mockSessionValidator.validateAndAttachToSocket.mockResolvedValue(true);
       mockSocket.session = mockSession;
       
-      mockSessionRegistry.getSocket.mockReturnValue(prevSocket);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue({
+        serverId: 'test-server',
+        socketId: prevSocket.id
+      });
 
       const mockRoomInstance = {
         join: vi.fn().mockResolvedValue(mockRoomData),
@@ -268,7 +292,7 @@ describe('Room WebSocket Gateway', () => {
       mockSessionValidator.validateAndAttachToSocket.mockResolvedValue(true);
       mockSocket.session = mockSession;
       
-      mockSessionRegistry.getSocket.mockReturnValue(null);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue(null);
 
       const mockRoomInstance = {
         join: vi.fn().mockRejectedValue(roomError),
@@ -305,7 +329,11 @@ describe('Room WebSocket Gateway', () => {
 
     it('should successfully destroy connection and leave room', async () => {
       const mockRoomData = { users: {} };
-      mockSessionRegistry.getSocket.mockReturnValue(mockSocket);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue({
+        serverId: 'test-server',
+        socketId: mockSocket.id
+      });
+      mockSessionRegistry.destroySession.mockResolvedValue(undefined);
 
       const mockRoomInstance = {
         leave: vi.fn().mockResolvedValue(mockRoomData),
@@ -328,7 +356,10 @@ describe('Room WebSocket Gateway', () => {
 
     it('should handle reconnection scenario gracefully', async () => {
       const differentSocket = { id: 'different-socket' };
-      mockSessionRegistry.getSocket.mockReturnValue(differentSocket);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue({
+        serverId: 'different-server',
+        socketId: differentSocket.id
+      });
 
       await roomGateway.destroyConnection(mockSocket, 'reconnect');
 
@@ -348,7 +379,11 @@ describe('Room WebSocket Gateway', () => {
 
     it('should handle room leave errors gracefully', async () => {
       const leaveError = new Error('Leave failed');
-      mockSessionRegistry.getSocket.mockReturnValue(mockSocket);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue({
+        serverId: 'test-server',
+        socketId: mockSocket.id
+      });
+      mockSessionRegistry.destroySession.mockResolvedValue(undefined);
 
       const mockRoomInstance = {
         leave: vi.fn().mockRejectedValue(leaveError),

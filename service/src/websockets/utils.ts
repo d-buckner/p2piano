@@ -63,10 +63,24 @@ export function broadcastToSubset<T>(socket: AuthenticatedSocket, userIds: strin
     userId,
   };
 
-  userIds.forEach(targetUserId => {
-    const socketId = SessionRegistry.getSocket(targetUserId)?.id;
-    if (socketId) {
-      socket.to(socketId).emit(eventType, decoratedPayload);
+  // Process each target user ID
+  userIds.forEach(async (targetUserId) => {
+    try {
+      const socketMetadata = await SessionRegistry.getSocketMetadata(targetUserId);
+      if (!socketMetadata) {
+        return; // User not found
+      }
+
+      if (socketMetadata.serverId === SessionRegistry.getServerId()) {
+        // Local server - route directly to socket
+        socket.to(socketMetadata.socketId).emit(eventType, decoratedPayload);
+      } else {
+        // Different server - use Socket.IO adapter for cross-server communication
+        socket.to(targetUserId).emit(eventType, decoratedPayload);
+      }
+    } catch (error) {
+      // Log error but don't throw - broadcasting to other users should continue
+      console.warn(`Failed to route message to user ${targetUserId}:`, error);
     }
   });
 }

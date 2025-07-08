@@ -19,10 +19,13 @@ services:
     environment:
       - NODE_ENV=production
       - MONGO_URI=mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@database:27017/p2piano
+      - REDIS_URI=redis://redis:6379
       - COOKIE_SECRET=${COOKIE_SECRET}
       - MONGO_URI=${MONGO_URI}
     depends_on:
       database:
+        condition: service_started
+      redis:
         condition: service_started
     ports:
       - "3001:3001"
@@ -32,6 +35,13 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+  redis:
+    image: redis:8-alpine
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
 volumes:
   caddy_data:
   caddy_config:
+  redis_data:

@@ -47,23 +47,39 @@ async function waitForDatabase(composeCmd) {
   }
 }
 
-// Start the database container
-async function startDatabase(composeCmd) {
-  console.log('Ensuring database container is running...');
+// Wait for Redis to be healthy
+async function waitForRedis(composeCmd) {
+  console.log('Waiting for Redis to be ready...');
+  
+  while (true) {
+    try {
+      await exec(`${composeCmd} -f docker-compose.dev.yml exec -T redis redis-cli ping`);
+      console.log('Redis is ready!');
+      return;
+    } catch (error) {
+      console.log('Redis not ready yet, retrying...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+}
+
+// Start the database and Redis containers
+async function startContainers(composeCmd) {
+  console.log('Ensuring database and Redis containers are running...');
   
   try {
     // Try to start with --no-recreate flag
-    await runCommand(composeCmd, ['-f', 'docker-compose.dev.yml', 'up', '-d', '--no-recreate', 'database']);
-    console.log('Database container is running');
+    await runCommand(composeCmd, ['-f', 'docker-compose.dev.yml', 'up', '-d', '--no-recreate', 'database', 'redis']);
+    console.log('Database and Redis containers are running');
   } catch (error) {
-    // If that fails, try to restart existing container
-    console.log('Attempting to restart existing container...');
+    // If that fails, try to restart existing containers
+    console.log('Attempting to restart existing containers...');
     try {
-      await runCommand(composeCmd, ['-f', 'docker-compose.dev.yml', 'restart', 'database']);
-      console.log('Database container restarted successfully');
+      await runCommand(composeCmd, ['-f', 'docker-compose.dev.yml', 'restart', 'database', 'redis']);
+      console.log('Database and Redis containers restarted successfully');
     } catch (restartError) {
-      console.error('Failed to start database container');
-      console.error(`You may need to run: ${composeCmd} -f docker-compose.dev.yml down database`);
+      console.error('Failed to start containers');
+      console.error(`You may need to run: ${composeCmd} -f docker-compose.dev.yml down`);
       process.exit(1);
     }
   }
@@ -77,7 +93,8 @@ async function startDevServers() {
     stdio: 'inherit',
     env: {
       ...process.env,
-      MONGO_URI: 'mongodb://root:password@localhost:27017/p2piano?authSource=admin'
+      MONGO_URI: 'mongodb://root:password@localhost:27017/p2piano?authSource=admin',
+      REDIS_URI: 'redis://localhost:6379'
     }
   });
 
@@ -88,18 +105,21 @@ async function startDevServers() {
 
 // Main function
 async function main() {
-  console.log('Checking database container status...');
+  console.log('Checking container status...');
   
   try {
     const composeCmd = await getComposeCommand();
     console.log(`Using ${composeCmd} for container management`);
     
-    await startDatabase(composeCmd);
+    await startContainers(composeCmd);
     
     // Wait a bit before health check
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    await waitForDatabase(composeCmd);
+    await Promise.all([
+      waitForDatabase(composeCmd),
+      waitForRedis(composeCmd),
+    ]);
     await startDevServers();
   } catch (error) {
     console.error('Error starting development environment:', error.message);

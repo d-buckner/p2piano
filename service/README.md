@@ -29,9 +29,10 @@ The service is built with NestJS and TypeScript, providing a robust backend for 
 
 - **Framework**: NestJS with TypeScript
 - **Runtime**: Node.js with Fastify
-- **Database**: MongoDB
-- **Real-time**: Socket.IO
-- **Testing**: Jest
+- **Database**: MongoDB for persistent data
+- **Cache/Sessions**: Redis for distributed sessions and real-time coordination
+- **Real-time**: Socket.IO with Redis adapter for multi-server support
+- **Testing**: Vitest
 - **Validation**: Class-validator
 
 ## Development
@@ -73,6 +74,9 @@ The service requires these environment variables:
 MONGO_URI=mongodb://localhost:27017/p2piano
 MONGO_USERNAME=your_username
 MONGO_PASSWORD=your_password
+
+# Required: Redis connection for sessions and real-time coordination
+REDIS_URI=redis://localhost:6379
 
 # Required: Security
 COOKIE_SECRET=your_secure_random_string
@@ -147,3 +151,4 @@ When contributing to the service:
 4. Use proper TypeScript types and validation
 5. Test WebSocket functionality thoroughly
 6. Maintain database schema consistency
+7. Test Redis integration in distributed scenarios

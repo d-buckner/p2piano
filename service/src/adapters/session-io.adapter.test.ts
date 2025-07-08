@@ -34,7 +34,8 @@ describe('SessionIoAdapter', () => {
       const mockServer = { 
         on: vi.fn(), 
         use: vi.fn(),
-        engine: { generateId: vi.fn() }
+        engine: { generateId: vi.fn() },
+        adapter: vi.fn()
       };
       
       // Mock the parent's createIOServer method
@@ -206,7 +207,8 @@ describe('SessionIoAdapter', () => {
       const mockServer = { 
         on: vi.fn(), 
         use: vi.fn(),
-        engine: { generateId: vi.fn() }
+        engine: { generateId: vi.fn() },
+        adapter: vi.fn()
       };
       
       vi.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(adapter)), 'createIOServer')

@@ -19,8 +19,11 @@ services:
     environment:
       - NODE_ENV=development
       - MONGO_URI=mongodb://root:password@database:27017/p2piano?authSource=admin
+      - REDIS_URI=redis://redis:6379
     depends_on:
       database:
+        condition: service_started
+      redis:
         condition: service_started
     ports:
       - "3001:3001"
@@ -32,6 +35,15 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
+  redis:
+    image: redis:8-alpine
+    restart: always
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
 volumes:
   caddy_data:
   caddy_config:
+  redis_data:

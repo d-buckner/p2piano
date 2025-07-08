@@ -16,7 +16,7 @@ export class Signal {
 
   @UseGuards(SignalThrottlerGuard) 
   @SubscribeMessage(SignalEvents.SIGNAL)
-  onSignal(@MessageBody(new WsValidationPipe()) payload: SignalPayloadDto, @ConnectedSocket() socket: AuthenticatedSocket) {
+  async onSignal(@MessageBody(new WsValidationPipe()) payload: SignalPayloadDto, @ConnectedSocket() socket: AuthenticatedSocket) {
     try {
       const userId = getSocketSessionId(socket);
       if (!userId) {
@@ -24,8 +24,9 @@ export class Signal {
         return;
       }
 
-      const targetSocket = SessionRegistry.getSocket(payload.userId);
-      if (!targetSocket) {
+      // Get target socket info from Redis
+      const socketMetadata = await SessionRegistry.getSocketMetadata(payload.userId);
+      if (!socketMetadata) {
         this.logger.debug('Target user not found for signal', { 
           from: userId, 
           to: payload.userId,
@@ -34,17 +35,34 @@ export class Signal {
         return;
       }
 
-      socket.to(targetSocket.id).emit(SignalEvents.SIGNAL, {
-        signalData: payload.signalData,
-        userId,
-      });
+      if (socketMetadata.serverId === SessionRegistry.getServerId()) {
+        // Target is on this server (local)
+        socket.to(socketMetadata.socketId).emit(SignalEvents.SIGNAL, {
+          signalData: payload.signalData,
+          userId,
+        });
 
-      this.logger.debug('WebRTC signal routed successfully', {
-        from: userId,
-        to: payload.userId,
-        signalType: payload.signalData.type,
-        targetSocketId: targetSocket.id
-      });
+        this.logger.debug('WebRTC signal routed locally', {
+          from: userId,
+          to: payload.userId,
+          signalType: payload.signalData.type,
+          targetSocketId: socketMetadata.socketId
+        });
+      } else {
+        // Target is on another server - use Socket.IO adapter for cross-server communication
+        socket.to(payload.userId).emit(SignalEvents.SIGNAL, {
+          signalData: payload.signalData,
+          userId,
+        });
+
+        this.logger.debug('WebRTC signal routed cross-server', {
+          from: userId,
+          to: payload.userId,
+          signalType: payload.signalData.type,
+          targetServerId: socketMetadata.serverId,
+          targetSocketId: socketMetadata.socketId
+        });
+      }
 
     } catch (error) {
       this.logger.error('Error processing WebRTC signal', {

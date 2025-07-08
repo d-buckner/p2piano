@@ -12,6 +12,7 @@
  * 
  * // Get configuration values
  * const dbUri = ConfigProvider.getMongoUri();
+ * const redisUri = ConfigProvider.getRedisUri();
  * const isProduction = ConfigProvider.isProduction();
  * ```
  */
@@ -59,6 +60,14 @@ export default class ConfigProvider {
   }
 
   /**
+   * Gets the Redis connection URI.
+   * @returns Redis URI from environment or localhost default
+   */
+  static getRedisUri(): string {
+    return process.env.REDIS_URI || 'redis://localhost:6379';
+  }
+
+  /**
    * Gets the cookie signing secret with validation.
    * @returns Cookie secret string
    * @throws Error if secret is missing in production
@@ -83,7 +92,7 @@ export default class ConfigProvider {
    * Validates all required environment variables for the current environment.
    * 
    * In production, validates that critical secrets are present and meet
-   * minimum security requirements. Also validates MongoDB URI format.
+   * minimum security requirements. Also validates MongoDB and Redis URI formats.
    * 
    * @throws Error with detailed validation messages if any checks fail
    */
@@ -100,6 +109,10 @@ export default class ConfigProvider {
         errors.push('MONGO_URI is required in production');
       }
       
+      if (!process.env.REDIS_URI) {
+        errors.push('REDIS_URI is required in production');
+      }
+      
       // Validate COOKIE_SECRET strength in production
       const secret = process.env.COOKIE_SECRET;
       if (secret && secret.length < 32) {
@@ -111,6 +124,12 @@ export default class ConfigProvider {
     const mongoUri = process.env.MONGO_URI;
     if (mongoUri && !mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://')) {
       errors.push('MONGO_URI must be a valid MongoDB connection string');
+    }
+    
+    // Validate REDIS_URI format if provided
+    const redisUri = process.env.REDIS_URI;
+    if (redisUri && !redisUri.startsWith('redis://') && !redisUri.startsWith('rediss://')) {
+      errors.push('REDIS_URI must be a valid Redis connection string');
     }
     
     if (errors.length > 0) {
