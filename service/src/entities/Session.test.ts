@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import Database from '../clients/Database';
-import ConfigProvider from '../config/ConfigProvider';
 import RedisClient from '../clients/RedisClient';
+import ConfigProvider from '../config/ConfigProvider';
 import { SessionNotFoundError } from '../errors';
 import SessionProvider from './Session';
 import type { Session } from './Session';

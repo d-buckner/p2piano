@@ -159,7 +159,7 @@ describe('Signal Gateway Message Flow', () => {
 
       const socket1 = { ...mockSocket, id: 'socket-1' };
       const socket2 = { ...targetSocket, id: 'socket-2' };
-      const socket3 = { id: 'socket-3', to: vi.fn().mockReturnThis(), emit: vi.fn() };
+      const socket3 = { id: 'socket-3', to: vi.fn().mockReturnThis(), emit: vi.fn() } as any;
 
       // User 1 sends to User 2
       mockGetSocketSessionId.mockReturnValueOnce(user1);

@@ -180,8 +180,9 @@ describe('SessionRegistry', () => {
       
       const afterTime = Date.now();
       const registrationCall = vi.mocked(RedisClient.hSet).mock.calls[0];
-      const sessionData = registrationCall[1] as Record<string, string>;
-      const registeredAt = parseInt(sessionData.registeredAt, 10);
+      expect(registrationCall).toBeDefined();
+      const sessionData = registrationCall?.[1] as Record<string, string>;
+      const registeredAt = parseInt(sessionData?.registeredAt ?? '0', 10);
       
       expect(registeredAt).toBeGreaterThanOrEqual(beforeTime);
       expect(registeredAt).toBeLessThanOrEqual(afterTime);
