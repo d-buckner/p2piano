@@ -138,6 +138,8 @@ PORT=3001                     # Defaults to 3001
 
 ## Architecture
 
+![prod-system](./docs/design/prod-system.svg)
+
 ### Core Components
 
 **Client Architecture:**
