@@ -17,7 +17,7 @@ export class SessionIoAdapter extends IoAdapter {
     super(app);
   }
 
-  async createIOServer(port: number, options?: ServerOptions): Promise<Server> {
+  createIOServer(port: number, options?: ServerOptions): Server {
     // Get the SessionValidatorService from the application context
     this.sessionValidator = this.app.get(SessionValidatorService);
 
@@ -44,7 +44,13 @@ export class SessionIoAdapter extends IoAdapter {
       },
     });
 
-    // Set up Redis adapter for distributed Socket.IO
+    // Set up Redis adapter for distributed Socket.IO asynchronously
+    this.setupRedisAdapter(server);
+
+    return server;
+  }
+
+  private async setupRedisAdapter(server: Server): Promise<void> {
     try {
       const pubClient = createClient({ url: ConfigProvider.getRedisUri() });
       const subClient = pubClient.duplicate();
@@ -60,7 +66,5 @@ export class SessionIoAdapter extends IoAdapter {
       this.logger.error('Failed to configure Redis adapter:', error);
       this.logger.warn('Socket.IO running in single-server mode');
     }
-
-    return server;
   }
 }

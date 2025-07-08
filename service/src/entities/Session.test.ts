@@ -176,6 +176,53 @@ describe('SessionProvider', () => {
     });
   });
 
+  describe('Session expiration behavior', () => {
+    it('should set 24-hour TTL when creating session', async () => {
+      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
+      
+      mockRandomUUID.mockReturnValue(sessionId);
+      mockRedisClient.hSet.mockResolvedValue('OK');
+      mockRedisClient.expire.mockResolvedValue(1);
+
+      await SessionProvider.create();
+
+      expect(mockRedisClient.expire).toHaveBeenCalledWith(`session:${sessionId}`, 86400);
+    });
+
+    it('should refresh TTL when accessing session', async () => {
+      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
+      const mockSession = {
+        sessionId,
+        createdAt: new Date('2023-01-01T00:00:00Z'),
+        lastActivity: new Date('2023-01-01T00:00:00Z'),
+      };
+
+      mockRedisClient.hGet.mockResolvedValue(JSON.stringify(mockSession));
+      mockRedisClient.hSet.mockResolvedValue('OK');
+      mockRedisClient.expire.mockResolvedValue(1);
+
+      await SessionProvider.get(sessionId, '192.168.1.1');
+
+      expect(mockRedisClient.expire).toHaveBeenCalledWith(`session:${sessionId}`, 86400);
+    });
+
+    it('should handle JSON parsing errors gracefully', async () => {
+      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
+      
+      mockRedisClient.hGet.mockResolvedValue('invalid-json');
+
+      await expect(SessionProvider.get(sessionId, '192.168.1.1')).rejects.toThrow();
+    });
+
+    it('should handle empty string session data', async () => {
+      const sessionId = '550e8400-e29b-41d4-a716-446655440000';
+      
+      mockRedisClient.hGet.mockResolvedValue('');
+
+      await expect(SessionProvider.get(sessionId, '192.168.1.1')).rejects.toThrow(SessionNotFoundError);
+    });
+  });
+
   describe('IP address validation', () => {
     const sessionId = '550e8400-e29b-41d4-a716-446655440000';
     const originalIp = '192.168.1.1';

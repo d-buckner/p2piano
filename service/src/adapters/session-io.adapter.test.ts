@@ -30,7 +30,7 @@ describe('SessionIoAdapter', () => {
   });
 
   describe('createIOServer', () => {
-    it('should create server with proper configuration', async () => {
+    it('should create server with proper configuration', () => {
       const mockServer = { 
         on: vi.fn(), 
         use: vi.fn(),
@@ -50,7 +50,7 @@ describe('SessionIoAdapter', () => {
         transports: ['websocket']
       } as any;
 
-      const result = await adapter.createIOServer(3000, options);
+      const result = adapter.createIOServer(3000, options);
 
       expect(result).toBe(mockServer);
       expect(mockApp.get).toHaveBeenCalledWith(SessionValidatorService);
@@ -203,7 +203,7 @@ describe('SessionIoAdapter', () => {
       expect(capturedOptions.allowRequest).toBeDefined();
     });
 
-    it('should work with minimal options', async () => {
+    it('should work with minimal options', () => {
       const mockServer = { 
         on: vi.fn(), 
         use: vi.fn(),
@@ -214,7 +214,7 @@ describe('SessionIoAdapter', () => {
       vi.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(adapter)), 'createIOServer')
         .mockReturnValue(mockServer);
 
-      const result = await adapter.createIOServer(3000);
+      const result = adapter.createIOServer(3000);
 
       expect(result).toBe(mockServer);
       expect(mockApp.get).toHaveBeenCalledWith(SessionValidatorService);
