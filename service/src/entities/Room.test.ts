@@ -114,7 +114,7 @@ describe('Room Entity', () => {
       const afterTime = Date.now();
 
       const insertCall = mockCollection.insertOne.mock.calls[0];
-      const createdAt = insertCall[0].createdAt.getTime();
+      const createdAt = insertCall?.[0]?.createdAt?.getTime();
       
       expect(createdAt).toBeGreaterThanOrEqual(beforeTime);
       expect(createdAt).toBeLessThanOrEqual(afterTime);

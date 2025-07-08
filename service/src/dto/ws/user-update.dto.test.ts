@@ -81,7 +81,7 @@ describe('UserUpdateDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.isUuid).toBeDefined();
+        expect(errors[0]?.constraints?.isUuid).toBeDefined();
       });
 
       it('should fail validation for missing userId', async () => {
@@ -91,7 +91,7 @@ describe('UserUpdateDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.isUuid).toBeDefined();
+        expect(errors[0]?.constraints?.isUuid).toBeDefined();
       });
     });
 
@@ -104,7 +104,7 @@ describe('UserUpdateDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.minLength).toBeDefined();
+        expect(errors[0]?.constraints?.minLength).toBeDefined();
       });
 
       it('should fail validation for display name too long', async () => {
@@ -115,7 +115,7 @@ describe('UserUpdateDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.maxLength).toBeDefined();
+        expect(errors[0]?.constraints?.maxLength).toBeDefined();
       });
 
       it('should fail validation for non-string display name', async () => {
@@ -126,7 +126,7 @@ describe('UserUpdateDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.isString).toBeDefined();
+        expect(errors[0]?.constraints?.isString).toBeDefined();
       });
     });
 
@@ -139,7 +139,7 @@ describe('UserUpdateDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.matches).toBeDefined();
+        expect(errors[0]?.constraints?.matches).toBeDefined();
       });
 
       it('should fail validation for color without hash prefix', async () => {
@@ -150,7 +150,7 @@ describe('UserUpdateDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.matches).toBeDefined();
+        expect(errors[0]?.constraints?.matches).toBeDefined();
       });
 
       it('should fail validation for color with invalid length', async () => {
@@ -161,7 +161,7 @@ describe('UserUpdateDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.matches).toBeDefined();
+        expect(errors[0]?.constraints?.matches).toBeDefined();
       });
     });
 
@@ -174,7 +174,7 @@ describe('UserUpdateDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.isIn).toBeDefined();
+        expect(errors[0]?.constraints?.isIn).toBeDefined();
       });
 
       it('should fail validation for non-string instrument', async () => {
@@ -185,7 +185,7 @@ describe('UserUpdateDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.isString).toBeDefined();
+        expect(errors[0]?.constraints?.isString).toBeDefined();
       });
     });
   });

@@ -7,9 +7,13 @@ import Piano from './Piano';
 
 type MockDPiano = {
   load: vi.Mock<[], Promise<void>>;
-  triggerAttack: vi.Mock<[string | string[], number, number], void>;
-  triggerRelease: vi.Mock<[string | string[], number], void>;
+  keyDown: vi.Mock<[unknown], void>;
+  keyUp: vi.Mock<[unknown], void>;
+  pedalDown: vi.Mock<[], void>;
+  pedalUp: vi.Mock<[], void>;
+  stopAll: vi.Mock<[], void>;
   dispose: vi.Mock<[], void>;
+  toDestination: vi.Mock<[], unknown>;
 };
 
 // Mock all dependencies
@@ -30,6 +34,8 @@ describe('Piano', () => {
       load: vi.fn().mockResolvedValue(undefined),
       keyDown: vi.fn(),
       keyUp: vi.fn(),
+      pedalDown: vi.fn(),
+      pedalUp: vi.fn(),
       stopAll: vi.fn(),
       dispose: vi.fn(),
       toDestination: vi.fn().mockReturnThis(),
@@ -232,6 +238,97 @@ describe('Piano', () => {
       (piano as any).instrument = undefined;
 
       expect(() => piano.releaseAll()).not.toThrow();
+    });
+  });
+
+  describe('sustainDown', () => {
+    beforeEach(async () => {
+      piano = new Piano();
+      await mockDPiano.load();
+    });
+
+    it('should call pedalDown on instrument', () => {
+      piano.sustainDown();
+
+      expect(mockDPiano.pedalDown).toHaveBeenCalled();
+    });
+
+    it('should handle when instrument is not loaded', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (piano as any).instrument = undefined;
+
+      expect(() => piano.sustainDown()).not.toThrow();
+    });
+
+    it('should handle multiple sustain down calls', () => {
+      piano.sustainDown();
+      piano.sustainDown();
+      piano.sustainDown();
+
+      expect(mockDPiano.pedalDown).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  describe('sustainUp', () => {
+    beforeEach(async () => {
+      piano = new Piano();
+      await mockDPiano.load();
+    });
+
+    it('should call pedalUp on instrument', () => {
+      piano.sustainUp();
+
+      expect(mockDPiano.pedalUp).toHaveBeenCalled();
+    });
+
+    it('should handle when instrument is not loaded', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (piano as any).instrument = undefined;
+
+      expect(() => piano.sustainUp()).not.toThrow();
+    });
+
+    it('should handle multiple sustain up calls', () => {
+      piano.sustainUp();
+      piano.sustainUp();
+
+      expect(mockDPiano.pedalUp).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('sustain pedal integration', () => {
+    beforeEach(async () => {
+      piano = new Piano();
+      await mockDPiano.load();
+    });
+
+    it('should handle complete sustain cycle with notes', () => {
+      piano.sustainDown();
+      piano.keyDown(60, undefined, 100);
+      piano.keyUp(60);
+      piano.sustainUp();
+
+      expect(mockDPiano.pedalDown).toHaveBeenCalled();
+      expect(mockDPiano.keyDown).toHaveBeenCalledWith({
+        note: '60',
+        time: 0,
+        velocity: 100 / 127,
+      });
+      expect(mockDPiano.keyUp).toHaveBeenCalledWith({
+        note: '60',
+        time: 0,
+      });
+      expect(mockDPiano.pedalUp).toHaveBeenCalled();
+    });
+
+    it('should handle sustain without notes', () => {
+      piano.sustainDown();
+      piano.sustainUp();
+
+      expect(mockDPiano.pedalDown).toHaveBeenCalled();
+      expect(mockDPiano.pedalUp).toHaveBeenCalled();
+      expect(mockDPiano.keyDown).not.toHaveBeenCalled();
+      expect(mockDPiano.keyUp).not.toHaveBeenCalled();
     });
   });
 

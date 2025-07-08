@@ -66,7 +66,7 @@ describe('websockets/utils', () => {
     });
 
     it('should return null when session does not exist', () => {
-      const socketWithoutSession = { ...mockSocket, session: null } as AuthenticatedSocket;
+      const socketWithoutSession = { ...mockSocket, session: null } as unknown as AuthenticatedSocket;
       const result = getSocketSessionId(socketWithoutSession);
       expect(result).toBe(null);
     });

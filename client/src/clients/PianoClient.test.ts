@@ -284,6 +284,16 @@ describe('PianoClient', () => {
       expect(mockRealTimeController.broadcast).toHaveBeenCalledTimes(8); // 3 down + 1 down + 1 up + 3 up
     });
 
+    it('should handle sustain pedal events', () => {
+      // Test sustain down followed by sustain up
+      PianoClient.sustainDown();
+      PianoClient.sustainUp();
+
+      expect(mockRealTimeController.broadcast).toHaveBeenCalledTimes(2);
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(1, 'SUSTAIN_DOWN');
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(2, 'SUSTAIN_UP');
+    });
+
     it('should maintain event ordering', () => {
       const events = [
         () => PianoClient.keyDown(60, 100),
@@ -309,6 +319,83 @@ describe('PianoClient', () => {
     });
   });
 
+  describe('sustainDown', () => {
+    it('should broadcast SUSTAIN_DOWN event', () => {
+      PianoClient.sustainDown();
+
+      expect(mockRealTimeController.broadcast).toHaveBeenCalledWith('SUSTAIN_DOWN');
+    });
+
+    it('should handle multiple sustain down events', () => {
+      PianoClient.sustainDown();
+      PianoClient.sustainDown();
+      PianoClient.sustainDown();
+
+      expect(mockRealTimeController.broadcast).toHaveBeenCalledTimes(3);
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(1, 'SUSTAIN_DOWN');
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(2, 'SUSTAIN_DOWN');
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(3, 'SUSTAIN_DOWN');
+    });
+  });
+
+  describe('sustainUp', () => {
+    it('should broadcast SUSTAIN_UP event', () => {
+      PianoClient.sustainUp();
+
+      expect(mockRealTimeController.broadcast).toHaveBeenCalledWith('SUSTAIN_UP');
+    });
+
+    it('should handle multiple sustain up events', () => {
+      PianoClient.sustainUp();
+      PianoClient.sustainUp();
+
+      expect(mockRealTimeController.broadcast).toHaveBeenCalledTimes(2);
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(1, 'SUSTAIN_UP');
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(2, 'SUSTAIN_UP');
+    });
+  });
+
+  describe('sustain pedal integration', () => {
+    it('should handle complete sustain pedal cycle', () => {
+      PianoClient.sustainDown();
+      PianoClient.sustainUp();
+
+      expect(mockRealTimeController.broadcast).toHaveBeenCalledTimes(2);
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(1, 'SUSTAIN_DOWN');
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(2, 'SUSTAIN_UP');
+    });
+
+    it('should handle sustain with note playing', () => {
+      // Sustain down, play notes, sustain up
+      PianoClient.sustainDown();
+      PianoClient.keyDown(60, 100);
+      PianoClient.keyDown(64, 100);
+      PianoClient.keyUp(60);
+      PianoClient.keyUp(64);
+      PianoClient.sustainUp();
+
+      expect(mockRealTimeController.broadcast).toHaveBeenCalledTimes(6);
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(1, 'SUSTAIN_DOWN');
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(2, 'KEY_DOWN', { note: 60, velocity: 100 });
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(3, 'KEY_DOWN', { note: 64, velocity: 100 });
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(4, 'KEY_UP', { note: 60 });
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(5, 'KEY_UP', { note: 64 });
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(6, 'SUSTAIN_UP');
+    });
+
+    it('should handle sustain without release', () => {
+      // Sustain down but never up (like holding pedal)
+      PianoClient.sustainDown();
+      PianoClient.keyDown(60, 100);
+      PianoClient.keyUp(60);
+
+      expect(mockRealTimeController.broadcast).toHaveBeenCalledTimes(3);
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(1, 'SUSTAIN_DOWN');
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(2, 'KEY_DOWN', { note: 60, velocity: 100 });
+      expect(mockRealTimeController.broadcast).toHaveBeenNthCalledWith(3, 'KEY_UP', { note: 60 });
+    });
+  });
+
   describe('error handling', () => {
     it('should handle RealTimeController broadcast failure gracefully', () => {
       mockRealTimeController.broadcast.mockImplementation(() => {
@@ -319,6 +406,8 @@ describe('PianoClient', () => {
       // This documents the current behavior - errors are not caught
       expect(() => PianoClient.keyDown(60, 100)).toThrow('Network error');
       expect(() => PianoClient.keyUp(60)).toThrow('Network error');
+      expect(() => PianoClient.sustainDown()).toThrow('Network error');
+      expect(() => PianoClient.sustainUp()).toThrow('Network error');
     });
 
     it('should handle missing RealTimeController instance', () => {
@@ -329,6 +418,8 @@ describe('PianoClient', () => {
       // Same as above - PianoClient doesn't handle these errors
       expect(() => PianoClient.keyDown(60, 100)).toThrow('RealTimeController not initialized');
       expect(() => PianoClient.keyUp(60)).toThrow('RealTimeController not initialized');
+      expect(() => PianoClient.sustainDown()).toThrow('RealTimeController not initialized');
+      expect(() => PianoClient.sustainUp()).toThrow('RealTimeController not initialized');
     });
   });
 });

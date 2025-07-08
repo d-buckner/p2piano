@@ -41,6 +41,14 @@ export default class Piano implements Instrument {
     }
   }
 
+  public sustainDown(): void {
+    this.instrument?.pedalDown();
+  }
+
+  public sustainUp(): void {
+    this.instrument?.pedalUp();
+  }
+
   public releaseAll() {
     this.instrument?.stopAll();
   }

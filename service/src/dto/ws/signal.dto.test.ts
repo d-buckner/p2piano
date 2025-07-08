@@ -90,7 +90,7 @@ describe('SignalPayloadDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.isUuid).toBeDefined();
+        expect(errors[0]?.constraints?.isUuid).toBeDefined();
       });
 
       it('should fail validation for missing userId', async () => {
@@ -103,7 +103,7 @@ describe('SignalPayloadDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.isUuid).toBeDefined();
+        expect(errors[0]?.constraints?.isUuid).toBeDefined();
       });
     });
 
@@ -119,7 +119,7 @@ describe('SignalPayloadDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].children?.[0]?.constraints?.isIn).toBeDefined();
+        expect(errors[0]?.children?.[0]?.constraints?.isIn).toBeDefined();
       });
 
       it('should fail validation for SDP too large', async () => {
@@ -133,7 +133,7 @@ describe('SignalPayloadDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].children?.[0]?.constraints?.maxLength).toBeDefined();
+        expect(errors[0]?.children?.[0]?.constraints?.maxLength).toBeDefined();
       });
 
       it('should fail validation for non-string SDP', async () => {
@@ -147,7 +147,7 @@ describe('SignalPayloadDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].children?.[0]?.constraints?.isString).toBeDefined();
+        expect(errors[0]?.children?.[0]?.constraints?.isString).toBeDefined();
       });
 
       it('should fail validation for non-string type', async () => {
@@ -161,7 +161,7 @@ describe('SignalPayloadDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].children?.[0]?.constraints?.isString).toBeDefined();
+        expect(errors[0]?.children?.[0]?.constraints?.isString).toBeDefined();
       });
 
 
@@ -173,7 +173,7 @@ describe('SignalPayloadDto', () => {
         
         const errors = await validate(dto);
         expect(errors).toHaveLength(1);
-        expect(errors[0].constraints?.isObject).toBeDefined();
+        expect(errors[0]?.constraints?.isObject).toBeDefined();
       });
     });
   });

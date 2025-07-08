@@ -11,6 +11,7 @@ import {
 } from '../test-utils/validation.helpers';
 import { AutoSessionGuard } from './auto-session.guard';
 import type { ExecutionContext } from '@nestjs/common';
+import type { Request, Reply } from '../types/request';
 
 
 describe('AutoSessionGuard', () => {
@@ -175,7 +176,7 @@ describe('AutoSessionGuard', () => {
       );
 
       // Mock a new session creation scenario
-      sessionValidatorService.getOrCreateSession.mockImplementation(async (req, reply) => {
+      sessionValidatorService.getOrCreateSession.mockImplementation(async (req: Request, reply: Reply) => {
         // Simulate setting the cookie
         reply.cookie('sessionId', newSessionId, {
           httpOnly: true,

@@ -7,9 +7,7 @@ import DisplayName from './DisplayName';
 import * as styles from './SettingsModal.css';
 
 
-
 const noop = () => { };
-
 
 interface Props {
   onSubmit: () => void,

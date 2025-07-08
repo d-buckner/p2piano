@@ -244,7 +244,7 @@ a=rtpmap:111 opus/48000/2`;
         signalData: { type: 'offer', sdp: complexSdp }
       }, mockSocket);
 
-      const emittedData = mockEmit.mock.calls[0][1];
+      const emittedData = mockEmit.mock.calls[0]?.[1];
       expect(emittedData.signalData.sdp).toBe(complexSdp);
     });
 
@@ -268,7 +268,7 @@ a=rtpmap:111 opus/48000/2`;
         signalData: complexCandidate
       }, mockSocket);
 
-      const emittedData = mockEmit.mock.calls[0][1];
+      const emittedData = mockEmit.mock.calls[0]?.[1];
       expect(emittedData.signalData).toEqual(complexCandidate);
     });
   });

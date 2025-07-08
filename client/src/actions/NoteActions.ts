@@ -1,9 +1,9 @@
-import { setStore, store } from '../app/store';
+import { setStore } from '../app/store';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import { getAudioDelay } from '../audio/syncronization/utils';
 import PianoClient from '../clients/PianoClient';
 import { DEFAULT_VELOCITY, type Note } from '../constants';
-import { selectUser, selectWorkspace } from '../selectors/workspaceSelectors';
+import { getResolvedUserId, getUserColor } from './utils';
 
 
 export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: string): string | undefined {
@@ -23,8 +23,7 @@ export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: stri
     velocity,
   );
 
-  const user = selectUser(resolvedUserId)(store);
-  const color = user?.color;
+  const color = getUserColor(resolvedUserId);
   const note: Note = {
     midi,
     peerId: resolvedUserId,
@@ -73,7 +72,31 @@ export function keyUp(midi: number, peerId?: string): string | undefined {
   return undefined;
 }
 
-function getResolvedUserId(userId?: string): string | undefined {
-  return userId
-    || selectWorkspace(store).userId;
+export function sustainDown(peerId?: string): void {
+  if (!peerId) {
+    PianoClient.sustainDown();
+  }
+
+  const resolvedUserId = getResolvedUserId(peerId);
+  if (!resolvedUserId) {
+    // can't perform piano actions before room connection are set up
+    return;
+  }
+
+  InstrumentRegistry.get(resolvedUserId)?.sustainDown?.();
 }
+
+export function sustainUp(peerId?: string): void {
+  if (!peerId) {
+    PianoClient.sustainUp();
+  }
+
+  const resolvedUserId = getResolvedUserId(peerId);
+  if (!resolvedUserId) {
+    // can't perform piano actions before room connection are set up
+    return;
+  }
+
+  InstrumentRegistry.get(resolvedUserId)?.sustainUp?.();
+}
+
