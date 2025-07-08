@@ -30,11 +30,12 @@ describe('SessionIoAdapter', () => {
   });
 
   describe('createIOServer', () => {
-    it('should create server with proper configuration', () => {
+    it('should create server with proper configuration', async () => {
       const mockServer = { 
         on: vi.fn(), 
         use: vi.fn(),
-        engine: { generateId: vi.fn() }
+        engine: { generateId: vi.fn() },
+        adapter: vi.fn()
       };
       
       // Mock the parent's createIOServer method
@@ -49,7 +50,7 @@ describe('SessionIoAdapter', () => {
         transports: ['websocket']
       } as any;
 
-      const result = adapter.createIOServer(3000, options);
+      const result = await adapter.createIOServer(3000, options);
 
       expect(result).toBe(mockServer);
       expect(mockApp.get).toHaveBeenCalledWith(SessionValidatorService);
@@ -202,17 +203,18 @@ describe('SessionIoAdapter', () => {
       expect(capturedOptions.allowRequest).toBeDefined();
     });
 
-    it('should work with minimal options', () => {
+    it('should work with minimal options', async () => {
       const mockServer = { 
         on: vi.fn(), 
         use: vi.fn(),
-        engine: { generateId: vi.fn() }
+        engine: { generateId: vi.fn() },
+        adapter: vi.fn()
       };
       
       vi.spyOn(Object.getPrototypeOf(Object.getPrototypeOf(adapter)), 'createIOServer')
         .mockReturnValue(mockServer);
 
-      const result = adapter.createIOServer(3000);
+      const result = await adapter.createIOServer(3000);
 
       expect(result).toBe(mockServer);
       expect(mockApp.get).toHaveBeenCalledWith(SessionValidatorService);

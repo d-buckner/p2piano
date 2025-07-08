@@ -14,7 +14,8 @@ vi.mock('../config/ConfigProvider', () => ({
 // Mock SessionRegistry
 vi.mock('./SessionRegistry', () => ({
   default: {
-    getSocket: vi.fn(),
+    getSocketMetadata: vi.fn(),
+    getServerId: vi.fn(),
   },
 }));
 
@@ -117,9 +118,14 @@ describe('websockets/utils', () => {
   });
 
   describe('broadcastToSubset', () => {
-    it('should broadcast to specific user sockets', () => {
-      const mockTargetSocket = { id: 'target-socket-1' };
-      vi.mocked(SessionRegistry.getSocket).mockReturnValue(mockTargetSocket as any);
+    it('should broadcast to local user sockets', async () => {
+      const mockTargetSocketInfo = { 
+        serverId: 'current-server',
+        socketId: 'target-socket-1' 
+      };
+      
+      vi.mocked(SessionRegistry.getSocketMetadata).mockResolvedValue(mockTargetSocketInfo);
+      vi.mocked(SessionRegistry.getServerId).mockReturnValue('current-server');
 
       const mockEmit = vi.fn();
       const mockTo = vi.fn(() => ({ emit: mockEmit }));
@@ -128,15 +134,68 @@ describe('websockets/utils', () => {
         to: mockTo,
       } as unknown as AuthenticatedSocket;
 
-      broadcastToSubset(mockSocketForBroadcast, ['user-1', 'user-2'], 'test-event', { data: 'test' });
+      broadcastToSubset(mockSocketForBroadcast, ['user-1'], 'test-event', { data: 'test' });
 
-      expect(SessionRegistry.getSocket).toHaveBeenCalledWith('user-1');
-      expect(SessionRegistry.getSocket).toHaveBeenCalledWith('user-2');
+      // Wait a bit for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(SessionRegistry.getSocketMetadata).toHaveBeenCalledWith('user-1');
       expect(mockTo).toHaveBeenCalledWith('target-socket-1');
       expect(mockEmit).toHaveBeenCalledWith('test-event', {
         data: 'test',
         userId: 'session-1',
       });
+    });
+
+    it('should broadcast to remote user sockets', async () => {
+      const mockTargetSocketInfo = { 
+        serverId: 'different-server',
+        socketId: 'target-socket-1' 
+      };
+      
+      vi.mocked(SessionRegistry.getSocketMetadata).mockResolvedValue(mockTargetSocketInfo);
+      vi.mocked(SessionRegistry.getServerId).mockReturnValue('current-server');
+
+      const mockEmit = vi.fn();
+      const mockTo = vi.fn(() => ({ emit: mockEmit }));
+      const mockSocketForBroadcast = {
+        ...mockSocket,
+        to: mockTo,
+      } as unknown as AuthenticatedSocket;
+
+      broadcastToSubset(mockSocketForBroadcast, ['user-1'], 'test-event', { data: 'test' });
+
+      // Wait a bit for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      expect(SessionRegistry.getSocketMetadata).toHaveBeenCalledWith('user-1');
+      expect(mockTo).toHaveBeenCalledWith('user-1'); // Cross-server uses userId
+      expect(mockEmit).toHaveBeenCalledWith('test-event', {
+        data: 'test',
+        userId: 'session-1',
+      });
+    });
+
+    it('should handle missing target sockets gracefully', async () => {
+      vi.mocked(SessionRegistry.getSocketMetadata).mockResolvedValue(null);
+
+      const mockEmit = vi.fn();
+      const mockTo = vi.fn(() => ({ emit: mockEmit }));
+      const mockSocketForBroadcast = {
+        ...mockSocket,
+        to: mockTo,
+      } as unknown as AuthenticatedSocket;
+
+      // Should not throw
+      expect(() => {
+        broadcastToSubset(mockSocketForBroadcast, ['non-existent-user'], 'test-event', { data: 'test' });
+      }).not.toThrow();
+
+      // Wait a bit for async operations
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      // Should not emit anything
+      expect(mockEmit).not.toHaveBeenCalled();
     });
   });
 });

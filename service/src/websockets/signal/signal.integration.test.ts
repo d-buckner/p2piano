@@ -6,9 +6,24 @@ import { Signal } from './signal';
 import type { SignalPayloadDto } from '../../dto/ws/signal.dto';
 import type { Socket } from 'socket.io';
 
+// Mock nanoid
+vi.mock('nanoid', () => ({
+  nanoid: vi.fn(() => 'test-server-id'),
+}));
+
 // Mock dependencies
-vi.mock('../SessionRegistry');
-vi.mock('../utils');
+vi.mock('../SessionRegistry', () => ({
+  default: {
+    getSocketMetadata: vi.fn(),
+    getServerId: vi.fn(),
+    registerSession: vi.fn(),
+    destroySession: vi.fn(),
+  },
+}));
+vi.mock('../utils', () => ({
+  getSocketSessionId: vi.fn(),
+  getWebSocketGatewayOptions: () => {},
+}));
 
 describe('Signal Gateway Message Flow', () => {
   let gateway: Signal;
@@ -36,16 +51,22 @@ describe('Signal Gateway Message Flow', () => {
       emit: vi.fn(),
     } as any;
 
+    // Setup common mocks
+    mockSessionRegistry.getServerId.mockReturnValue('test-server');
+
     vi.clearAllMocks();
   });
 
   describe('WebRTC Signaling Flow', () => {
-    it('should route offer signals correctly between peers', () => {
+    it('should route offer signals correctly between peers', async () => {
       const senderUserId = 'user-1';
       const targetUserId = 'user-2';
       
       mockGetSocketSessionId.mockReturnValue(senderUserId);
-      mockSessionRegistry.getSocket.mockReturnValue(targetSocket);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue({
+        serverId: 'test-server',
+        socketId: targetSocket.id
+      });
 
       const offerPayload: SignalPayloadDto = {
         userId: targetUserId,
@@ -58,21 +79,24 @@ describe('Signal Gateway Message Flow', () => {
       const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-      gateway.onSignal(offerPayload, mockSocket);
+      await gateway.onSignal(offerPayload, mockSocket);
 
       expect(mockSocket.to).toHaveBeenCalledWith(targetSocket.id);
       expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
         signalData: offerPayload.signalData,
-        userId: senderUserId
+        userId: senderUserId,
       });
     });
 
-    it('should handle answer signals in response', () => {
+    it('should handle answer signals in response', async () => {
       const senderUserId = 'user-2';
       const targetUserId = 'user-1';
       
       mockGetSocketSessionId.mockReturnValue(senderUserId);
-      mockSessionRegistry.getSocket.mockReturnValue(targetSocket);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue({
+        serverId: 'test-server',
+        socketId: targetSocket.id
+      });
 
       const answerPayload: SignalPayloadDto = {
         userId: targetUserId,
@@ -85,20 +109,24 @@ describe('Signal Gateway Message Flow', () => {
       const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-      gateway.onSignal(answerPayload, mockSocket);
+      await gateway.onSignal(answerPayload, mockSocket);
 
+      expect(mockSocket.to).toHaveBeenCalledWith(targetSocket.id);
       expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
         signalData: answerPayload.signalData,
-        userId: senderUserId
+        userId: senderUserId,
       });
     });
 
-    it('should route ICE candidates between specific peers', () => {
+    it('should route ICE candidates between specific peers', async () => {
       const senderUserId = 'user-1';
       const targetUserId = 'user-2';
       
       mockGetSocketSessionId.mockReturnValue(senderUserId);
-      mockSessionRegistry.getSocket.mockReturnValue(targetSocket);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue({
+        serverId: 'test-server',
+        socketId: targetSocket.id
+      });
 
       const candidatePayload: SignalPayloadDto = {
         userId: targetUserId,
@@ -113,104 +141,120 @@ describe('Signal Gateway Message Flow', () => {
       const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-      gateway.onSignal(candidatePayload, mockSocket);
+      await gateway.onSignal(candidatePayload, mockSocket);
 
+      expect(mockSocket.to).toHaveBeenCalledWith(targetSocket.id);
       expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
         signalData: candidatePayload.signalData,
-        userId: senderUserId
+        userId: senderUserId,
       });
     });
   });
 
   describe('Multi-peer Scenarios', () => {
-    it('should handle signals between multiple peer pairs independently', () => {
+    it('should handle signals between multiple peer pairs independently', async () => {
       const user1 = 'user-1';
       const user2 = 'user-2';
       const user3 = 'user-3';
 
-      const socket2 = { id: 'socket-2' } as Socket;
-      const socket3 = { id: 'socket-3' } as Socket;
+      const socket1 = { ...mockSocket, id: 'socket-1' };
+      const socket2 = { ...targetSocket, id: 'socket-2' };
+      const socket3 = { id: 'socket-3', to: vi.fn().mockReturnThis(), emit: vi.fn() };
 
       // User 1 sends to User 2
       mockGetSocketSessionId.mockReturnValueOnce(user1);
-      mockSessionRegistry.getSocket.mockReturnValueOnce(socket2);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValueOnce({
+        serverId: 'test-server',
+        socketId: socket2.id
+      });
 
       const mockEmit1 = vi.fn();
-      mockSocket.to.mockReturnValueOnce({ emit: mockEmit1 } as any);
+      socket1.to.mockReturnValueOnce({ emit: mockEmit1 } as any);
 
-      gateway.onSignal({
+      const payload1: SignalPayloadDto = {
         userId: user2,
-        signalData: { type: 'offer', sdp: 'offer-1-to-2' }
-      }, mockSocket);
+        signalData: { type: 'offer', sdp: 'test-sdp-1' }
+      };
 
-      // User 1 sends to User 3  
-      mockGetSocketSessionId.mockReturnValueOnce(user1);
-      mockSessionRegistry.getSocket.mockReturnValueOnce(socket3);
+      await gateway.onSignal(payload1, socket1);
+
+      // User 3 sends to User 1
+      mockGetSocketSessionId.mockReturnValueOnce(user3);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValueOnce({
+        serverId: 'test-server',
+        socketId: socket1.id
+      });
 
       const mockEmit2 = vi.fn();
-      mockSocket.to.mockReturnValueOnce({ emit: mockEmit2 } as any);
+      socket3.to.mockReturnValueOnce({ emit: mockEmit2 } as any);
 
-      gateway.onSignal({
-        userId: user3,
-        signalData: { type: 'offer', sdp: 'offer-1-to-3' }
-      }, mockSocket);
+      const payload2: SignalPayloadDto = {
+        userId: user1,
+        signalData: { type: 'offer', sdp: 'test-sdp-2' }
+      };
 
-      expect(mockSocket.to).toHaveBeenCalledWith(socket2.id);
-      expect(mockSocket.to).toHaveBeenCalledWith(socket3.id);
+      await gateway.onSignal(payload2, socket3);
+
+      // Verify both signals were routed correctly
       expect(mockEmit1).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
-        signalData: { type: 'offer', sdp: 'offer-1-to-2' },
-        userId: user1
+        signalData: payload1.signalData,
+        userId: user1,
       });
+
       expect(mockEmit2).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
-        signalData: { type: 'offer', sdp: 'offer-1-to-3' },
-        userId: user1
+        signalData: payload2.signalData,
+        userId: user3,
       });
     });
   });
 
   describe('Error Handling', () => {
-    it('should handle missing target user gracefully', () => {
+    it('should handle missing target user gracefully', async () => {
       const senderUserId = 'user-1';
-      const nonExistentUserId = 'non-existent-user';
+      const targetUserId = 'non-existent-user';
       
       mockGetSocketSessionId.mockReturnValue(senderUserId);
-      mockSessionRegistry.getSocket.mockReturnValue(null);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue(null);
 
-      expect(() => {
-        gateway.onSignal({
-          userId: nonExistentUserId,
-          signalData: { type: 'offer', sdp: 'test-sdp' }
-        }, mockSocket);
-      }).not.toThrow();
+      const payload: SignalPayloadDto = {
+        userId: targetUserId,
+        signalData: { type: 'offer', sdp: 'test-sdp' }
+      };
 
-      // Should not attempt to send signal when target user not found
+      // Should not throw
+      await expect(gateway.onSignal(payload, mockSocket)).resolves.not.toThrow();
+
+      // Should not attempt to route signal
       expect(mockSocket.to).not.toHaveBeenCalled();
     });
 
-    it('should handle missing sender user ID gracefully', () => {
+    it('should handle missing sender user ID gracefully', async () => {
       const targetUserId = 'user-2';
       
       mockGetSocketSessionId.mockReturnValue(null);
-      mockSessionRegistry.getSocket.mockReturnValue(targetSocket);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue({
+        serverId: 'test-server',
+        socketId: targetSocket.id
+      });
 
       const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-      expect(() => {
-        gateway.onSignal({
-          userId: targetUserId,
-          signalData: { type: 'offer', sdp: 'test-sdp' }
-        }, mockSocket);
-      }).not.toThrow();
+      const payload: SignalPayloadDto = {
+        userId: targetUserId,
+        signalData: { type: 'offer', sdp: 'test-sdp' }
+      };
 
-      // Should not attempt to send signal when sender is unauthenticated
-      expect(mockSocket.to).not.toHaveBeenCalled();
+      await gateway.onSignal(payload, mockSocket);
+
+      // Should not emit signal when sender is not authenticated
       expect(mockEmit).not.toHaveBeenCalled();
+      expect(mockSocket.to).not.toHaveBeenCalled();
     });
   });
 
   describe('Signal Data Integrity', () => {
-    it('should preserve complex SDP data unchanged', () => {
+    it('should preserve complex SDP data unchanged', async () => {
       const complexSdp = `v=0
 o=- 4611731400430051336 2 IN IP4 127.0.0.1
 s=-
@@ -234,22 +278,30 @@ a=rtcp-mux
 a=rtpmap:111 opus/48000/2`;
 
       mockGetSocketSessionId.mockReturnValue('user-1');
-      mockSessionRegistry.getSocket.mockReturnValue(targetSocket);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue({
+        serverId: 'test-server',
+        socketId: targetSocket.id
+      });
 
       const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-      gateway.onSignal({
+      const payload: SignalPayloadDto = {
         userId: 'user-2',
-        signalData: { type: 'offer', sdp: complexSdp }
-      }, mockSocket);
+        signalData: {
+          type: 'offer',
+          sdp: complexSdp
+        }
+      };
+
+      await gateway.onSignal(payload, mockSocket);
 
       const emittedData = mockEmit.mock.calls[0]?.[1];
       expect(emittedData.signalData.sdp).toBe(complexSdp);
     });
 
-    it('should preserve ICE candidate structure with all fields', () => {
-      const complexCandidate = {
+    it('should preserve ICE candidate structure with all fields', async () => {
+      const candidate = {
         type: 'candidate',
         candidate: 'candidate:842163049 1 udp 1677729535 192.168.0.100 54400 typ srflx raddr 192.168.0.100 rport 54400 generation 0 ufrag abc123 network-cost 999',
         sdpMid: '0',
@@ -258,18 +310,23 @@ a=rtpmap:111 opus/48000/2`;
       };
 
       mockGetSocketSessionId.mockReturnValue('user-1');
-      mockSessionRegistry.getSocket.mockReturnValue(targetSocket);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue({
+        serverId: 'test-server',
+        socketId: targetSocket.id
+      });
 
       const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-      gateway.onSignal({
+      const payload: SignalPayloadDto = {
         userId: 'user-2',
-        signalData: complexCandidate
-      }, mockSocket);
+        signalData: candidate
+      };
+
+      await gateway.onSignal(payload, mockSocket);
 
       const emittedData = mockEmit.mock.calls[0]?.[1];
-      expect(emittedData.signalData).toEqual(complexCandidate);
+      expect(emittedData.signalData).toEqual(candidate);
     });
   });
 });

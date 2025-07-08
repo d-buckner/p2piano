@@ -13,7 +13,8 @@ vi.mock('../utils', () => ({
 
 vi.mock('../SessionRegistry', () => ({
   default: {
-    getSocket: vi.fn(),
+    getSocketMetadata: vi.fn(),
+    getServerId: vi.fn(),
     registerSession: vi.fn(),
     destroySession: vi.fn()
   }
@@ -53,13 +54,17 @@ describe('Signal Gateway', () => {
 
     beforeEach(() => {
       mockGetSocketSessionId.mockReturnValue(senderUserId);
-      mockSessionRegistry.getSocket.mockReturnValue(targetSocket);
+      mockSessionRegistry.getSocketMetadata.mockResolvedValue({
+        serverId: 'test-server',
+        socketId: targetSocket.id
+      });
+      mockSessionRegistry.getServerId.mockReturnValue('test-server');
       mockSocket.to.mockReturnValue({
         emit: vi.fn()
       } as any);
     });
 
-    it('should route signal to target user correctly', () => {
+    it('should route signal to target user correctly', async () => {
       const payload: SignalPayloadDto = {
         userId: targetUserId,
         signalData: {
@@ -68,14 +73,14 @@ describe('Signal Gateway', () => {
         }
       };
 
-      gateway.onSignal(payload, mockSocket);
+      await gateway.onSignal(payload, mockSocket);
 
       expect(mockGetSocketSessionId).toHaveBeenCalledWith(mockSocket);
-      expect(mockSessionRegistry.getSocket).toHaveBeenCalledWith(targetUserId);
+      expect(mockSessionRegistry.getSocketMetadata).toHaveBeenCalledWith(targetUserId);
       expect(mockSocket.to).toHaveBeenCalledWith(targetSocket.id);
     });
 
-    it('should emit signal with correct payload structure', () => {
+    it('should emit signal with correct payload structure', async () => {
       const payload: SignalPayloadDto = {
         userId: targetUserId,
         signalData: {
@@ -87,7 +92,7 @@ describe('Signal Gateway', () => {
       const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-      gateway.onSignal(payload, mockSocket);
+      await gateway.onSignal(payload, mockSocket);
 
       expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
         signalData: payload.signalData,
@@ -95,7 +100,7 @@ describe('Signal Gateway', () => {
       });
     });
 
-    it('should handle ICE candidate signals', () => {
+    it('should handle ICE candidate signals', async () => {
       const payload: SignalPayloadDto = {
         userId: targetUserId,
         signalData: {
@@ -109,7 +114,7 @@ describe('Signal Gateway', () => {
       const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-      gateway.onSignal(payload, mockSocket);
+      await gateway.onSignal(payload, mockSocket);
 
       expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
         signalData: payload.signalData,
@@ -117,7 +122,7 @@ describe('Signal Gateway', () => {
       });
     });
 
-    it('should handle rollback signals', () => {
+    it('should handle rollback signals', async () => {
       const payload: SignalPayloadDto = {
         userId: targetUserId,
         signalData: {
@@ -128,7 +133,7 @@ describe('Signal Gateway', () => {
       const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-      gateway.onSignal(payload, mockSocket);
+      await gateway.onSignal(payload, mockSocket);
 
       expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
         signalData: payload.signalData,
@@ -136,7 +141,7 @@ describe('Signal Gateway', () => {
       });
     });
 
-    it('should handle pranswer signals', () => {
+    it('should handle pranswer signals', async () => {
       const payload: SignalPayloadDto = {
         userId: targetUserId,
         signalData: {
@@ -148,7 +153,7 @@ describe('Signal Gateway', () => {
       const mockEmit = vi.fn();
       mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-      gateway.onSignal(payload, mockSocket);
+      await gateway.onSignal(payload, mockSocket);
 
       expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
         signalData: payload.signalData,
@@ -157,8 +162,8 @@ describe('Signal Gateway', () => {
     });
 
     describe('Error Handling', () => {
-      it('should handle case when target user socket is not found', () => {
-        mockSessionRegistry.getSocket.mockReturnValue(null);
+      it('should handle case when target user socket is not found', async () => {
+        mockSessionRegistry.getSocketMetadata.mockResolvedValue(null);
 
         const payload: SignalPayloadDto = {
           userId: targetUserId,
@@ -166,15 +171,13 @@ describe('Signal Gateway', () => {
         };
 
         // Should not throw
-        expect(() => {
-          gateway.onSignal(payload, mockSocket);
-        }).not.toThrow();
+        await expect(gateway.onSignal(payload, mockSocket)).resolves.not.toThrow();
 
         // Should not call socket.to() when target is not found (method returns early)
         expect(mockSocket.to).not.toHaveBeenCalled();
       });
 
-      it('should handle case when sender user ID is not found', () => {
+      it('should handle case when sender user ID is not found', async () => {
         mockGetSocketSessionId.mockReturnValue(null);
 
         const payload: SignalPayloadDto = {
@@ -185,14 +188,14 @@ describe('Signal Gateway', () => {
         const mockEmit = vi.fn();
         mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-        gateway.onSignal(payload, mockSocket);
+        await gateway.onSignal(payload, mockSocket);
 
         // Should not emit signal when sender is not authenticated (method returns early)
         expect(mockEmit).not.toHaveBeenCalled();
         expect(mockSocket.to).not.toHaveBeenCalled();
       });
 
-      it('should handle empty signal data', () => {
+      it('should handle empty signal data', async () => {
         const payload: SignalPayloadDto = {
           userId: targetUserId,
           signalData: {} as any
@@ -201,9 +204,7 @@ describe('Signal Gateway', () => {
         const mockEmit = vi.fn();
         mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-        expect(() => {
-          gateway.onSignal(payload, mockSocket);
-        }).not.toThrow();
+        await expect(gateway.onSignal(payload, mockSocket)).resolves.not.toThrow();
 
         expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
           signalData: {},
@@ -213,20 +214,20 @@ describe('Signal Gateway', () => {
     });
 
     describe('Message Routing Logic', () => {
-      it('should route messages only to intended recipient', () => {
+      it('should route messages only to intended recipient', async () => {
         const payload: SignalPayloadDto = {
           userId: targetUserId,
           signalData: { type: 'offer', sdp: 'test-sdp' }
         };
 
-        gateway.onSignal(payload, mockSocket);
+        await gateway.onSignal(payload, mockSocket);
 
         // Verify it's sent to specific socket, not broadcast
         expect(mockSocket.to).toHaveBeenCalledWith(targetSocket.id);
         expect(mockSocket.to).toHaveBeenCalledTimes(1);
       });
 
-      it('should include sender information in routed message', () => {
+      it('should include sender information in routed message', async () => {
         const payload: SignalPayloadDto = {
           userId: targetUserId,
           signalData: { type: 'offer', sdp: 'test-sdp' }
@@ -235,7 +236,7 @@ describe('Signal Gateway', () => {
         const mockEmit = vi.fn();
         mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-        gateway.onSignal(payload, mockSocket);
+        await gateway.onSignal(payload, mockSocket);
 
         const emittedData = mockEmit.mock.calls[0]?.[1];
         expect(emittedData).toHaveProperty('userId', senderUserId);
@@ -244,7 +245,7 @@ describe('Signal Gateway', () => {
     });
 
     describe('Signal Data Preservation', () => {
-      it('should preserve complex SDP data', () => {
+      it('should preserve complex SDP data', async () => {
         const complexSdp = `v=0
 o=- 4611731400430051336 2 IN IP4 127.0.0.1
 s=-
@@ -278,13 +279,13 @@ a=rtpmap:111 opus/48000/2`;
         const mockEmit = vi.fn();
         mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-        gateway.onSignal(payload, mockSocket);
+        await gateway.onSignal(payload, mockSocket);
 
         const emittedData = mockEmit.mock.calls[0]?.[1];
         expect(emittedData.signalData.sdp).toBe(complexSdp);
       });
 
-      it('should preserve ICE candidate data structure', () => {
+      it('should preserve ICE candidate data structure', async () => {
         const candidate = {
           type: 'candidate',
           candidate: 'candidate:842163049 1 udp 1677729535 192.168.0.100 54400 typ srflx raddr 192.168.0.100 rport 54400 generation 0 ufrag abc123 network-cost 999',
@@ -301,7 +302,7 @@ a=rtpmap:111 opus/48000/2`;
         const mockEmit = vi.fn();
         mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
-        gateway.onSignal(payload, mockSocket);
+        await gateway.onSignal(payload, mockSocket);
 
         const emittedData = mockEmit.mock.calls[0]?.[1];
         expect(emittedData.signalData).toEqual(candidate);

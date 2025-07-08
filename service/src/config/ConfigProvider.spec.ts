@@ -178,6 +178,7 @@ describe('ConfigProvider', () => {
       process.env.NODE_ENV = 'production';
       process.env.COOKIE_SECRET = 'a-very-long-secret-key-that-meets-requirements';
       process.env.MONGO_URI = 'mongodb://localhost:27017/production-db';
+      process.env.REDIS_URI = 'redis://localhost:6379';
       
       expect(() => ConfigProvider.validateEnvironment()).not.toThrow();
     });

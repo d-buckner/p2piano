@@ -1,5 +1,6 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { createUUID } from '../../test-utils/validation.helpers';
+import { broadcastToSubset } from '../utils';
 import { NoteEvents } from './events';
 import { Notes } from './notes';
 
@@ -14,7 +15,7 @@ describe('Notes WebSocket Gateway', () => {
   let mockSocket: any;
   let mockBroadcastToSubset: any;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     // Mock Socket
     mockSocket = {
       id: 'socket-123',
@@ -30,9 +31,8 @@ describe('Notes WebSocket Gateway', () => {
       },
     };
 
-    // Mock utils
-    const utils = await import('../utils');
-    mockBroadcastToSubset = utils.broadcastToSubset as any;
+    // Get mocked function
+    mockBroadcastToSubset = vi.mocked(broadcastToSubset);
 
     // Create gateway instance
     notesGateway = new Notes();

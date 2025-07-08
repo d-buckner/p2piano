@@ -14,8 +14,9 @@ async function bootstrap() {
   
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
  
-  // Use custom WebSocket adapter for session validation
-  app.useWebSocketAdapter(new SessionIoAdapter(app));
+  // Use custom WebSocket adapter for session validation and Redis clustering
+  const sessionAdapter = new SessionIoAdapter(app);
+  app.useWebSocketAdapter(sessionAdapter);
 
   // Cookie support for sessions
   // eslint-disable-next-line @typescript-eslint/no-require-imports

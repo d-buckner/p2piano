@@ -14,8 +14,8 @@ export class Notes {
     @Throttle({ default: { limit: 1000, ttl: 10000 } }) // 100 notes/second allows for fast passages, glissandos, and complex chords
     @UseGuards(WsThrottlerGuard)
     @SubscribeMessage(NoteEvents.KEY_DOWN)
-    onKeyDown(@MessageBody(new WsValidationPipe()) payload: NoteOnDto, @ConnectedSocket() socket: AuthenticatedSocket) {
-        broadcastToSubset(socket, payload.targetUserIds, NoteEvents.KEY_DOWN, {
+    async onKeyDown(@MessageBody(new WsValidationPipe()) payload: NoteOnDto, @ConnectedSocket() socket: AuthenticatedSocket) {
+        await broadcastToSubset(socket, payload.targetUserIds, NoteEvents.KEY_DOWN, {
             note: payload.note,
             velocity: payload.velocity,
         });

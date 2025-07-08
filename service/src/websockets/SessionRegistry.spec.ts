@@ -1,7 +1,22 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import RedisClient from '../clients/RedisClient';
 import SessionRegistry from './SessionRegistry';
 import type { Socket } from 'socket.io';
 
+// Mock nanoid
+vi.mock('nanoid', () => ({
+  nanoid: vi.fn(() => 'test-server-id'),
+}));
+
+// Mock Redis client
+vi.mock('../clients/RedisClient', () => ({
+  default: {
+    hSet: vi.fn(),
+    hGetAll: vi.fn(),
+    expire: vi.fn(),
+    del: vi.fn(),
+  }
+}));
 
 describe('SessionRegistry', () => {
   const mockSocket = {
@@ -9,55 +24,83 @@ describe('SessionRegistry', () => {
     emit: vi.fn(),
   } as unknown as Socket;
 
-  const mockSocket2 = {
-    id: 'socket-id-2', 
-    emit: vi.fn(),
-  } as unknown as Socket;
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   describe('registerSession', () => {
-    it('should register a session with socket', () => {
-      SessionRegistry.registerSession('session-1', mockSocket);
+    it('should register a session with socket in Redis', async () => {
+      await SessionRegistry.registerSession('session-1', mockSocket);
       
-      const retrievedSocket = SessionRegistry.getSocket('session-1');
-      expect(retrievedSocket).toBe(mockSocket);
-    });
-
-    it('should overwrite existing session', () => {
-      SessionRegistry.registerSession('session-1', mockSocket);
-      SessionRegistry.registerSession('session-1', mockSocket2);
-      
-      const retrievedSocket = SessionRegistry.getSocket('session-1');
-      expect(retrievedSocket).toBe(mockSocket2);
+      expect(RedisClient.hSet).toHaveBeenCalledWith(
+        'session:session-1',
+        expect.objectContaining({
+          socketId: 'socket-id',
+          serverId: expect.any(String),
+          registeredAt: expect.any(String)
+        })
+      );
+      expect(RedisClient.expire).toHaveBeenCalledWith('session:session-1', 86400);
     });
   });
 
-  describe('getSocket', () => {
-    it('should return socket for existing session', () => {
-      SessionRegistry.registerSession('session-2', mockSocket);
+  describe('getSocketMetadata', () => {
+    it('should return socket info for existing session', async () => {
+      vi.mocked(RedisClient.hGetAll).mockResolvedValue({
+        serverId: 'server-1',
+        socketId: 'socket-id',
+        registeredAt: '1234567890'
+      });
       
-      const result = SessionRegistry.getSocket('session-2');
-      expect(result).toBe(mockSocket);
+      const result = await SessionRegistry.getSocketMetadata('session-1');
+      
+      expect(result).toEqual({
+        serverId: 'server-1',
+        socketId: 'socket-id'
+      });
+      expect(RedisClient.hGetAll).toHaveBeenCalledWith('session:session-1');
     });
 
-    it('should return undefined for non-existent session', () => {
-      const result = SessionRegistry.getSocket('non-existent');
-      expect(result).toBeUndefined();
+    it('should return null for non-existent session', async () => {
+      vi.mocked(RedisClient.hGetAll).mockResolvedValue({});
+      
+      const result = await SessionRegistry.getSocketMetadata('non-existent');
+      
+      expect(result).toBeNull();
     });
   });
 
   describe('destroySession', () => {
-    it('should remove session from registry', () => {
-      SessionRegistry.registerSession('session-3', mockSocket);
-      expect(SessionRegistry.getSocket('session-3')).toBe(mockSocket);
+    it('should remove session from Redis', async () => {
+      await SessionRegistry.destroySession('session-1');
       
-      SessionRegistry.destroySession('session-3');
-      expect(SessionRegistry.getSocket('session-3')).toBeUndefined();
+      expect(RedisClient.del).toHaveBeenCalledWith('session:session-1');
+    });
+  });
+
+  describe('isLocalSession', () => {
+    it('should return true for sessions on current server', async () => {
+      vi.mocked(RedisClient.hGetAll).mockResolvedValue({
+        serverId: SessionRegistry.getServerId(),
+        socketId: 'socket-id',
+        registeredAt: '1234567890'
+      });
+      
+      const result = await SessionRegistry.isLocalSession('session-1');
+      
+      expect(result).toBe(true);
     });
 
-    it('should handle destroying non-existent session', () => {
-      expect(() => {
-        SessionRegistry.destroySession('non-existent');
-      }).not.toThrow();
+    it('should return false for sessions on different server', async () => {
+      vi.mocked(RedisClient.hGetAll).mockResolvedValue({
+        serverId: 'different-server',
+        socketId: 'socket-id',
+        registeredAt: '1234567890'
+      });
+      
+      const result = await SessionRegistry.isLocalSession('session-1');
+      
+      expect(result).toBe(false);
     });
   });
 });

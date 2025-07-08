@@ -92,10 +92,15 @@ export class Room {
         return;
       }
 
-      const prevSocket = SessionRegistry.getSocket(socket.session.sessionId);
-      SessionRegistry.registerSession(socket.session.sessionId, socket);
-      // Disconnect existing connection if exists
-      prevSocket?.disconnect();
+      // Check for existing socket before registering new one
+      const prevSocketMetadata = await SessionRegistry.getSocketMetadata(socket.session.sessionId);
+      await SessionRegistry.registerSession(socket.session.sessionId, socket);
+      
+      // Disconnect existing connection if exists and is local to this server
+      if (prevSocketMetadata && prevSocketMetadata.serverId === SessionRegistry.getServerId()) {
+        const prevSocket = this.server.sockets.sockets.get(prevSocketMetadata.socketId);
+        prevSocket?.disconnect();
+      }
 
       const roomEntity = new RoomEntity(roomId);
 
@@ -106,7 +111,7 @@ export class Room {
         socket.join(roomId);
         socket.on(SocketEvents.DISCONNECT, reason => this.destroyConnection(socket, reason));
 
-        if (prevSocket) {
+        if (prevSocketMetadata) {
           // Client reconnect, no need to send connection events
           return;
         }
@@ -130,7 +135,7 @@ export class Room {
           originalError: getErrorMessage(err),
         });
         Logger.error(roomError);
-        SessionRegistry.destroySession(socket.session.sessionId);
+        await SessionRegistry.destroySession(socket.session.sessionId);
         socket.disconnect();
       }
     } catch (error) {
@@ -173,12 +178,13 @@ export class Room {
 
     const roomEntity = new RoomEntity(roomId);
 
-    if (SessionRegistry.getSocket(sessionId)?.id !== socket.id) {
+    const socketMetadata = await SessionRegistry.getSocketMetadata(sessionId);
+    if (!socketMetadata || socketMetadata.socketId !== socket.id) {
       Logger.log(`Session ${sessionId} reconnected to room ${roomId} due to ${reason}`);
       return;
     }
 
-    SessionRegistry.destroySession(sessionId);
+    await SessionRegistry.destroySession(sessionId);
 
     try {
       const roomData = await roomEntity.leave(sessionId);

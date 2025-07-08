@@ -1,5 +1,8 @@
 import { Logger } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { createAdapter } from '@socket.io/redis-adapter';
+import { createClient } from 'redis';
+import ConfigProvider from '../config/ConfigProvider';
 import { SessionValidatorService } from '../services/session-validator.service';
 import type { RawHttpRequest } from '../types/raw-request';
 import type { INestApplicationContext} from '@nestjs/common';
@@ -14,7 +17,7 @@ export class SessionIoAdapter extends IoAdapter {
     super(app);
   }
 
-  createIOServer(port: number, options?: ServerOptions): Server {
+  async createIOServer(port: number, options?: ServerOptions): Promise<Server> {
     // Get the SessionValidatorService from the application context
     this.sessionValidator = this.app.get(SessionValidatorService);
 
@@ -40,6 +43,23 @@ export class SessionIoAdapter extends IoAdapter {
         }
       },
     });
+
+    // Set up Redis adapter for distributed Socket.IO
+    try {
+      const pubClient = createClient({ url: ConfigProvider.getRedisUri() });
+      const subClient = pubClient.duplicate();
+
+      await Promise.all([
+        pubClient.connect(),
+        subClient.connect()
+      ]);
+
+      server.adapter(createAdapter(pubClient, subClient));
+      this.logger.log('Redis adapter configured for distributed Socket.IO');
+    } catch (error) {
+      this.logger.error('Failed to configure Redis adapter:', error);
+      this.logger.warn('Socket.IO running in single-server mode');
+    }
 
     return server;
   }
