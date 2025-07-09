@@ -194,9 +194,9 @@ describe('SessionIoAdapter', () => {
 
       adapter.createIOServer(3000, originalOptions);
 
-      // Verify original options are preserved
+      // Verify original options are preserved (except transports which is forced to websocket-only)
       expect(capturedOptions.cors).toEqual(originalOptions.cors);
-      expect(capturedOptions.transports).toEqual(originalOptions.transports);
+      expect(capturedOptions.transports).toEqual(['websocket']); // Adapter forces websocket-only transport
       expect(capturedOptions.pingTimeout).toBe(originalOptions.pingTimeout);
       
       // Verify allowRequest was added

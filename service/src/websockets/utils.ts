@@ -1,5 +1,5 @@
 import ConfigProvider from '../config/ConfigProvider';
-import type { AuthenticatedSocket } from '../types/socket';
+import type { Socket } from 'socket.io';
 
 
 export function getWebSocketGatewayOptions() {
@@ -14,34 +14,49 @@ export function getWebSocketGatewayOptions() {
   };
 }
 
-export function getSocketSessionId(socket: AuthenticatedSocket) {
-  // Get sessionId from the session attached by auth guard
-  return socket.session?.sessionId || null;
+export function extractSessionIdFromSocket(socket: Socket): string | null {
+  // Check handshake auth first
+  const auth = socket.handshake?.auth;
+  if (auth?.sessionId) {
+    return auth.sessionId;
+  }
+
+  // Check cookies (secure, HttpOnly)
+  const cookies = socket.handshake.headers.cookie;
+  if (cookies) {
+    const match = cookies.match(/sessionId=([^;]+)/);
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  // Don't trust query parameters - they can be modified by clients
+  return null;
 }
 
-export function getSocketRoomId(socket: AuthenticatedSocket) {
+export function getSocketRoomId(socket: Socket) {
   return getSocketHandshakeQuery(socket).roomId as string;
 }
 
-export function getSocketDisplayName(socket: AuthenticatedSocket) {
+export function getSocketDisplayName(socket: Socket) {
   return getSocketHandshakeQuery(socket).displayName as string;
 }
 
-function getSocketHandshakeQuery(socket: AuthenticatedSocket) {
+function getSocketHandshakeQuery(socket: Socket) {
   return socket.handshake.query;
 }
 
-export function getSocketMetadata(socket: AuthenticatedSocket) {
+export function getSocketMetadata(socket: Socket) {
   return {
     displayName: getSocketDisplayName(socket),
-    sessionId: getSocketSessionId(socket),
+    sessionId: extractSessionIdFromSocket(socket),
     roomId: getSocketRoomId(socket),
   };
 }
 
-export function broadcast<T>(socket: AuthenticatedSocket, eventType: string, payload: T) {
+export function broadcast<T>(socket: Socket, eventType: string, payload: T) {
   const roomId = getSocketRoomId(socket);
-  const userId = getSocketSessionId(socket);
+  const userId = extractSessionIdFromSocket(socket);
   if (!userId) {
     throw new Error('Socket session ID is required for broadcasting');
   }
@@ -64,8 +79,8 @@ export function broadcast<T>(socket: AuthenticatedSocket, eventType: string, pay
  * @param eventType - WebSocket event type to emit
  * @param payload - Data payload to send
  */
-export function broadcastToSubset<T>(socket: AuthenticatedSocket, sessionIds: string[], eventType: string, payload: T) {
-  const sessionId = getSocketSessionId(socket);
+export function broadcastToSubset<T>(socket: Socket, sessionIds: string[], eventType: string, payload: T) {
+  const sessionId = extractSessionIdFromSocket(socket);
   if (!sessionId) {
     throw new Error('Socket session ID is required for broadcasting');
   }

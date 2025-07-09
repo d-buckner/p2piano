@@ -87,8 +87,8 @@ async function bootstrap() {
 
   const port = ConfigProvider.getPort();
   await app.listen(port, '0.0.0.0');
-  console.log(`🚀 P2Piano service listening on port ${port}`);
-  console.log(`📚 API documentation available at http://localhost:${port}/api`);
+  console.log(`p2piano service listening on port ${port}`);
+  console.log(`api documentation available at http://localhost:${port}/api`);
 }
 
 bootstrap();

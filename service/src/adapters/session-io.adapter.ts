@@ -23,6 +23,7 @@ export class SessionIoAdapter extends IoAdapter {
 
     const server = super.createIOServer(port, {
       ...options,
+      transports: ['websocket'], // Use only WebSocket transport to avoid the need for sticky sessions
       allowRequest: async (req: RawHttpRequest, callback: (err: Error | null, success: boolean) => void) => {
         try {
           // Validate session using the shared validator

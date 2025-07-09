@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { getSocketSessionId } from '../websockets/utils';
-import type { AuthenticatedSocket } from '../types/socket';
+import { extractSessionIdFromSocket } from '../websockets/utils';
+import type { Socket } from 'socket.io';
 import type { ExecutionContext } from '@nestjs/common';
 import type { ThrottlerRequest } from '@nestjs/throttler';
 
@@ -24,12 +24,12 @@ export class WsThrottlerGuard extends ThrottlerGuard {
 
   async handleRequest(requestProps: ThrottlerRequest): Promise<boolean> {
     const { context, limit, ttl, throttler, blockDuration, generateKey } = requestProps;
-    const client = context.switchToWs().getClient<AuthenticatedSocket>();
+    const client = context.switchToWs().getClient<Socket>();
     
-    // Use a combination of IP and session id from session object
+    // Use a combination of IP and session id
     // This helps distinguish between multiple users on the same network
-    const ip = client.session.ipAddress || 'unknown';
-    const sessionId = getSocketSessionId(client);
+    const ip = client.handshake.address || 'unknown';
+    const sessionId = extractSessionIdFromSocket(client);
     if (!sessionId) {
       throw new Error('Socket session ID is required for throttling');
     }
@@ -52,7 +52,7 @@ export class WsThrottlerGuard extends ThrottlerGuard {
   }
 
   protected async throwThrottlingException(context: ExecutionContext, throttlerLimitDetail: ThrottlerLimitDetail): Promise<void> {
-    const client = context.switchToWs().getClient<AuthenticatedSocket>();
+    const client = context.switchToWs().getClient<Socket>();
     const eventName = context.getHandler().name;
     const ip = throttlerLimitDetail.tracker;
 
