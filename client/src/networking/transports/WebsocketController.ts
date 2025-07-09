@@ -21,10 +21,13 @@ interface UserConnectionMessage {
 
 export default class WebsocketController extends AbstractNetworkController {
   private static instance?: WebsocketController;
-  private socket: Socket;
+  private socket?: Socket;
 
-  private constructor() {
-    super();
+  public connect() {
+    if (this.socket) {
+      return;
+    }
+    
     this.socket = io(ConfigProvider.getServiceUrl(), {
       withCredentials: true, // Include cookies for authentication
       transports: ['websocket'], // Use only WebSocket transport to avoid the need for sticky sessions
@@ -33,6 +36,13 @@ export default class WebsocketController extends AbstractNetworkController {
         roomId: selectRoomId(store)
       },
     });
+
+    // setup queued event handlers
+    for (const [eventType, callbacks] of this.messageHandlers.entries()) {
+      callbacks.forEach(cb => this.socket!.on(eventType, cb));
+    }
+    this.messageHandlers = new Map(); // clear message handlers, socketio has got it from here
+
     this.on(WEBSOCKET_ACTIONS.USER_CONNECT, this.onUserConnect);
     this.on(WEBSOCKET_ACTIONS.USER_DISCONNECT, this.onUserDisconnect);
     this.on('exception', (error: Error & { code?: number }) => {
@@ -53,14 +63,31 @@ export default class WebsocketController extends AbstractNetworkController {
   }
 
   on<T>(action: string, callback: (message: T) => void) {
+    if (!this.socket) {
+      // queue handler to be added on connection
+      super.on(action, callback);
+      return;
+    }
+
     this.socket.on(action, callback);
   }
 
   off<T>(action: string, callback: (message: T) => void) {
+    if (!this.socket) {
+      // prevent this handler being added on connection
+      super.off(action, callback);
+      return;
+    }
+
     this.socket.off(action, callback);
   }
 
   public broadcast(action: string, payload?: Message): void {
+    if (!this.socket) {
+      Logger.WARN('Cannot send message before websocket is connected');
+      return;
+    }
+
     this.socket.emit(action, payload);
   }
 
@@ -87,7 +114,7 @@ export default class WebsocketController extends AbstractNetworkController {
   }
 
   static destroy(): void {
-    WebsocketController.instance?.socket.disconnect();
+    WebsocketController.instance?.socket?.disconnect();
     WebsocketController.instance = undefined;
   }
 }

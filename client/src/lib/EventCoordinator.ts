@@ -42,14 +42,17 @@ interface EventEmitter {
 
 export function register() {
   subscribe(HuMIDI as EventEmitter, MIDI_HANDLERS);
-  subscribe(RealTimeController.getInstance() as EventEmitter, RTC_HANDLERS);
-  subscribe(WebsocketController.getInstance() as EventEmitter, WEBSOCKET_HANDLERS);
+  const websocketController = WebsocketController.getInstance();
+  subscribe(RealTimeController.getInstance(), RTC_HANDLERS);
+  subscribe(websocketController, WEBSOCKET_HANDLERS);
   window.addEventListener('blur', RoomHandlers.blurHandler);
 
   const keyboardController = KeyboardController.getInstance();
   keyboardController.registerKeyDownHandler(NoteActions.keyDown);
   keyboardController.registerKeyUpHandler(NoteActions.keyUp);
 
+  // establish websocket connection only after all listeners have been setup
+  websocketController.connect();
   AudioSyncCoordinator.start();
 }
 

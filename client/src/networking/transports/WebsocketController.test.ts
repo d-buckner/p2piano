@@ -86,8 +86,24 @@ describe('WebsocketController', () => {
   });
 
   describe('initialization', () => {
-    it('should configure socket with correct parameters', () => {
+    it('should not create socket in constructor', () => {
       WebsocketController.getInstance();
+      
+      expect(io).not.toHaveBeenCalled();
+    });
+
+    it('should not set up event listeners before connection', () => {
+      WebsocketController.getInstance();
+      
+      expect(mockSocket.on).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('connect', () => {
+    it('should create socket with correct parameters', () => {
+      const controller = WebsocketController.getInstance();
+      
+      controller.connect();
       
       expect(io).toHaveBeenCalledWith('ws://localhost:3001', {
         withCredentials: true,
@@ -99,8 +115,10 @@ describe('WebsocketController', () => {
       });
     });
 
-    it('should set up core event listeners', () => {
-      WebsocketController.getInstance();
+    it('should set up core event listeners after connection', () => {
+      const controller = WebsocketController.getInstance();
+      
+      controller.connect();
       
       expect(mockSocket.on).toHaveBeenCalledWith(
         WEBSOCKET_ACTIONS.USER_CONNECT,
@@ -112,6 +130,27 @@ describe('WebsocketController', () => {
       );
       expect(mockSocket.on).toHaveBeenCalledWith('exception', expect.any(Function));
     });
+
+    it('should transfer pre-registered handlers to socket', () => {
+      const controller = WebsocketController.getInstance();
+      const handler = vi.fn();
+      
+      // Register handler before connection
+      controller.on('test-event', handler);
+      
+      controller.connect();
+      
+      expect(mockSocket.on).toHaveBeenCalledWith('test-event', handler);
+    });
+
+    it('should not connect if already connected', () => {
+      const controller = WebsocketController.getInstance();
+      
+      controller.connect();
+      controller.connect(); // Second call should be ignored
+      
+      expect(io).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('message broadcasting', () => {
@@ -119,6 +158,7 @@ describe('WebsocketController', () => {
 
     beforeEach(() => {
       controller = WebsocketController.getInstance();
+      controller.connect();
     });
 
     it('should broadcast messages to all peers', () => {
@@ -158,6 +198,7 @@ describe('WebsocketController', () => {
       
       expect(mockSocket.emit).toHaveBeenCalledWith('SIMPLE_ACTION', undefined);
     });
+
   });
 
   describe('event handling', () => {
@@ -167,26 +208,49 @@ describe('WebsocketController', () => {
       controller = WebsocketController.getInstance();
     });
 
-    it('should add event listeners', () => {
+    it('should queue handlers when not connected', () => {
       const callback = vi.fn();
       
+      controller.on('test-event', callback);
+      
+      // Should not call socket.on yet
+      expect(mockSocket.on).not.toHaveBeenCalledWith('test-event', callback);
+    });
+
+    it('should add event listeners directly when connected', () => {
+      const callback = vi.fn();
+      
+      controller.connect();
       controller.on('test-event', callback);
       
       expect(mockSocket.on).toHaveBeenCalledWith('test-event', callback);
     });
 
-    it('should remove event listeners', () => {
+    it('should remove event listeners when connected', () => {
       const callback = vi.fn();
       
+      controller.connect();
       controller.off('test-event', callback);
       
       expect(mockSocket.off).toHaveBeenCalledWith('test-event', callback);
+    });
+
+    it('should remove queued handlers when not connected', () => {
+      const callback = vi.fn();
+      
+      controller.on('test-event', callback);
+      controller.off('test-event', callback);
+      controller.connect();
+      
+      // Handler should not be registered since it was removed
+      expect(mockSocket.on).not.toHaveBeenCalledWith('test-event', callback);
     });
   });
 
   describe('user connection management', () => {
     it('should handle user connections', () => {
-      WebsocketController.getInstance();
+      const controller = WebsocketController.getInstance();
+      controller.connect();
       
       // Get the registered callback for USER_CONNECT
       const connectCallback = mockSocket.on.mock.calls.find(
@@ -206,7 +270,8 @@ describe('WebsocketController', () => {
     });
 
     it('should handle user disconnections', () => {
-      WebsocketController.getInstance();
+      const controller = WebsocketController.getInstance();
+      controller.connect();
       
       // Get the registered callback for USER_DISCONNECT
       const disconnectCallback = mockSocket.on.mock.calls.find(
@@ -224,7 +289,8 @@ describe('WebsocketController', () => {
 
   describe('error handling', () => {
     it('should handle rate limiting errors', () => {
-      WebsocketController.getInstance();
+      const controller = WebsocketController.getInstance();
+      controller.connect();
       
       // Get the exception handler
       const exceptionCallback = mockSocket.on.mock.calls.find(
@@ -240,7 +306,8 @@ describe('WebsocketController', () => {
     });
 
     it('should handle general websocket errors', () => {
-      WebsocketController.getInstance();
+      const controller = WebsocketController.getInstance();
+      controller.connect();
       
       const exceptionCallback = mockSocket.on.mock.calls.find(
         call => call[0] === 'exception'
@@ -254,12 +321,21 @@ describe('WebsocketController', () => {
   });
 
   describe('cleanup', () => {
-    it('should disconnect socket on destroy', () => {
-      WebsocketController.getInstance();
+    it('should disconnect socket on destroy when connected', () => {
+      const controller = WebsocketController.getInstance();
+      controller.connect();
       
       WebsocketController.destroy();
       
       expect(mockSocket.disconnect).toHaveBeenCalled();
+    });
+
+    it('should handle destroy when not connected', () => {
+      WebsocketController.getInstance();
+      
+      expect(() => {
+        WebsocketController.destroy();
+      }).not.toThrow();
     });
 
     it('should reset instance on destroy', () => {

@@ -77,6 +77,7 @@ const mockRealTimeController = {
 
 const mockWebsocketController = {
   on: vi.fn(),
+  connect: vi.fn(),
 };
 
 describe('EventCoordinator', () => {
@@ -129,6 +130,12 @@ describe('EventCoordinator', () => {
       register();
 
       expect(AudioSyncCoordinator.start).toHaveBeenCalled();
+    });
+
+    it('should connect websocket after registering handlers', () => {
+      register();
+
+      expect(mockWebsocketController.connect).toHaveBeenCalled();
     });
   });
 
