@@ -36,12 +36,18 @@ vi.mock('../../actions/ConnectionActions', () => ({
 
 describe('WebRtcController', () => {
   beforeEach(() => {
-    mockPeerInstance = {
+    // Create a factory function to return new mock instances for each peer
+    const createMockPeer = () => ({
       on: vi.fn(),
       send: vi.fn(),
       signal: vi.fn(),
       destroy: vi.fn(),
-    };
+    });
+
+    mockPeerInstance = createMockPeer();
+
+    // Mock SimplePeer to return new instances each time
+    (SimplePeer as unknown as ReturnType<typeof vi.fn>).mockImplementation(() => createMockPeer());
 
     mockWebsocketInstance = {
       on: vi.fn(),
@@ -104,7 +110,8 @@ describe('WebRtcController', () => {
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
       userConnectHandler({ userId: 'user1' });
 
-      const connectHandler = mockPeerInstance.on.mock.calls
+      const peer = SimplePeer.mock.results[0].value;
+      const connectHandler = peer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'connect')?.[1];
       connectHandler();
 
@@ -119,19 +126,43 @@ describe('WebRtcController', () => {
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
       userConnectHandler({ userId: 'user1' });
 
-      const connectHandler = mockPeerInstance.on.mock.calls
+      const peer = SimplePeer.mock.results[0].value;
+      const connectHandler = peer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'connect')?.[1];
       connectHandler();
 
       // Verify peer is active
       expect(controller.getActivePeerIds().has('user1')).toBe(true);
 
-      const closeHandler = mockPeerInstance.on.mock.calls
+      const closeHandler = peer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'close')?.[1];
       closeHandler();
 
       expect(controller.getActivePeerIds().has('user1')).toBe(false);
       expect(updatePeerTransport).toHaveBeenCalledWith('user1', Transport.WEBSOCKET);
+    });
+
+    it('should not recreate peer when receiving multiple signals from same user', () => {
+      WebRtcController.getInstance();
+
+      const signalHandler = mockWebsocketInstance.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === ACTION.SIGNAL)?.[1];
+
+      // First signal should create peer
+      signalHandler({ userId: 'user1', signalData: { type: 'offer' } });
+      expect(SimplePeer).toHaveBeenCalledTimes(1);
+
+      // Second signal should not create new peer
+      signalHandler({ userId: 'user1', signalData: { type: 'candidate' } });
+      expect(SimplePeer).toHaveBeenCalledTimes(1);
+
+      // Third signal should not create new peer
+      signalHandler({ userId: 'user1', signalData: { type: 'candidate' } });
+      expect(SimplePeer).toHaveBeenCalledTimes(1);
+
+      // Signal from different user should create new peer
+      signalHandler({ userId: 'user2', signalData: { type: 'offer' } });
+      expect(SimplePeer).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -143,13 +174,14 @@ describe('WebRtcController', () => {
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
       userConnectHandler({ userId: 'user1' });
 
-      const connectHandler = mockPeerInstance.on.mock.calls
+      const peer = SimplePeer.mock.results[0].value;
+      const connectHandler = peer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'connect')?.[1];
       connectHandler();
 
       controller.sendToPeer('user1', 'KEY_DOWN', { midi: 60 });
 
-      expect(mockPeerInstance.send).toHaveBeenCalledWith(JSON.stringify({
+      expect(peer.send).toHaveBeenCalledWith(JSON.stringify({
         action: 'KEY_DOWN',
         payload: { midi: 60 },
       }));
@@ -168,21 +200,28 @@ describe('WebRtcController', () => {
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
 
+      // Create first peer
       userConnectHandler({ userId: 'user1' });
-      const connectHandler1 = mockPeerInstance.on.mock.calls
+      const peer1 = SimplePeer.mock.results[0].value;
+      const connectHandler1 = peer1.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'connect')?.[1];
       connectHandler1();
 
+      // Create second peer
       userConnectHandler({ userId: 'user2' });
-      const connectHandler2 = mockPeerInstance.on.mock.calls
-        .slice(-4) // Get the last set of on calls for the new peer
+      const peer2 = SimplePeer.mock.results[1].value;
+      const connectHandler2 = peer2.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'connect')?.[1];
       connectHandler2();
 
       controller.broadcast('KEY_DOWN', { midi: 60 });
 
       expect(controller.getActivePeerIds().size).toBe(2);
-      expect(mockPeerInstance.send).toHaveBeenCalledWith(JSON.stringify({
+      expect(peer1.send).toHaveBeenCalledWith(JSON.stringify({
+        action: 'KEY_DOWN',
+        payload: { midi: 60 },
+      }));
+      expect(peer2.send).toHaveBeenCalledWith(JSON.stringify({
         action: 'KEY_DOWN',
         payload: { midi: 60 },
       }));
@@ -200,7 +239,8 @@ describe('WebRtcController', () => {
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
       userConnectHandler({ userId: 'user1' });
 
-      const dataHandler = mockPeerInstance.on.mock.calls
+      const peer = SimplePeer.mock.results[0].value;
+      const dataHandler = peer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'data')?.[1];
       dataHandler(new Uint8Array([1, 2, 3]));
 
@@ -217,9 +257,13 @@ describe('WebRtcController', () => {
       userConnectHandler({ userId: 'user1' });
       userConnectHandler({ userId: 'user2' });
 
+      const peer1 = SimplePeer.mock.results[0].value;
+      const peer2 = SimplePeer.mock.results[1].value;
+
       WebRtcController.destroy();
 
-      expect(mockPeerInstance.destroy).toHaveBeenCalledTimes(2);
+      expect(peer1.destroy).toHaveBeenCalledTimes(1);
+      expect(peer2.destroy).toHaveBeenCalledTimes(1);
     });
   });
 });

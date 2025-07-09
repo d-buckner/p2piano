@@ -8,7 +8,7 @@ import type { Instrument } from './Instrument';
 const URL = '/assets/samples/piano/';
 
 export default class Piano implements Instrument {
-  private static readonly velocityOptions: number[] = [2, 16];
+  private static readonly velocityOptions: number[] = [2, 8];
   private loadStart = Date.now();
   private instrument?: DPiano;
   private velocityIndex: number = 0;

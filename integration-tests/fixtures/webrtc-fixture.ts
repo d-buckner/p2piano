@@ -13,7 +13,16 @@ export class WebRTCFixture {
     message: any;
   }> = [];
 
-  constructor(private page: Page) {}
+  private consoleLogs: string[] = [];
+
+  constructor(private page: Page) {
+    // Capture console logs for debugging
+    this.page.on('console', (msg) => {
+      if (msg.text().includes('[WebRTC]') || msg.text().includes('[WebSocket]')) {
+        this.consoleLogs.push(`${new Date().toISOString()}: ${msg.text()}`);
+      }
+    });
+  }
 
   /**
    * Start intercepting WebRTC data channel messages
@@ -24,15 +33,33 @@ export class WebRTCFixture {
     // Inject script to intercept WebRTC data channel messages
     // This needs to be done before any WebRTC connections are established
     await this.page.addInitScript(() => {
-      // Initialize the messages array
+      // Initialize the messages array and connection tracking
       (window as any).webrtcMessages = [];
+      (window as any).webrtcConnectionStates = {};
+      (window as any).webrtcConnected = false;
+      (window as any).webrtcPeerConnections = new Map();
       
-      // Override RTCPeerConnection to capture data channels
+      // Override RTCPeerConnection to capture data channels and connection states
       const originalRTCPeerConnection = (window as any).RTCPeerConnection;
       
       (window as any).RTCPeerConnection = class extends originalRTCPeerConnection {
         constructor(...args: any[]) {
           super(...args);
+          
+          // Generate unique ID for this connection
+          const connectionId = 'peer_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+          (window as any).webrtcPeerConnections.set(connectionId, this);
+          
+          // Track connection state changes
+          this.addEventListener('connectionstatechange', () => {
+            (window as any).webrtcConnectionStates[connectionId] = this.connectionState;
+            
+            // Update global connected state
+            const states = Object.values((window as any).webrtcConnectionStates);
+            (window as any).webrtcConnected = states.some((state: any) => state === 'connected');
+            
+            console.log(`WebRTC connection ${connectionId} state: ${this.connectionState}`);
+          });
           
           // Listen for data channel events
           this.addEventListener('datachannel', (event: any) => {
@@ -46,7 +73,8 @@ export class WebRTCFixture {
                 (window as any).webrtcMessages.push({
                   type: 'received',
                   timestamp: Date.now(),
-                  message: data
+                  message: data,
+                  connectionId
                 });
               } catch (e) {
                 // Handle non-JSON messages
@@ -54,7 +82,8 @@ export class WebRTCFixture {
                 (window as any).webrtcMessages.push({
                   type: 'received',
                   timestamp: Date.now(),
-                  message: messageEvent.data
+                  message: messageEvent.data,
+                  connectionId
                 });
               }
             };
@@ -63,6 +92,15 @@ export class WebRTCFixture {
         
         createDataChannel(...args: any[]) {
           const channel = super.createDataChannel(...args);
+          
+          // Find the connection ID for this instance
+          let connectionId = 'unknown';
+          for (const [id, conn] of (window as any).webrtcPeerConnections) {
+            if (conn === this) {
+              connectionId = id;
+              break;
+            }
+          }
           
           // Intercept sent messages
           const originalSend = channel.send;
@@ -73,7 +111,8 @@ export class WebRTCFixture {
               (window as any).webrtcMessages.push({
                 type: 'sent',
                 timestamp: Date.now(),
-                message: parsedData
+                message: parsedData,
+                connectionId
               });
             } catch (e) {
               // Handle non-JSON messages
@@ -81,7 +120,8 @@ export class WebRTCFixture {
               (window as any).webrtcMessages.push({
                 type: 'sent',
                 timestamp: Date.now(),
-                message: data
+                message: data,
+                connectionId
               });
             }
             return originalSend.call(this, data);
@@ -143,6 +183,44 @@ export class WebRTCFixture {
   }
 
   /**
+   * Check if WebRTC connection is active
+   */
+  async isWebRTCConnected(): Promise<boolean> {
+    return await this.page.evaluate(() => {
+      return (window as any).webrtcConnected || false;
+    });
+  }
+
+  /**
+   * Get WebRTC connection states for all peers
+   */
+  async getConnectionStates(): Promise<Record<string, string>> {
+    return await this.page.evaluate(() => {
+      return (window as any).webrtcConnectionStates || {};
+    });
+  }
+
+  /**
+   * Wait for specific number of WebRTC connections to be established
+   */
+  async waitForConnections(expectedCount: number, timeout: number = 10000): Promise<void> {
+    const startTime = Date.now();
+    
+    while (Date.now() - startTime < timeout) {
+      const states = await this.getConnectionStates();
+      const connectedCount = Object.values(states).filter(state => state === 'connected').length;
+      
+      if (connectedCount >= expectedCount) {
+        return;
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    throw new Error(`Expected ${expectedCount} WebRTC connections but only found ${Object.keys(await this.getConnectionStates()).length} within ${timeout}ms`);
+  }
+
+  /**
    * Get all WebRTC messages
    */
   async getMessages(): Promise<any[]> {
@@ -158,5 +236,19 @@ export class WebRTCFixture {
     await this.page.evaluate(() => {
       (window as any).webrtcMessages = [];
     });
+  }
+
+  /**
+   * Get captured console logs
+   */
+  getConsoleLogs(): string[] {
+    return [...this.consoleLogs];
+  }
+
+  /**
+   * Clear captured console logs
+   */
+  clearConsoleLogs(): void {
+    this.consoleLogs = [];
   }
 }

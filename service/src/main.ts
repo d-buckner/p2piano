@@ -58,7 +58,7 @@ async function bootstrap() {
 
   // Set up Swagger documentation
   const config = new DocumentBuilder()
-    .setTitle('P2Piano API')
+    .setTitle('p2piano API')
     .setDescription('Real-time collaborative piano platform API')
     .setVersion('1.0')
     .addBearerAuth(

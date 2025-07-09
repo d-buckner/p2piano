@@ -1,7 +1,7 @@
 import Database from '../clients/Database';
 
 /**
- * Database indexing strategy for P2Piano.
+ * Database indexing strategy for p2piano.
  * 
  * This module ensures all required indexes are created for optimal performance.
  * Indexes are created automatically when collections are first accessed.

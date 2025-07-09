@@ -40,7 +40,12 @@ test.describe('Note Synchronization', () => {
     await secondPianoFixture.waitForPianoReady();
     
     // Wait for WebRTC connection to be established (notes are sent over WebRTC, not WebSocket)
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Give WebRTC time to connect
+    await webrtcFixture.waitForConnection(15000);
+    await secondWebrtcFixture.waitForConnection(15000);
+    
+    // Verify both users have WebRTC connections established
+    expect(await webrtcFixture.isWebRTCConnected()).toBe(true);
+    expect(await secondWebrtcFixture.isWebRTCConnected()).toBe(true);
     
     // First user plays a note
     await pianoFixture.playKey('C4');
@@ -87,7 +92,12 @@ test.describe('Note Synchronization', () => {
     await secondPianoFixture.waitForPianoReady();
     
     // Wait for WebRTC connection
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await webrtcFixture.waitForConnection(15000);
+    await secondWebrtcFixture.waitForConnection(15000);
+    
+    // Verify WebRTC connections are established
+    expect(await webrtcFixture.isWebRTCConnected()).toBe(true);
+    expect(await secondWebrtcFixture.isWebRTCConnected()).toBe(true);
     
     // Play a chord (multiple notes simultaneously)
     const chord = ['C4', 'E4', 'G4'];
@@ -125,7 +135,12 @@ test.describe('Note Synchronization', () => {
     await secondPianoFixture.waitForPianoReady();
     
     // Wait for WebRTC connection
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await webrtcFixture.waitForConnection(15000);
+    await secondWebrtcFixture.waitForConnection(15000);
+    
+    // Verify WebRTC connections are established
+    expect(await webrtcFixture.isWebRTCConnected()).toBe(true);
+    expect(await secondWebrtcFixture.isWebRTCConnected()).toBe(true);
     
     // Clear any existing messages
     await webrtcFixture.clearMessages();
@@ -175,7 +190,12 @@ test.describe('Note Synchronization', () => {
     await secondPianoFixture.waitForPianoReady();
     
     // Wait for WebRTC connection
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await webrtcFixture.waitForConnection(15000);
+    await secondWebrtcFixture.waitForConnection(15000);
+    
+    // Verify WebRTC connections are established
+    expect(await webrtcFixture.isWebRTCConnected()).toBe(true);
+    expect(await secondWebrtcFixture.isWebRTCConnected()).toBe(true);
     
     // Skip instrument change for now as it's failing - focus on core functionality
     // TODO: Fix instrument selector detection
@@ -209,7 +229,12 @@ test.describe('Note Synchronization', () => {
     await secondPianoFixture.waitForPianoReady();
     
     // Wait for WebRTC connection
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await webrtcFixture.waitForConnection(15000);
+    await secondWebrtcFixture.waitForConnection(15000);
+    
+    // Verify WebRTC connections are established
+    expect(await webrtcFixture.isWebRTCConnected()).toBe(true);
+    expect(await secondWebrtcFixture.isWebRTCConnected()).toBe(true);
     
     // Play a note to establish baseline
     await pianoFixture.playKey('C4');
@@ -247,7 +272,12 @@ test.describe('Note Synchronization', () => {
     await secondPianoFixture.waitForPianoReady();
     
     // Wait for WebRTC connection
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await webrtcFixture.waitForConnection(15000);
+    await secondWebrtcFixture.waitForConnection(15000);
+    
+    // Verify WebRTC connections are established
+    expect(await webrtcFixture.isWebRTCConnected()).toBe(true);
+    expect(await secondWebrtcFixture.isWebRTCConnected()).toBe(true);
     
     // Skip volume testing for now - focus on core functionality
     // TODO: Fix volume selector detection

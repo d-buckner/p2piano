@@ -28,6 +28,7 @@ export const createSharedConfig = (options: {
       'src/**/*.{test,spec}.{js,ts,tsx}',
       'src/**/*.d.ts',
       '**/*.config.*',
+      'integration-tests/**',
     ],
   } = options;
 
@@ -75,6 +76,7 @@ export const configs = {
       'src/main.ts',
       'src/**/*.d.ts',
       '**/*.config.*',
+      'integration-tests/**',
     ],
     coverageThresholds: {
       lines: 80,
@@ -100,6 +102,7 @@ export const configs = {
       '**/index.ts',
       'src/styles/**',
       'src/workers/serviceWorker.ts',
+      'integration-tests/**',
     ],
     coverageThresholds: {
       lines: 25,    // Client has lower thresholds currently

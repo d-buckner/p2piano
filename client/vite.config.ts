@@ -95,6 +95,7 @@ export default defineConfig(({ mode }) => {
           '**/*.test.tsx',
           '**/*.spec.ts',
           '**/*.spec.tsx',
+          'integration-tests/**',
         ],
         thresholds: {
           lines: 70,

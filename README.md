@@ -9,7 +9,7 @@ p2piano enables instant musical collaboration through your web browser. Create a
 
 **[Try it out](https://p2piano.com)**
 
-![P2Piano Demo](docs/demo-screenshot.png)
+![p2Piano demo](docs/demo-screenshot.png)
 
 ## Features
 
@@ -178,7 +178,6 @@ Contributions are welcome from developers, musicians, and anyone with ideas to i
 - **Suggest features** that would improve the experience
 - **Submit pull requests** for bug fixes or enhancements
 - **Improve documentation** to help others understand and use the project
-- **Share your music** and experiences using P2Piano
 
 ### Development Contributions
 

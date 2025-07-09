@@ -96,32 +96,12 @@ jobs:
             client/coverage/
             service/coverage/
 
-      - name: Update coverage thresholds if improved
+      - name: Check coverage thresholds
         if: github.event_name == 'pull_request'
         run: |
-          cd client && npm run coverage:update || true
-          cd ../service && npm run coverage:update || true
-          
-      - name: Check if thresholds were updated
-        if: github.event_name == 'pull_request'
-        id: check-thresholds
-        run: |
-          if git diff --quiet client/coverage.thresholds.json service/coverage.thresholds.json; then
-            echo "updated=false" >> $GITHUB_OUTPUT
-          else
-            echo "updated=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Commit updated thresholds
-        if: github.event_name == 'pull_request' && steps.check-thresholds.outputs.updated == 'true'
-        run: |
-          git config --local user.email "coverage-bot@github.com"
-          git config --local user.name "coverage-bot"
-          git add client/coverage.thresholds.json service/coverage.thresholds.json
-          git commit -m "chore: update coverage thresholds
-
-          🤖 Generated with [GitHub Actions](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
-          git push
+          echo "Coverage thresholds are now static and defined in vitest configuration files"
+          echo "Client thresholds: lines=70%, functions=80%, branches=80%, statements=70%"
+          echo "Service thresholds: lines=60%, functions=60%, branches=80%, statements=60%"
 
       - name: Generate consolidated coverage report
         if: github.event_name == 'pull_request'

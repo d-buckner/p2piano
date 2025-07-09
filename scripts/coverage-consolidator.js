@@ -162,7 +162,7 @@ function displayRecommendations(clientData, serviceData) {
 }
 
 function main() {
-  console.log('🧪 P2Piano Test Coverage Consolidator\n');
+  console.log('🧪 p2piano Test Coverage Consolidator\n');
   
   const rootDir = path.resolve(__dirname, '..');
   const clientData = loadCoverageData(path.join(rootDir, 'client'));
