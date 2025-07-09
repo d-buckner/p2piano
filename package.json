@@ -34,9 +34,14 @@
     "build:service": "cd service && npm run build",
     "build:client": "cd client && npm run build",
     "docs": "cd service && npm run docs",
-    "docs:serve": "cd service && npm run docs:serve"
+    "docs:serve": "cd service && npm run docs:serve",
+    "test:integration": "cd integration-tests && npx playwright test",
+    "test:integration:ui": "cd integration-tests && npx playwright test --ui",
+    "test:integration:headed": "cd integration-tests && npx playwright test --headed"
   },
   "devDependencies": {
-    "concurrently": "^9.1.0"
+    "@playwright/test": "^1.53.2",
+    "concurrently": "^9.1.0",
+    "playwright": "^1.53.2"
   }
 }
