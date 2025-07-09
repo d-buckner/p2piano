@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { extractSessionIdFromSocket } from '../websockets/utils';
-import type { Socket } from 'socket.io';
 import type { ExecutionContext } from '@nestjs/common';
 import type { ThrottlerRequest } from '@nestjs/throttler';
+import type { Socket } from 'socket.io';
 
 
 interface ThrottlerLimitDetail {

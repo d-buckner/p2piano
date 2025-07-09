@@ -23,9 +23,8 @@ import {
 } from '../utils';
 import { RoomEvents, SocketEvents } from './events';
 import type { UserUpdateDto } from '../../dto/ws/user-update.dto';
-import type { Socket } from 'socket.io';
 import type { Room as IRoom } from '../../utils/workspaceTypes';
-import type { Server } from 'socket.io';
+import type { Socket , Server } from 'socket.io';
 
 
 /**

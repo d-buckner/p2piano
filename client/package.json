@@ -27,7 +27,6 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest --coverage --run",
     "test:ci": "vitest --coverage --run",
-    "coverage:update": "node scripts/update-thresholds.js",
     "prepare": "husky"
   },
   "devDependencies": {

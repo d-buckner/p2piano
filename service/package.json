@@ -20,7 +20,6 @@
     "test:run": "vitest run",
     "test:coverage": "vitest --coverage --run",
     "test:ci": "vitest --coverage --run",
-    "coverage:update": "node scripts/update-thresholds.js",
     "docs": "typedoc",
     "docs:serve": "npm run docs && npx http-server docs -p 8080 -o"
   },

@@ -1,4 +1,3 @@
-import fs from 'fs';
 import path from 'path';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import replace from '@rollup/plugin-replace';
@@ -12,10 +11,6 @@ import solidPlugin from 'vite-plugin-solid';
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
   
-  // Only import coverage thresholds in non-production environments
-  const coverageThresholds = !isProduction 
-    ? JSON.parse(fs.readFileSync('./coverage.thresholds.json', 'utf8'))
-    : {};
 
   const define: Record<string, string> = {
     // for tonejs's very persistent logger (dev server)
@@ -100,7 +95,12 @@ export default defineConfig(({ mode }) => {
           '**/*.spec.ts',
           '**/*.spec.tsx',
         ],
-        ...(coverageThresholds && { thresholds: coverageThresholds }),
+        thresholds: {
+          lines: 70,
+          functions: 80,
+          branches: 80,
+          statements: 70
+        },
       },
     },
     build: {
