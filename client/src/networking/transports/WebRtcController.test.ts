@@ -42,18 +42,18 @@ describe('WebRtcController', () => {
       signal: vi.fn(),
       destroy: vi.fn(),
     };
-    
+
     mockWebsocketInstance = {
       on: vi.fn(),
       sendToPeer: vi.fn(),
     };
-    
+
     vi.stubGlobal('TextDecoder', vi.fn(() => ({
       decode: vi.fn(() => JSON.stringify({ action: 'KEY_DOWN', payload: { midi: 60 } })),
     })));
-    
+
     (WebRtcController as unknown as { instance: undefined }).instance = undefined;
-    
+
     vi.clearAllMocks();
   });
 
@@ -73,7 +73,7 @@ describe('WebRtcController', () => {
   describe('initialization', () => {
     it('should register WebSocket event handlers', () => {
       WebRtcController.getInstance();
-      
+
       expect(mockWebsocketInstance.on).toHaveBeenCalledWith(ACTION.SIGNAL, expect.any(Function));
       expect(mockWebsocketInstance.on).toHaveBeenCalledWith(ACTION.USER_CONNECT, expect.any(Function));
     });
@@ -82,52 +82,54 @@ describe('WebRtcController', () => {
   describe('peer management', () => {
     it('should create peer when user connects', () => {
       WebRtcController.getInstance();
-      
+
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
-      
+
       // Trigger user connect
       userConnectHandler({ userId: 'user1' });
-      
+
       expect(SimplePeer).toHaveBeenCalledWith({
         initiator: true,
-        trickle: false,
+        config: {
+          iceCandidatePoolSize: 10,
+        },
       });
     });
 
     it('should handle peer connection', () => {
       const controller = WebRtcController.getInstance();
-      
+
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
       userConnectHandler({ userId: 'user1' });
-      
+
       const connectHandler = mockPeerInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'connect')?.[1];
       connectHandler();
-      
+
       expect(updatePeerTransport).toHaveBeenCalledWith('user1', Transport.WEBRTC);
       expect(controller.getActivePeerIds().has('user1')).toBe(true);
     });
 
     it('should handle peer disconnection', () => {
       const controller = WebRtcController.getInstance();
-      
+
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
       userConnectHandler({ userId: 'user1' });
-      
+
       const connectHandler = mockPeerInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'connect')?.[1];
       connectHandler();
-      
+
       // Verify peer is active
       expect(controller.getActivePeerIds().has('user1')).toBe(true);
-      
+
       const closeHandler = mockPeerInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'close')?.[1];
       closeHandler();
-      
+
       expect(controller.getActivePeerIds().has('user1')).toBe(false);
       expect(updatePeerTransport).toHaveBeenCalledWith('user1', Transport.WEBSOCKET);
     });
@@ -136,17 +138,17 @@ describe('WebRtcController', () => {
   describe('messaging', () => {
     it('should send message to active peer', () => {
       const controller = WebRtcController.getInstance();
-      
+
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
       userConnectHandler({ userId: 'user1' });
-      
+
       const connectHandler = mockPeerInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'connect')?.[1];
       connectHandler();
-      
+
       controller.sendToPeer('user1', 'KEY_DOWN', { midi: 60 });
-      
+
       expect(mockPeerInstance.send).toHaveBeenCalledWith(JSON.stringify({
         action: 'KEY_DOWN',
         payload: { midi: 60 },
@@ -155,30 +157,30 @@ describe('WebRtcController', () => {
 
     it('should throw error for inactive peer', () => {
       const controller = WebRtcController.getInstance();
-      
+
       expect(() => controller.sendToPeer('nonexistent', 'KEY_DOWN', { midi: 60 }))
         .toThrow('Cannot send message to unavailable peer');
     });
 
     it('should broadcast to all active peers', () => {
       const controller = WebRtcController.getInstance();
-      
+
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
-      
+
       userConnectHandler({ userId: 'user1' });
       const connectHandler1 = mockPeerInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'connect')?.[1];
       connectHandler1();
-      
+
       userConnectHandler({ userId: 'user2' });
       const connectHandler2 = mockPeerInstance.on.mock.calls
         .slice(-4) // Get the last set of on calls for the new peer
         .find((call: [string, EventHandler]) => call[0] === 'connect')?.[1];
       connectHandler2();
-      
+
       controller.broadcast('KEY_DOWN', { midi: 60 });
-      
+
       expect(controller.getActivePeerIds().size).toBe(2);
       expect(mockPeerInstance.send).toHaveBeenCalledWith(JSON.stringify({
         action: 'KEY_DOWN',
@@ -191,17 +193,17 @@ describe('WebRtcController', () => {
     it('should process received data and trigger handlers', () => {
       const controller = WebRtcController.getInstance();
       const mockHandler = vi.fn();
-      
+
       controller.on('KEY_DOWN', mockHandler);
-      
+
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
       userConnectHandler({ userId: 'user1' });
-      
+
       const dataHandler = mockPeerInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'data')?.[1];
       dataHandler(new Uint8Array([1, 2, 3]));
-      
+
       expect(mockHandler).toHaveBeenCalledWith({ midi: 60, userId: 'user1' });
     });
   });
@@ -209,14 +211,14 @@ describe('WebRtcController', () => {
   describe('cleanup', () => {
     it('should destroy all peers and reset instance', () => {
       WebRtcController.getInstance();
-      
+
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
       userConnectHandler({ userId: 'user1' });
       userConnectHandler({ userId: 'user2' });
-      
+
       WebRtcController.destroy();
-      
+
       expect(mockPeerInstance.destroy).toHaveBeenCalledTimes(2);
     });
   });

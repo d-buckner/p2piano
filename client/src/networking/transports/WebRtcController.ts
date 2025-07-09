@@ -105,7 +105,9 @@ export default class WebRtcController extends AbstractNetworkController {
   private addPeer(userId: string) {
     const p = new SimplePeer({
       initiator: this.initiator,
-      trickle: false,
+      config: {
+        iceCandidatePoolSize: 10,
+      },
     });
 
     p.on(PEER_EVENT.CONNECT, () => {
