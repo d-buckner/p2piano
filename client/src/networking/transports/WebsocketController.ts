@@ -27,6 +27,7 @@ export default class WebsocketController extends AbstractNetworkController {
     super();
     this.socket = io(ConfigProvider.getServiceUrl(), {
       withCredentials: true, // Include cookies for authentication
+      transports: ['websocket'], // Use only WebSocket transport to avoid the need for sticky sessions
       query: {
         displayName: ClientPreferences.getDisplayName(),
         roomId: selectRoomId(store)

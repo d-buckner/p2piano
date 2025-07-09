@@ -1,19 +1,19 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { getSocketSessionId } from '../utils';
+import { extractSessionIdFromSocket } from '../utils';
 import { SignalEvents } from './events';
 import { Signal } from './signal';
 import type { SignalPayloadDto } from '../../dto/ws/signal.dto';
 
 // Mock dependencies
 vi.mock('../utils', () => ({
-  getSocketSessionId: vi.fn(),
+  extractSessionIdFromSocket: vi.fn(),
   getWebSocketGatewayOptions: () => {},
 }));
 
 describe('Signal Gateway (Simplified)', () => {
   let gateway: Signal;
   let mockSocket: any;
-  const mockGetSocketSessionId = getSocketSessionId as any;
+  const mockGetSocketSessionId = extractSessionIdFromSocket as any;
 
   beforeEach(() => {
     gateway = new Signal();

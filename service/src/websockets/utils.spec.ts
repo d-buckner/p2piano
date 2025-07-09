@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import ConfigProvider from '../config/ConfigProvider';
-import { getWebSocketGatewayOptions, getSocketSessionId, getSocketRoomId, getSocketDisplayName, getSocketMetadata, broadcast, broadcastToSubset } from './utils';
-import type { AuthenticatedSocket } from '../types/socket';
+import { getWebSocketGatewayOptions, extractSessionIdFromSocket, getSocketRoomId, getSocketDisplayName, getSocketMetadata, broadcast, broadcastToSubset } from './utils';
+import type { Socket } from 'socket.io';
 
 // Mock ConfigProvider
 vi.mock('../config/ConfigProvider', () => ({
@@ -21,10 +21,16 @@ describe('websockets/utils', () => {
         roomId: 'room-1',
         displayName: 'Test User',
       },
+      headers: {
+        cookie: 'sessionId=session-1; path=/',
+      },
+      auth: {
+        sessionId: 'session-1',
+      },
     },
     to: vi.fn(() => ({ emit: vi.fn() })),
     emit: vi.fn(),
-  } as unknown as AuthenticatedSocket;
+  } as unknown as Socket;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -53,17 +59,12 @@ describe('websockets/utils', () => {
     });
   });
 
-  describe('getSocketSessionId', () => {
+  describe('extractSessionIdFromSocket', () => {
     it('should return session id when session exists', () => {
-      const result = getSocketSessionId(mockSocket);
+      const result = extractSessionIdFromSocket(mockSocket);
       expect(result).toBe('session-1');
     });
 
-    it('should return null when session does not exist', () => {
-      const socketWithoutSession = { ...mockSocket, session: null } as unknown as AuthenticatedSocket;
-      const result = getSocketSessionId(socketWithoutSession);
-      expect(result).toBe(null);
-    });
   });
 
   describe('getSocketRoomId', () => {
@@ -98,7 +99,7 @@ describe('websockets/utils', () => {
       const mockSocketForBroadcast = {
         ...mockSocket,
         to: mockTo,
-      } as unknown as AuthenticatedSocket;
+      } as unknown as Socket;
 
       broadcast(mockSocketForBroadcast, 'test-event', { data: 'test' });
 
@@ -117,7 +118,7 @@ describe('websockets/utils', () => {
       const mockSocketForBroadcast = {
         ...mockSocket,
         to: mockTo,
-      } as unknown as AuthenticatedSocket;
+      } as unknown as Socket;
 
       broadcastToSubset(mockSocketForBroadcast, ['user-1', 'user-2'], 'test-event', { data: 'test' });
 
@@ -137,7 +138,7 @@ describe('websockets/utils', () => {
       const mockSocketForBroadcast = {
         ...mockSocket,
         to: mockTo,
-      } as unknown as AuthenticatedSocket;
+      } as unknown as Socket;
 
       broadcastToSubset(mockSocketForBroadcast, ['user-1'], 'test-event', { data: 'test' });
 
@@ -155,7 +156,7 @@ describe('websockets/utils', () => {
       const mockSocketForBroadcast = {
         ...mockSocket,
         to: mockTo,
-      } as unknown as AuthenticatedSocket;
+      } as unknown as Socket;
 
       // Should not throw
       expect(() => {

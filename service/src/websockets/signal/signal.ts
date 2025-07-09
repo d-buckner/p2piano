@@ -3,10 +3,10 @@ import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from
 import { SignalThrottlerGuard } from '../../guards/signalthrottler.guard';
 import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
 import { getErrorMessage } from '../../utils/ErrorUtils';
-import { getWebSocketGatewayOptions, getSocketSessionId } from '../utils';
+import { getWebSocketGatewayOptions, extractSessionIdFromSocket } from '../utils';
 import { SignalEvents } from './events';
 import type { SignalPayloadDto } from '../../dto/ws/signal.dto';
-import type { AuthenticatedSocket } from '../../types/socket';
+import type { Socket } from 'socket.io';
 
 
 @WebSocketGateway(getWebSocketGatewayOptions())
@@ -15,9 +15,9 @@ export class Signal {
 
   @UseGuards(SignalThrottlerGuard) 
   @SubscribeMessage(SignalEvents.SIGNAL)
-  async onSignal(@MessageBody(new WsValidationPipe()) payload: SignalPayloadDto, @ConnectedSocket() socket: AuthenticatedSocket) {
+  async onSignal(@MessageBody(new WsValidationPipe()) payload: SignalPayloadDto, @ConnectedSocket() socket: Socket) {
     try {
-      const userId = getSocketSessionId(socket);
+      const userId = extractSessionIdFromSocket(socket);
       if (!userId) {
         this.logger.warn('Signal received from unauthenticated socket', { socketId: socket.id });
         return;
