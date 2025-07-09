@@ -91,6 +91,7 @@ describe('WebsocketController', () => {
       
       expect(io).toHaveBeenCalledWith('ws://localhost:3001', {
         withCredentials: true,
+        transports: ['websocket'],
         query: {
           displayName: 'test-user',
           roomId: 'test-room',
