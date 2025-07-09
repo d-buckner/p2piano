@@ -1,8 +1,6 @@
 # p2piano
 
 [![CI](https://img.shields.io/github/actions/workflow/status/d-buckner/p2piano/test-coverage.yml?branch=main&label=CI)](https://github.com/d-buckner/p2piano/actions)
-[![Client Coverage](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/d-buckner/p2piano/main/client/coverage.thresholds.json&label=Client%20Coverage&query=$.lines&suffix=%25&colorB=green&valColorA=red&valColorB=yellow&valColorC=green&valThresholdA=50&valThresholdB=70)](https://github.com/d-buckner/p2piano/tree/main/client/coverage)
-[![Service Coverage](https://img.shields.io/badge/dynamic/json?url=https://raw.githubusercontent.com/d-buckner/p2piano/main/service/coverage.thresholds.json&label=Service%20Coverage&query=$.lines&suffix=%25&colorB=green&valColorA=red&valColorB=yellow&valColorC=green&valThresholdA=50&valThresholdB=70)](https://github.com/d-buckner/p2piano/tree/main/service/coverage)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
 **A real-time collaborative music platform where musicians can play together from anywhere in the world.**
