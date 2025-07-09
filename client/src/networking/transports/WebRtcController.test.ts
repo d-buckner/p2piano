@@ -34,6 +34,14 @@ vi.mock('../../actions/ConnectionActions', () => ({
   updatePeerTransport: vi.fn(),
 }));
 
+// Mock requestIdleCallback
+let mockRequestIdleCallback: ReturnType<typeof vi.fn>;
+vi.stubGlobal('requestIdleCallback', (callback: () => void) => {
+  mockRequestIdleCallback = vi.fn(callback);
+  // Call immediately for testing unless we need to control timing
+  return mockRequestIdleCallback();
+});
+
 describe('WebRtcController', () => {
   beforeEach(() => {
     // Create a factory function to return new mock instances for each peer
@@ -245,6 +253,85 @@ describe('WebRtcController', () => {
       dataHandler(new Uint8Array([1, 2, 3]));
 
       expect(mockHandler).toHaveBeenCalledWith({ midi: 60, userId: 'user1' });
+    });
+  });
+
+  describe('signal rate limiting', () => {
+    it('should use requestIdleCallback to schedule WebRTC signals', () => {
+      WebRtcController.getInstance();
+
+      const userConnectHandler = mockWebsocketInstance.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
+      userConnectHandler({ userId: 'user1' });
+
+      const peer = SimplePeer.mock.results[0].value;
+      const signalHandler = peer.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === 'signal')?.[1];
+
+      // Create a mock that doesn't immediately execute the callback
+      const mockCallbacks: Array<() => void> = [];
+      vi.stubGlobal('requestIdleCallback', (callback: () => void) => {
+        mockCallbacks.push(callback);
+        return 1; // Mock handle
+      });
+
+      // Trigger a signal
+      signalHandler({ type: 'offer', sdp: 'mock-sdp' });
+
+      // Signal should be queued via requestIdleCallback, not sent immediately
+      expect(mockCallbacks).toHaveLength(1);
+      expect(mockWebsocketInstance.sendToPeer).not.toHaveBeenCalled();
+
+      // Execute the queued callback
+      mockCallbacks[0]();
+
+      // Now the signal should be sent
+      expect(mockWebsocketInstance.sendToPeer).toHaveBeenCalledWith('user1', ACTION.SIGNAL, {
+        userId: 'user1',
+        signalData: { type: 'offer', sdp: 'mock-sdp' },
+      });
+    });
+
+    it('should schedule multiple signals independently', () => {
+      WebRtcController.getInstance();
+
+      const userConnectHandler = mockWebsocketInstance.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
+      userConnectHandler({ userId: 'user1' });
+
+      const peer = SimplePeer.mock.results[0].value;
+      const signalHandler = peer.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === 'signal')?.[1];
+
+      const mockCallbacks: Array<() => void> = [];
+      vi.stubGlobal('requestIdleCallback', (callback: () => void) => {
+        mockCallbacks.push(callback);
+        return mockCallbacks.length;
+      });
+
+      // Trigger multiple signals
+      signalHandler({ type: 'offer', sdp: 'mock-sdp' });
+      signalHandler({ type: 'candidate', candidate: 'mock-candidate' });
+
+      // Both signals should be queued
+      expect(mockCallbacks).toHaveLength(2);
+      expect(mockWebsocketInstance.sendToPeer).not.toHaveBeenCalled();
+
+      // Execute first callback
+      mockCallbacks[0]();
+      expect(mockWebsocketInstance.sendToPeer).toHaveBeenCalledWith('user1', ACTION.SIGNAL, {
+        userId: 'user1',
+        signalData: { type: 'offer', sdp: 'mock-sdp' },
+      });
+
+      // Execute second callback
+      mockCallbacks[1]();
+      expect(mockWebsocketInstance.sendToPeer).toHaveBeenCalledWith('user1', ACTION.SIGNAL, {
+        userId: 'user1',
+        signalData: { type: 'candidate', candidate: 'mock-candidate' },
+      });
+
+      expect(mockWebsocketInstance.sendToPeer).toHaveBeenCalledTimes(2);
     });
   });
 

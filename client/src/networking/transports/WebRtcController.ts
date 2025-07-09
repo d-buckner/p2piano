@@ -121,10 +121,12 @@ export default class WebRtcController extends AbstractNetworkController {
     });
 
     p.on(PEER_EVENT.SIGNAL, signalData => {
-      Logger.DEBUG(`[WebRTC] Sending signal to ${userId}:`, signalData.type);
-      this.websocketController.sendToPeer(userId, ACTION.SIGNAL, {
-        userId,
-        signalData,
+      Logger.DEBUG(`[WebRTC] Scheduling signal to ${userId}:`, signalData.type);
+      requestIdleCallback(() => {
+        this.websocketController.sendToPeer(userId, ACTION.SIGNAL, {
+          userId,
+          signalData,
+        });
       });
     });
 
