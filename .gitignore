@@ -1,9 +1,9 @@
-!jest.config.js
 *.d.ts
 node_modules
 .env
-
 .DS_Store
+integration-tests/playwright-report
+integration-tests/test-results
 
 # README drafts and planning
 README_next.md

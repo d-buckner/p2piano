@@ -1,3 +1,4 @@
+import fs from 'fs';
 import path from 'path';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
 import replace from '@rollup/plugin-replace';
