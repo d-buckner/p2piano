@@ -101,7 +101,7 @@ export class Room {
       }
 
       // Register connection (handles disconnecting existing connections)
-      const { wasReconnection } = await this.sessionService.registerConnection(sessionId, socket, this.server);
+      const { isReconnection } = await this.sessionService.registerConnection(sessionId, socket, this.server);
 
       const roomEntity = new RoomEntity(roomId);
 
@@ -114,7 +114,7 @@ export class Room {
         socket.join(sessionId);
         socket.on(SocketEvents.DISCONNECT, reason => this.destroyConnection(socket, reason));
 
-        if (wasReconnection) {
+        if (isReconnection) {
           // Client reconnect, no need to send connection events
           return;
         }

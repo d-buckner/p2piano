@@ -2,11 +2,16 @@ import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import RedisClient from '../clients/RedisClient';
 import SessionProvider, { Session } from '../entities/Session';
+import type { Server } from 'socket.io';
 
 
 interface ConnectionMetadata {
   socketId: string;
   registeredAt: string;
+}
+
+interface RegisterConnectionResult {
+  isReconnection: boolean
 }
 
 @Injectable()
@@ -23,15 +28,13 @@ export class SessionService {
 
 
   // WebSocket connection tracking
-  async registerConnection(sessionId: string, socket: Socket, server: unknown): Promise<{ wasReconnection: boolean }> {
+  async registerConnection(sessionId: string, socket: Socket, server: Server): Promise<RegisterConnectionResult> {
     // First, disconnect any existing connections for this session
     const existingConnection = await this.getConnectionMetadata(sessionId);
-    const wasReconnection = !!existingConnection?.socketId;
+    const isReconnection = !!existingConnection?.socketId;
     
-    if (existingConnection?.socketId) {
-      // Use Socket.IO's cross-server disconnect
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (server as any).of('/api').in(existingConnection.socketId).disconnectSockets(true);
+    if (isReconnection) {
+      server.in(existingConnection.socketId).disconnectSockets(true);
     }
 
     // Now register the new connection
@@ -44,7 +47,7 @@ export class SessionService {
     // Refresh TTL to 24 hours
     await RedisClient.expire(sessionKey, 86400);
 
-    return { wasReconnection };
+    return { isReconnection };
   }
 
   async getConnectionMetadata(sessionId: string): Promise<ConnectionMetadata | null> {
