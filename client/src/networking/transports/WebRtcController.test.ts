@@ -103,12 +103,11 @@ describe('WebRtcController', () => {
       // Trigger user connect
       userConnectHandler({ userId: 'user1' });
 
-      expect(SimplePeer).toHaveBeenCalledWith({
-        initiator: true,
-        config: {
-          iceCandidatePoolSize: 10,
-        },
-      });
+      expect(SimplePeer).toHaveBeenCalledWith(
+        expect.objectContaining({
+          initiator: true,
+        })
+      );
     });
 
     it('should handle peer connection', () => {

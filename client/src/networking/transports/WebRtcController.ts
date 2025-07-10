@@ -107,12 +107,7 @@ export default class WebRtcController extends AbstractNetworkController {
 
   private addPeer(userId: string) {
     Logger.DEBUG(`[WebRTC] Adding peer ${userId} with initiator: ${this.initiator}`);
-    const p = new SimplePeer({
-      initiator: this.initiator,
-      config: {
-        iceCandidatePoolSize: 10,
-      },
-    });
+    const p = new SimplePeer({ initiator: this.initiator });
 
     p.on(PEER_EVENT.CONNECT, () => {
       Logger.DEBUG(`[WebRTC] Peer ${userId} connected successfully`);
