@@ -1,6 +1,7 @@
 import { Piano as DPiano } from 'd-piano';
 import { DEFAULT_VELOCITY } from '../../constants';
 import Logger from '../../lib/Logger';
+import { requestIdleCallback } from '../../lib/ponyfill';
 import getDelayTime from './getDelayTime';
 import type { Instrument } from './Instrument';
 
@@ -109,7 +110,7 @@ export default class Piano implements Instrument {
       this.load().catch(error => {
         Logger.ERROR('Piano sample loading failed:', error);
       });
-    }, { timeout: 5000 });
+    });
   }
 
   private getSecondsFromLoad(): number {

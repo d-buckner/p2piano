@@ -2,6 +2,7 @@ import SimplePeer from 'simple-peer';
 import { updatePeerTransport } from '../../actions/ConnectionActions';
 import { Transport } from '../../constants';
 import Logger from '../../lib/Logger';
+import { requestIdleCallback } from '../../lib/ponyfill';
 import AbstractNetworkController, { type Message } from '../AbstractNetworkController';
 import WebsocketController from './WebsocketController';
 

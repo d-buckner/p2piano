@@ -23,11 +23,13 @@ vi.mock('./getDelayTime');
 describe('Piano', () => {
   let mockDPiano: MockDPiano;
   let piano: Piano;
-  const mockRequestIdleCallback = vi.fn();
+  let mockRequestIdleCallback: ReturnType<typeof vi.fn>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    vi.stubGlobal('requestIdleCallback', mockRequestIdleCallback);
+    
+    const { requestIdleCallback } = await vi.importMock('../../lib/ponyfill');
+    mockRequestIdleCallback = vi.mocked(requestIdleCallback);
     
     // Mock DPiano instance
     mockDPiano = {
@@ -349,8 +351,7 @@ describe('Piano', () => {
 
       // Should schedule next layer loading via requestIdleCallback
       expect(mockRequestIdleCallback).toHaveBeenCalledWith(
-        expect.any(Function),
-        { timeout: 5000 }
+        expect.any(Function)
       );
     });
   });

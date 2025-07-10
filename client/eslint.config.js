@@ -46,7 +46,14 @@ export default tseslint.config(
         }
       ],
       'import/first': 'error',
-      'import/no-duplicates': 'error'
+      'import/no-duplicates': 'error',
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'requestIdleCallback',
+          message: 'Import requestIdleCallback from lib/ponyfill for Safari compatibility'
+        }
+      ]
     },
   },
 )

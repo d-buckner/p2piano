@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // Import after mocks
 import { updatePeerTransport } from '../../actions/ConnectionActions';
 import { Transport } from '../../constants';
+import { mockIdleCallbacks } from '../../test/setup';
 import WebRtcController, { ACTION } from './WebRtcController';
 
 
@@ -34,16 +35,12 @@ vi.mock('../../actions/ConnectionActions', () => ({
   updatePeerTransport: vi.fn(),
 }));
 
-// Mock requestIdleCallback
-let mockRequestIdleCallback: ReturnType<typeof vi.fn>;
-vi.stubGlobal('requestIdleCallback', (callback: () => void) => {
-  mockRequestIdleCallback = vi.fn(callback);
-  // Call immediately for testing unless we need to control timing
-  return mockRequestIdleCallback();
-});
+// ponyfill is mocked globally in test setup
 
 describe('WebRtcController', () => {
   beforeEach(() => {
+    // Clear the global callback queue
+    mockIdleCallbacks.length = 0;
     // Create a factory function to return new mock instances for each peer
     const createMockPeer = () => ({
       on: vi.fn(),
@@ -267,22 +264,15 @@ describe('WebRtcController', () => {
       const signalHandler = peer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'signal')?.[1];
 
-      // Create a mock that doesn't immediately execute the callback
-      const mockCallbacks: Array<() => void> = [];
-      vi.stubGlobal('requestIdleCallback', (callback: () => void) => {
-        mockCallbacks.push(callback);
-        return 1; // Mock handle
-      });
-
       // Trigger a signal
       signalHandler({ type: 'offer', sdp: 'mock-sdp' });
 
       // Signal should be queued via requestIdleCallback, not sent immediately
-      expect(mockCallbacks).toHaveLength(1);
+      expect(mockIdleCallbacks).toHaveLength(1);
       expect(mockWebsocketInstance.sendToPeer).not.toHaveBeenCalled();
 
       // Execute the queued callback
-      mockCallbacks[0]();
+      mockIdleCallbacks[0]();
 
       // Now the signal should be sent
       expect(mockWebsocketInstance.sendToPeer).toHaveBeenCalledWith('user1', ACTION.SIGNAL, {
@@ -302,29 +292,23 @@ describe('WebRtcController', () => {
       const signalHandler = peer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'signal')?.[1];
 
-      const mockCallbacks: Array<() => void> = [];
-      vi.stubGlobal('requestIdleCallback', (callback: () => void) => {
-        mockCallbacks.push(callback);
-        return mockCallbacks.length;
-      });
-
       // Trigger multiple signals
       signalHandler({ type: 'offer', sdp: 'mock-sdp' });
       signalHandler({ type: 'candidate', candidate: 'mock-candidate' });
 
       // Both signals should be queued
-      expect(mockCallbacks).toHaveLength(2);
+      expect(mockIdleCallbacks).toHaveLength(2);
       expect(mockWebsocketInstance.sendToPeer).not.toHaveBeenCalled();
 
       // Execute first callback
-      mockCallbacks[0]();
+      mockIdleCallbacks[0]();
       expect(mockWebsocketInstance.sendToPeer).toHaveBeenCalledWith('user1', ACTION.SIGNAL, {
         userId: 'user1',
         signalData: { type: 'offer', sdp: 'mock-sdp' },
       });
 
       // Execute second callback
-      mockCallbacks[1]();
+      mockIdleCallbacks[1]();
       expect(mockWebsocketInstance.sendToPeer).toHaveBeenCalledWith('user1', ACTION.SIGNAL, {
         userId: 'user1',
         signalData: { type: 'candidate', candidate: 'mock-candidate' },

@@ -1,12 +1,24 @@
 import { vi } from 'vitest';
 
 /**
+ * Setup ponyfill mocks
+ */
+export const setupPonyfillMocks = () => {
+  const mockRequestIdleCallback = vi.fn();
+  
+  vi.mock('../lib/ponyfill', () => ({
+    requestIdleCallback: mockRequestIdleCallback
+  }));
+  
+  return { mockRequestIdleCallback };
+};
+
+/**
  * Common setup for audio-related tests
  */
 export const setupAudioMocks = () => {
   // Mock Web Audio API globals
   global.AudioContext = vi.fn();
-  global.requestIdleCallback = vi.fn();
   
   // Mock Tone.js context if needed
   const mockToneContext = {
