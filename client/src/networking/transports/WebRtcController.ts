@@ -46,6 +46,7 @@ export default class WebRtcController extends AbstractNetworkController {
     this.websocketController.on(ACTION.SIGNAL, this.onSignalReceived.bind(this));
     // new user joins, we send signal message
     this.websocketController.on(ACTION.USER_CONNECT, this.onPeerJoined.bind(this));
+    Logger.DEBUG('[WebRTC] Controller initialized');
   }
 
   public static getInstance(): WebRtcController {
@@ -92,37 +93,54 @@ export default class WebRtcController extends AbstractNetworkController {
 
   private onSignalReceived(message: SignalPayload) {
     const { userId, signalData } = message;
+    Logger.DEBUG(`[WebRTC] Signal received from ${userId}: ${signalData.type}`);
+
     if (!this.initiator && !this.peers.has(userId)) {
+      Logger.DEBUG(`[WebRTC] Creating peer for ${userId}`);
       this.addPeer(userId);
     }
 
-    this.peers.get(userId)?.signal(signalData);
+    const peer = this.peers.get(userId);
+    if (peer) {
+      Logger.DEBUG(`[WebRTC] Applying ${signalData.type} signal to ${userId}`);
+      peer.signal(signalData);
+      return;
+    }
+
+    Logger.WARN(`[WebRTC] No peer found for ${userId}`);
   }
 
   private onPeerJoined(message: UserPayload) {
-    Logger.DEBUG(`[WebRTC] Peer joined: ${message.userId}, setting as initiator`);
+    Logger.DEBUG(`[WebRTC] Peer joined: ${message.userId}, becoming initiator`);
     this.initiator = true;
     this.addPeer(message.userId);
   }
 
   private addPeer(userId: string) {
-    Logger.DEBUG(`[WebRTC] Adding peer ${userId} with initiator: ${this.initiator}`);
+    Logger.DEBUG(`[WebRTC] Adding peer ${userId}, initiator: ${this.initiator}`);
+
+    if (this.peers.has(userId)) {
+      Logger.WARN(`[WebRTC] Peer ${userId} already exists, destroying first`);
+      this.peers.get(userId)?.destroy();
+      this.peers.delete(userId);
+      this.activePeerIds.delete(userId);
+    }
+
     const p = new SimplePeer({ initiator: this.initiator });
+    Logger.DEBUG(`[WebRTC] SimplePeer created for ${userId}`);
 
     p.on(PEER_EVENT.CONNECT, () => {
-      Logger.DEBUG(`[WebRTC] Peer ${userId} connected successfully`);
+      Logger.DEBUG(`[WebRTC] Peer ${userId} CONNECTED`);
       this.activePeerIds.add(userId);
       updatePeerTransport(userId, Transport.WEBRTC);
     });
 
     p.on(PEER_EVENT.SIGNAL, signalData => {
-      Logger.DEBUG(`[WebRTC] Scheduling signal to ${userId}:`, signalData.type);
-      requestIdleCallback(() => {
-        this.websocketController.sendToPeer(userId, ACTION.SIGNAL, {
-          userId,
-          signalData,
-        });
-      });
+      Logger.DEBUG(`[WebRTC] Sending ${signalData.type} to ${userId}`);
+      requestIdleCallback(() => this.websocketController.sendToPeer(userId, ACTION.SIGNAL, {
+        userId,
+        signalData,
+      }));
     });
 
     p.on(PEER_EVENT.CLOSE, () => {
@@ -133,17 +151,21 @@ export default class WebRtcController extends AbstractNetworkController {
     });
 
     p.on(PEER_EVENT.DATA, data => {
-      const message = JSON.parse(this.textDecoder.decode(data));
-      Logger.DEBUG(`[WebRTC] Data received from ${userId}:`, message.action);
-      const callbacks = this.messageHandlers.get(message.action);
-      callbacks?.forEach(cb => cb({ ...message.payload, userId }));
+      try {
+        const message = JSON.parse(this.textDecoder.decode(data));
+        Logger.DEBUG(`[WebRTC] Data from ${userId}: ${message.action}`);
+        const callbacks = this.messageHandlers.get(message.action);
+        callbacks?.forEach(cb => cb({ ...message.payload, userId }));
+      } catch (error) {
+        Logger.ERROR(`[WebRTC] Parse error from ${userId}: ${error instanceof Error ? error.message : 'Unknown'}`);
+      }
     });
 
-    p.on(PEER_EVENT.ERROR, (err) => {
-      Logger.ERROR(`[WebRTC] Error with peer ${userId}:`, err.message);
+    p.on(PEER_EVENT.ERROR, err => {
+      Logger.ERROR(`[WebRTC] Error ${userId}: ${err.message}`);
     });
 
     this.peers.set(userId, p);
-    Logger.DEBUG(`[WebRTC] Peer ${userId} added to peers map`);
+    Logger.DEBUG(`[WebRTC] Peer ${userId} added`);
   }
 }
