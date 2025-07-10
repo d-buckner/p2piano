@@ -74,7 +74,7 @@ export default class Piano implements Instrument {
       url: URL,
       velocities,
     });
-    
+
     Logger.DEBUG(`Piano: Loading velocity layer ${velocities}`);
     await instrument.load();
     Logger.DEBUG(`Piano: Loaded velocity layer ${velocities}`);
@@ -85,25 +85,28 @@ export default class Piano implements Instrument {
         'seconds'
       );
     }
-    
+
     if (this.activeKeys.size) {
       // active note(s), queue the swap for when there's nothing playing to avoid impacting current audio
       this.onIdle = () => this.swapInstrument(instrument);
       return;
     }
-    
+
     // piano isn't active, time to swap it some sweet new velocity samples
     this.swapInstrument(instrument);
   }
-  
+
   private swapInstrument(instrument: DPiano) {
     // stop any ringing in the existing piano
-    this.instrument?.stopAll();
-    this.instrument?.dispose();
+    const existingInstrument = this.instrument;
+    // let old piano ring fully before queing cleanup during idle
+    setTimeout(() => requestIdleCallback(() => {
+      existingInstrument?.dispose();
+    }) , 10000);
     // make the swap, let the old instrument be garbage collected
     this.instrument = instrument.toDestination();
     this.velocityIndex++;
-    
+
     // Load next layer when browser is idle to prevent freezing with multiple users
     requestIdleCallback(() => {
       // Start async loading without blocking the idle callback
