@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
+import { RoomEvents } from 'src/websockets/room/events';
 import RedisClient from '../clients/RedisClient';
 import SessionProvider, { Session } from '../entities/Session';
 import type { Server } from 'socket.io';
@@ -34,7 +35,11 @@ export class SessionService {
     const isReconnection = !!existingConnection?.socketId;
     
     if (isReconnection) {
-      server.in(existingConnection.socketId).disconnectSockets(true);
+      const operator = server.in(existingConnection.socketId);
+      // notify prior connection that it's being dropped in favor of a newer one
+      // this happens when staring/creating a room in a 2nd window/tab
+      operator.emit(RoomEvents.NEWER_CONNECTION);
+      operator.disconnectSockets(true);
     }
 
     // Now register the new connection
@@ -54,13 +59,13 @@ export class SessionService {
     const sessionKey = `session:${sessionId}`;
     const [socketId, registeredAt] = await RedisClient.hmGet(sessionKey, ['socketId', 'registeredAt']);
 
-    if (!socketId) {
+    if (!socketId || !registeredAt) {
       return null;
     }
 
     return {
       socketId,
-      registeredAt: registeredAt || Date.now().toString(),
+      registeredAt,
     };
   }
 

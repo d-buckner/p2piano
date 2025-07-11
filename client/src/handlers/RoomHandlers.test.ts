@@ -3,6 +3,7 @@ import * as NoteActions from '../actions/NoteActions';
 import { setRoom, setUserId } from '../actions/RoomActions';
 import { InstrumentType } from '../audio/instruments/Instrument';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
+import '../lib/Logger'; // Import Logger so it's available when handlers run
 import { selectNotesByMidi } from '../selectors/noteSelectors';
 import { selectWorkspace, selectMyUser } from '../selectors/workspaceSelectors';
 import { createTestRoom, createTestUser, createTestNotesByMidi } from '../test-utils/testDataFactories';
@@ -171,9 +172,9 @@ describe('RoomHandlers', () => {
     });
   });
 
-  describe('roomDisconnectHandler', () => {
+  describe('newerConnectionHandler', () => {
     it('should redirect to home page', () => {
-      RoomHandlers.roomDisconnectHandler();
+      RoomHandlers.newerConnectionHandler();
 
       expect(window.location.pathname).toBe('/');
     });

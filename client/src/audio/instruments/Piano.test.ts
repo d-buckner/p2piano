@@ -31,6 +31,12 @@ describe('Piano', () => {
     const { requestIdleCallback } = await vi.importMock('../../lib/ponyfill');
     mockRequestIdleCallback = vi.mocked(requestIdleCallback);
     
+    // Mock setTimeout for disposal timing tests
+    vi.spyOn(global, 'setTimeout').mockImplementation(() => {
+      // Return a mock timer ID
+      return 123 as NodeJS.Timeout;
+    });
+    
     // Mock DPiano instance
     mockDPiano = {
       load: vi.fn().mockResolvedValue(undefined),
@@ -331,6 +337,256 @@ describe('Piano', () => {
       expect(mockDPiano.pedalUp).toHaveBeenCalled();
       expect(mockDPiano.keyDown).not.toHaveBeenCalled();
       expect(mockDPiano.keyUp).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('sustain ringing behavior', () => {
+    beforeEach(async () => {
+      piano = new Piano();
+      await mockDPiano.load();
+      vi.clearAllMocks(); // Clear initial load calls
+    });
+
+    it('should delay instrument disposal when keys are sustained (ringing)', async () => {
+      // Press key during sustain to make it ring
+      piano.sustainDown();
+      piano.keyDown(60);
+      piano.keyUp(60); // Key is now ringing
+
+      // Create new instrument to trigger progressive loading
+      const secondInstrument = {
+        ...mockDPiano,
+        load: vi.fn().mockResolvedValue(undefined),
+        toDestination: vi.fn().mockReturnThis(),
+        dispose: vi.fn(),
+      };
+      vi.mocked(DPiano).mockImplementation(() => secondInstrument);
+
+      // Trigger progressive loading - should be delayed because keys are ringing
+      await piano.load();
+
+      // New instrument should NOT be swapped yet (no toDestination call)
+      expect(secondInstrument.toDestination).not.toHaveBeenCalled();
+      
+      // Old instrument should NOT be disposed yet
+      expect(mockDPiano.dispose).not.toHaveBeenCalled();
+
+      // When sustain is released, swap should happen
+      piano.sustainUp();
+      expect(secondInstrument.toDestination).toHaveBeenCalled();
+      
+      // Old instrument disposal should be scheduled
+      expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 1000);
+    });
+
+    it('should immediately dispose instrument when keys pressed before sustain are released', async () => {
+      // Press key BEFORE sustain (this key will NOT ring)
+      piano.keyDown(60);
+      piano.sustainDown();
+      piano.keyUp(60); // This key should not be sustained
+
+      // Create new instrument to trigger progressive loading
+      const secondInstrument = {
+        ...mockDPiano,
+        load: vi.fn().mockResolvedValue(undefined),
+        toDestination: vi.fn().mockReturnThis(),
+        dispose: vi.fn(),
+      };
+      vi.mocked(DPiano).mockImplementation(() => secondInstrument);
+
+      // Trigger progressive loading - should happen immediately since no keys are ringing
+      await piano.load();
+
+      // New instrument should be swapped immediately
+      expect(secondInstrument.toDestination).toHaveBeenCalled();
+      
+      // Old instrument disposal should be scheduled immediately
+      expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 1000);
+    });
+
+    it('should correctly distinguish between sustained and non-sustained keys via disposal timing', async () => {
+      // Press key before sustain
+      piano.keyDown(60);
+      piano.sustainDown();
+      // Press key during sustain  
+      piano.keyDown(64);
+
+      // Create new instrument
+      const secondInstrument = {
+        ...mockDPiano,
+        load: vi.fn().mockResolvedValue(undefined),
+        toDestination: vi.fn().mockReturnThis(),
+        dispose: vi.fn(),
+      };
+      vi.mocked(DPiano).mockImplementation(() => secondInstrument);
+
+      // Release pre-sustain key - piano should still be considered active due to key 64
+      piano.keyUp(60);
+      await piano.load();
+      expect(secondInstrument.toDestination).not.toHaveBeenCalled(); // Still delayed
+
+      // Release sustained key - piano should still be considered active due to ringing
+      piano.keyUp(64);
+      expect(secondInstrument.toDestination).not.toHaveBeenCalled(); // Still delayed
+
+      // Release sustain - now piano should be idle and swap should happen
+      piano.sustainUp();
+      expect(secondInstrument.toDestination).toHaveBeenCalled();
+    });
+
+    it('should handle multiple sustained keys ringing together via disposal timing', async () => {
+      piano.sustainDown();
+      piano.keyDown(60);
+      piano.keyDown(64);
+      piano.keyDown(67); // C major chord
+      
+      // Release all keys - they should all still be ringing
+      piano.keyUp(60);
+      piano.keyUp(64);
+      piano.keyUp(67);
+
+      // Create new instrument
+      const secondInstrument = {
+        ...mockDPiano,
+        load: vi.fn().mockResolvedValue(undefined),
+        toDestination: vi.fn().mockReturnThis(),
+        dispose: vi.fn(),
+      };
+      vi.mocked(DPiano).mockImplementation(() => secondInstrument);
+
+      // Should not swap because all keys are still ringing
+      await piano.load();
+      expect(secondInstrument.toDestination).not.toHaveBeenCalled();
+
+      // Only when sustain is released should swap trigger
+      piano.sustainUp();
+      expect(secondInstrument.toDestination).toHaveBeenCalled();
+    });
+  });
+
+
+  describe('progressive loading with sustain timing', () => {
+    beforeEach(async () => {
+      piano = new Piano();
+      await mockDPiano.load();
+      vi.clearAllMocks(); // Clear initial load calls
+    });
+
+    it('should sequence instrument swaps correctly when sustain controls timing', async () => {
+      // Test the complete progressive loading sequence with sustain timing control
+      piano.sustainDown();
+      piano.keyDown(60);
+      piano.keyUp(60); // Key is ringing
+      
+      // First progressive load attempt - should be delayed
+      const secondInstrument = {
+        ...mockDPiano,
+        load: vi.fn().mockResolvedValue(undefined),
+        toDestination: vi.fn().mockReturnThis(),
+        dispose: vi.fn(),
+      };
+      vi.mocked(DPiano).mockImplementation(() => secondInstrument);
+      
+      await piano.load();
+      expect(secondInstrument.toDestination).not.toHaveBeenCalled();
+      
+      // Release sustain - swap should happen and schedule disposal
+      piano.sustainUp();
+      expect(secondInstrument.toDestination).toHaveBeenCalled();
+      expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 1000);
+    });
+
+    it('should handle rapid sustain toggling during progressive loading', async () => {
+      // Reset velocity index to test multiple loading cycles
+      // @ts-expect-error - accessing private property for testing setup
+      piano.velocityIndex = 0;
+      
+      const secondInstrument = {
+        ...mockDPiano,
+        load: vi.fn().mockResolvedValue(undefined),
+        toDestination: vi.fn().mockReturnThis(),
+        dispose: vi.fn(),
+      };
+      vi.mocked(DPiano).mockImplementation(() => secondInstrument);
+
+      // First cycle - sustain prevents immediate swap
+      piano.sustainDown();
+      piano.keyDown(60);
+      piano.keyUp(60);
+      await piano.load();
+      expect(secondInstrument.toDestination).not.toHaveBeenCalled();
+
+      // Release sustain - first swap happens
+      piano.sustainUp();
+      expect(secondInstrument.toDestination).toHaveBeenCalled();
+      
+      // Verify disposal scheduling for the swap
+      expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 1000);
+    });
+
+    it('should handle mixed active keys and sustained keys during loading', async () => {
+      // Press key before sustain
+      piano.keyDown(60);
+      piano.sustainDown();
+      // Press key during sustain  
+      piano.keyDown(64);
+
+      const secondInstrument = {
+        ...mockDPiano,
+        load: vi.fn().mockResolvedValue(undefined),
+        toDestination: vi.fn().mockReturnThis(),
+        dispose: vi.fn(),
+      };
+      vi.mocked(DPiano).mockImplementation(() => secondInstrument);
+
+      // Should be delayed due to active key 64
+      await piano.load();
+      expect(secondInstrument.toDestination).not.toHaveBeenCalled();
+
+      // Release pre-sustain key - should still be delayed due to active key 64
+      piano.keyUp(60);
+      expect(secondInstrument.toDestination).not.toHaveBeenCalled();
+
+      // Release sustained key - should still be delayed due to ringing
+      piano.keyUp(64);
+      expect(secondInstrument.toDestination).not.toHaveBeenCalled();
+
+      // Release sustain - now swap should happen
+      piano.sustainUp();
+      expect(secondInstrument.toDestination).toHaveBeenCalled();
+      expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 1000);
+    });
+
+    it('should clear all sustained keys and allow immediate swapping after sustain release', async () => {
+      // Reset velocity index to ensure we can load again
+      // @ts-expect-error - accessing private property for testing setup
+      piano.velocityIndex = 0;
+      
+      // Create multiple sustained keys
+      piano.sustainDown();
+      piano.keyDown(60);
+      piano.keyDown(64);
+      piano.keyDown(67);
+      piano.keyUp(60);
+      piano.keyUp(64);
+      piano.keyUp(67);
+
+      const secondInstrument = {
+        ...mockDPiano,
+        load: vi.fn().mockResolvedValue(undefined),
+        toDestination: vi.fn().mockReturnThis(),
+        dispose: vi.fn(),
+      };
+      vi.mocked(DPiano).mockImplementation(() => secondInstrument);
+
+      // Should be delayed due to all keys ringing
+      await piano.load();
+      expect(secondInstrument.toDestination).not.toHaveBeenCalled();
+
+      // Release sustain should clear all sustained keys and allow swap
+      piano.sustainUp();
+      expect(secondInstrument.toDestination).toHaveBeenCalled();
+      expect(setTimeout).toHaveBeenCalledWith(expect.any(Function), 1000);
     });
   });
 

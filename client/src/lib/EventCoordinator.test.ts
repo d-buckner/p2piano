@@ -47,7 +47,7 @@ vi.mock('../handlers/RoomHandlers', () => ({
     userConnectHandler: vi.fn(),
     userDisconnectHandler: vi.fn(),
     userUpdateHandler: vi.fn(),
-    roomDisconnectHandler: vi.fn(),
+    newerConnectionHandler: vi.fn(),
     blurHandler: vi.fn(),
   },
 }));
@@ -110,7 +110,7 @@ describe('EventCoordinator', () => {
       expect(mockWebsocketController.on).toHaveBeenCalledWith('USER_CONNECT', RoomHandlers.userConnectHandler);
       expect(mockWebsocketController.on).toHaveBeenCalledWith('USER_DISCONNECT', RoomHandlers.userDisconnectHandler);
       expect(mockWebsocketController.on).toHaveBeenCalledWith('USER_UPDATE', RoomHandlers.userUpdateHandler);
-      expect(mockWebsocketController.on).toHaveBeenCalledWith('disconnect', RoomHandlers.roomDisconnectHandler);
+      expect(mockWebsocketController.on).toHaveBeenCalledWith('NEWER_CONNECTION', RoomHandlers.newerConnectionHandler);
     });
 
     it('should register window blur handler', () => {
@@ -209,7 +209,7 @@ describe('EventCoordinator', () => {
       expect(mockWebsocketController.on).toHaveBeenCalledWith('USER_CONNECT', RoomHandlers.userConnectHandler);
       expect(mockWebsocketController.on).toHaveBeenCalledWith('USER_DISCONNECT', RoomHandlers.userDisconnectHandler);
       expect(mockWebsocketController.on).toHaveBeenCalledWith('USER_UPDATE', RoomHandlers.userUpdateHandler);
-      expect(mockWebsocketController.on).toHaveBeenCalledWith('disconnect', RoomHandlers.roomDisconnectHandler);
+      expect(mockWebsocketController.on).toHaveBeenCalledWith('NEWER_CONNECTION', RoomHandlers.newerConnectionHandler);
 
       // Window event handlers
       expect(window.addEventListener).toHaveBeenCalledWith('blur', RoomHandlers.blurHandler);
@@ -236,7 +236,7 @@ describe('EventCoordinator', () => {
       const wsCalls = mockWebsocketController.on.mock.calls;
       expect(wsCalls.find(call => call[0] === 'ROOM_JOIN')[1]).toBe(RoomHandlers.roomJoinHandler);
       expect(wsCalls.find(call => call[0] === 'USER_CONNECT')[1]).toBe(RoomHandlers.userConnectHandler);
-      expect(wsCalls.find(call => call[0] === 'disconnect')[1]).toBe(RoomHandlers.roomDisconnectHandler);
+      expect(wsCalls.find(call => call[0] === 'NEWER_CONNECTION')[1]).toBe(RoomHandlers.newerConnectionHandler);
     });
 
     it('should map RTC events to correct handlers', () => {

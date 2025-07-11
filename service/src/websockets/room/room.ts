@@ -198,8 +198,5 @@ export class Room {
     }
 
     Logger.log(`Session ${sessionId} disconnected from room ${roomId} due to ${reason}`, 'RoomGateway');
-    Logger.debug(`Disconnect reason: ${reason}`, 'RoomGateway');
   }
-
-
 }

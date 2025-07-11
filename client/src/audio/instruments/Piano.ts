@@ -15,6 +15,8 @@ export default class Piano implements Instrument {
   private velocityIndex: number = 0;
   private onIdle: (() => void) | null = null;
   private activeKeys: Set<number> = new Set();
+  private sustainedKeys: Set<number> = new Set();
+  private isSustained = false;
 
 
   constructor() {
@@ -28,7 +30,11 @@ export default class Piano implements Instrument {
       time: getDelayTime(delay),
       velocity: velocity / 127,
     });
+
     this.activeKeys.add(midi);
+    if (this.isSustained) {
+      this.sustainedKeys.add(midi);
+    }
   }
 
   public keyUp(midi: number, delay?: number): void {
@@ -37,21 +43,31 @@ export default class Piano implements Instrument {
       time: getDelayTime(delay),
     });
     this.activeKeys.delete(midi);
-    if (!this.activeKeys.size) {
+    if (!this.isActive()) {
       this.onIdle?.();
     }
   }
 
   public sustainDown(): void {
     this.instrument?.pedalDown();
+    this.isSustained = true;
   }
 
   public sustainUp(): void {
     this.instrument?.pedalUp();
+    this.isSustained = false;
+    this.sustainedKeys.clear();
+    if (!this.isActive()) {
+      this.onIdle?.();
+    }
   }
 
   public releaseAll() {
     this.instrument?.stopAll();
+  }
+
+  private isActive(): boolean {
+    return this.activeKeys.size > 0 || this.sustainedKeys.size > 0;
   }
 
   // everything below here is for the progressive sample streaming
@@ -86,7 +102,7 @@ export default class Piano implements Instrument {
       );
     }
 
-    if (this.activeKeys.size) {
+    if (this.isActive()) {
       // active note(s), queue the swap for when there's nothing playing to avoid impacting current audio
       this.onIdle = () => this.swapInstrument(instrument);
       return;
@@ -102,7 +118,7 @@ export default class Piano implements Instrument {
     // let old piano ring fully before queing cleanup during idle
     setTimeout(() => requestIdleCallback(() => {
       existingInstrument?.dispose();
-    }) , 10000);
+    }), 1000);
     // make the swap, let the old instrument be garbage collected
     this.instrument = instrument.toDestination();
     this.velocityIndex++;
