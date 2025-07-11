@@ -26,7 +26,7 @@ const WEBSOCKET_HANDLERS = {
   USER_CONNECT: RoomHandlers.userConnectHandler,
   USER_DISCONNECT: RoomHandlers.userDisconnectHandler,
   USER_UPDATE: RoomHandlers.userUpdateHandler,
-  disconnect: RoomHandlers.roomDisconnectHandler,
+  NEWER_CONNECTION: RoomHandlers.newerConnectionHandler,
 } as const;
 const MIDI_HANDLERS = {
   noteon: RoomHandlers.keyDownHandler,

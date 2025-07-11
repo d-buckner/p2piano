@@ -2,6 +2,7 @@ import * as NoteActions from '../actions/NoteActions';
 import { setRoom, setUserId } from '../actions/RoomActions';
 import { store } from '../app/store';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
+import Logger from '../lib/Logger';
 import { selectNotesByMidi } from '../selectors/noteSelectors';
 import { selectMyUser, selectWorkspace } from '../selectors/workspaceSelectors';
 import type { InstrumentType } from '../audio/instruments/Instrument';
@@ -73,10 +74,6 @@ export default class RoomHandlers {
     setRoom(room);
   }
 
-  static roomDisconnectHandler() {
-    window.location.pathname = '/';
-  }
-
   static userConnectHandler(payload: UserConnectPayload) {
     const { userId, room } = payload;
     const instrument = room.users?.[userId].instrument as InstrumentType;
@@ -106,6 +103,11 @@ export default class RoomHandlers {
     const { userId, room } = payload;
     InstrumentRegistry.unregister(userId);
     setRoom(room);
+  }
+
+  static newerConnectionHandler() {
+    Logger.ERROR('Booted for newer connection');
+    window.location.pathname = '/';
   }
 
   static blurHandler() {

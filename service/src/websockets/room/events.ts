@@ -3,6 +3,7 @@ export enum RoomEvents {
   USER_DISCONNECT = 'USER_DISCONNECT',
   USER_UPDATE = 'USER_UPDATE',
   ROOM_JOIN = 'ROOM_JOIN',
+  NEWER_CONNECTION = 'NEWER_CONNECTION',
 }
 
 export enum SocketEvents {
