@@ -8,7 +8,7 @@
     "clsx": "^2.1.1",
     "d-piano": "^0.2.1",
     "humidi": "^1.0.0",
-    "piano-visualizer": "^1.0.17",
+    "piano-visualizer": "^1.0.20",
     "simple-peer": "^9.11.1",
     "socket.io-client": "^4.5.4",
     "solid-js": "^1.9.7",
