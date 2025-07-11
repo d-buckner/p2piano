@@ -3,7 +3,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/d-buckner/p2piano/test-coverage.yml?branch=main&label=CI)](https://github.com/d-buckner/p2piano/actions)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-**A real-time collaborative music platform for musicians to play together.**
+**A peer-to-peer collaborative music platform for the musically inclined**
 
 p2piano enables musical collaboration through your web browser. Create a room, share the code with friends, and start jamming together. No downloads, no registration required.
 
