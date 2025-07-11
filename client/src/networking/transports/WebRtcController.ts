@@ -36,8 +36,9 @@ const PEER_EVENT = {
 
 export default class WebRtcController extends AbstractNetworkController {
   private static instance?: WebRtcController;
-  private static MAX_CONNECTION_ATTEMPTS = 3;
-  private static RECONNECT_DELAY = 2000;
+  private static MAX_CONNECTION_ATTEMPTS = 4;
+  private static INITIAL_RECONNECT_DELAY = 1000;
+  private static MAX_RECONNECT_DELAY = 8000;
   private websocketController: WebsocketController;
   private initiator = false;
   private peers = new Map<string, SimplePeer.Instance>();
@@ -122,30 +123,52 @@ export default class WebRtcController extends AbstractNetworkController {
   }
 
   private addPeer(userId: string, attempt: number = 1) {
+    // Track whether this peer was intentionally destroyed by our reconnection logic
+    // to prevent the 'close' event handler from triggering another reconnection
     let stalePeer = false;
     const isInitiator = this.initiator; // capture now for later use in disconnect handler
     Logger.DEBUG(`[WebRTC] Adding peer ${userId}, initiator: ${isInitiator}`);
 
     if (this.peers.has(userId)) {
       Logger.WARN(`[WebRTC] Peer ${userId} already exists, destroying first`);
-      this.peers.get(userId)?.destroy();
+      const existingPeer = this.peers.get(userId);
       this.peers.delete(userId);
       this.activePeerIds.delete(userId);
+      existingPeer?.destroy();
     }
 
     const peer = new SimplePeer({ initiator: this.initiator });
     Logger.DEBUG(`[WebRTC] Peer created for ${userId}`);
 
+    // CRITICAL: Store peer immediately after creation, before any async operations.
+    // This ensures incoming signals can find the peer even if they arrive before
+    // connection setup completes (common on slower devices like iPhones)
+    this.peers.set(userId, peer);
+
     if (this.initiator && attempt <= WebRtcController.MAX_CONNECTION_ATTEMPTS) {
+      // Exponential backoff: 1s, 2s, 4s (capped at 8s)
+      const delay = Math.min(
+        WebRtcController.INITIAL_RECONNECT_DELAY * Math.pow(2, attempt - 1),
+        WebRtcController.MAX_RECONNECT_DELAY
+      );
+      
       setTimeout(() => {
-        if (!this.activePeerIds.has(userId)) {
-          stalePeer = true;
-          Logger.DEBUG(`[WebRTC] Attempt ${attempt} to connection to ${userId}`);
-          peer.destroy();
+        // Only retry if peer hasn't connected and is still the current peer instance
+        // (prevents retrying if peer was replaced by a new connection attempt)
+        if (!this.activePeerIds.has(userId) && this.peers.get(userId) === peer) {
+          stalePeer = true;  // Mark as stale to prevent close handler from reconnecting
+          
+          const nextDelay = Math.min(
+            WebRtcController.INITIAL_RECONNECT_DELAY * Math.pow(2, attempt),
+            WebRtcController.MAX_RECONNECT_DELAY
+          );
+          Logger.DEBUG(`[WebRTC] Attempt ${attempt} to connect to ${userId} (next retry in ${nextDelay}ms)`);
+          
           this.peers.delete(userId);
+          peer.destroy();
           this.addPeer(userId, attempt + 1);
         }
-      }, WebRtcController.RECONNECT_DELAY);
+      }, delay);
     }
 
     peer.on(PEER_EVENT.CONNECT, () => {
@@ -168,15 +191,21 @@ export default class WebRtcController extends AbstractNetworkController {
         message += ` with error: ${peer.errored}`;
       }
       Logger.DEBUG(message);
-      this.peers.delete(userId);
+      
+      // Always remove from active peers and peers map immediately
       this.activePeerIds.delete(userId);
+      this.peers.delete(userId);
+      
       const peerConnection = selectPeerConnection(userId)(store);
       if (peerConnection) {
         updatePeerTransport(userId, Transport.WEBSOCKET);
       }
 
       if (isInitiator && peerConnection && !stalePeer) {
-        // attempt reconnection
+        // Attempt reconnection only if:
+        // 1. We initiated the original connection (isInitiator)
+        // 2. The peer still exists in our connection list (peerConnection)
+        // 3. This wasn't a planned destruction (!stalePeer)
         this.addPeer(userId, attempt + 1);
       }
     });
@@ -196,7 +225,6 @@ export default class WebRtcController extends AbstractNetworkController {
       Logger.ERROR(`[WebRTC] Error ${userId}: ${err.message}`);
     });
 
-    this.peers.set(userId, peer);
     Logger.DEBUG(`[WebRTC] Peer ${userId} added`);
   }
 }

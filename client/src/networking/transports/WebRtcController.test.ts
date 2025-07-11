@@ -345,29 +345,35 @@ describe('WebRtcController', () => {
       expect(SimplePeer).toHaveBeenCalledTimes(1);
       expect(controller.getActivePeerIds().has('user1')).toBe(false);
       
-      // Fast-forward past first timeout (2000ms)
-      vi.advanceTimersByTime(2000);
+      // Fast-forward past first timeout (1000ms with exponential backoff)
+      vi.advanceTimersByTime(1000);
       
       // Should have created retry attempt
       expect(SimplePeer).toHaveBeenCalledTimes(2);
       
-      // Fast-forward past second timeout
+      // Fast-forward past second timeout (2000ms)
       vi.advanceTimersByTime(2000);
       
       // Should have created second retry attempt
       expect(SimplePeer).toHaveBeenCalledTimes(3);
       
-      // Fast-forward past third timeout
-      vi.advanceTimersByTime(2000);
+      // Fast-forward past third timeout (4000ms)
+      vi.advanceTimersByTime(4000);
       
-      // Should have created third retry attempt (max attempts = 3)
+      // Should have created third retry attempt
       expect(SimplePeer).toHaveBeenCalledTimes(4);
       
-      // Fast-forward past fourth timeout
-      vi.advanceTimersByTime(2000);
+      // Fast-forward past fourth timeout (8000ms)
+      vi.advanceTimersByTime(8000);
+      
+      // Should have created fourth retry attempt (max attempts = 4)
+      expect(SimplePeer).toHaveBeenCalledTimes(5);
+      
+      // Fast-forward more to ensure no more retries
+      vi.advanceTimersByTime(16000);
       
       // Should not create more attempts after reaching maximum
-      expect(SimplePeer).toHaveBeenCalledTimes(4);
+      expect(SimplePeer).toHaveBeenCalledTimes(5);
     });
 
     it('should stop retrying after maximum attempts reached', () => {
@@ -378,16 +384,17 @@ describe('WebRtcController', () => {
       
       userConnectHandler({ userId: 'user1' });
       
-      // Fast-forward through all retry attempts
-      vi.advanceTimersByTime(8000); // 4 timeouts of 2000ms each
+      // Fast-forward through all retry attempts with exponential backoff
+      // 1000ms + 2000ms + 4000ms + 8000ms = 15000ms total
+      vi.advanceTimersByTime(15000);
       
-      // Verify we stopped at maximum attempts (original + 3 retries = 4 total)
-      expect(SimplePeer).toHaveBeenCalledTimes(4);
+      // Verify we stopped at maximum attempts (original + 4 retries = 5 total)
+      expect(SimplePeer).toHaveBeenCalledTimes(5);
       expect(controller.getActivePeerIds().has('user1')).toBe(false);
       
       // Advance further to ensure no more retries
-      vi.advanceTimersByTime(4000);
-      expect(SimplePeer).toHaveBeenCalledTimes(4);
+      vi.advanceTimersByTime(16000);
+      expect(SimplePeer).toHaveBeenCalledTimes(5);
     });
 
     it('should not retry for non-initiator peers', () => {
@@ -426,8 +433,8 @@ describe('WebRtcController', () => {
       // Verify peer is now active
       expect(controller.getActivePeerIds().has('user1')).toBe(true);
       
-      // Fast-forward past timeout
-      vi.advanceTimersByTime(2000);
+      // Fast-forward past timeout (1000ms for first attempt)
+      vi.advanceTimersByTime(1000);
       
       // Should not retry since connection was successful
       expect(SimplePeer).toHaveBeenCalledTimes(1);
@@ -444,26 +451,51 @@ describe('WebRtcController', () => {
       userConnectHandler({ userId: 'user1' });
       expect(SimplePeer).toHaveBeenCalledTimes(1);
       
-      // Advance 1 second
-      vi.advanceTimersByTime(1000);
+      // Advance 500ms
+      vi.advanceTimersByTime(500);
       
       // Create second peer
       userConnectHandler({ userId: 'user2' });
       expect(SimplePeer).toHaveBeenCalledTimes(2);
       
-      // Advance 1 more second (total 2 seconds from user1, 1 second from user2)
-      vi.advanceTimersByTime(1000);
+      // Advance 500ms more (total 1000ms from user1, 500ms from user2)
+      vi.advanceTimersByTime(500);
       
-      // user1 should retry (reached 2000ms timeout)
+      // user1 should retry (reached 1000ms timeout)
       expect(SimplePeer).toHaveBeenCalledTimes(3);
       expect(controller.getActivePeerIds().has('user1')).toBe(false);
       expect(controller.getActivePeerIds().has('user2')).toBe(false);
       
-      // Advance 1 more second (user2 reaches timeout)
-      vi.advanceTimersByTime(1000);
+      // Advance 500ms more (user2 reaches 1000ms timeout)
+      vi.advanceTimersByTime(500);
       
       // user2 should retry
       expect(SimplePeer).toHaveBeenCalledTimes(4);
+    });
+
+    it('should use exponential backoff for retry delays', () => {
+      WebRtcController.getInstance();
+
+      const userConnectHandler = mockWebsocketInstance.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
+      
+      userConnectHandler({ userId: 'user1' });
+      
+      // Test that delays follow exponential backoff: 1s, 2s, 4s, 8s (capped)
+      const expectedDelays = [1000, 2000, 4000, 8000];
+      
+      for (let i = 0; i < expectedDelays.length; i++) {
+        const delay = expectedDelays[i];
+        
+        // Advance time by the expected delay
+        vi.advanceTimersByTime(delay);
+        
+        // Should create new peer after each timeout
+        expect(SimplePeer).toHaveBeenCalledTimes(i + 2); // +1 for initial, +1 for this retry
+        
+        // Don't advance beyond max attempts
+        if (i >= 3) break;
+      }
     });
 
     it('should not attempt reconnection when peer connection no longer exists in store', () => {
@@ -499,6 +531,90 @@ describe('WebRtcController', () => {
       
       // Should NOT attempt reconnection since peer connection doesn't exist
       expect(SimplePeer).toHaveBeenCalledTimes(1); // Only the original peer creation
+    });
+  });
+
+  describe('race condition handling', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('should not get "No peer found" when signals arrive while peer exists in Map', () => {
+      const controller = WebRtcController.getInstance();
+
+      const userConnectHandler = mockWebsocketInstance.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
+      const signalHandler = mockWebsocketInstance.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === ACTION.SIGNAL)?.[1];
+      
+      // Create initial peer connection as initiator (via USER_CONNECT)
+      userConnectHandler({ userId: 'user1' });
+      const firstPeer = SimplePeer.mock.results[0].value;
+      
+      // Verify peer is in Map and can receive signals
+      expect(SimplePeer).toHaveBeenCalledTimes(1);
+      
+      // Send a signal while peer exists - should work fine
+      signalHandler({ 
+        userId: 'user1', 
+        signalData: { type: 'offer', sdp: 'test-offer' } 
+      });
+      
+      // Signal should be processed by the peer
+      expect(firstPeer.signal).toHaveBeenCalledWith({ 
+        type: 'offer', 
+        sdp: 'test-offer' 
+      });
+      
+      // Remove from active but keep in Map (simulating disconnected but not destroyed peer)
+      controller.getActivePeerIds().delete('user1');
+      
+      // Send another signal - should still work because peer is in Map
+      signalHandler({ 
+        userId: 'user1', 
+        signalData: { type: 'answer', sdp: 'test-answer' } 
+      });
+      
+      // Signal should still be processed by the same peer
+      expect(firstPeer.signal).toHaveBeenCalledWith({ 
+        type: 'answer', 
+        sdp: 'test-answer' 
+      });
+    });
+
+    it('should store peer in Map immediately after creation to handle async signals', () => {
+      const controller = WebRtcController.getInstance();
+
+      const userConnectHandler = mockWebsocketInstance.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
+      const signalHandler = mockWebsocketInstance.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === ACTION.SIGNAL)?.[1];
+      
+      // Create initial peer as initiator
+      userConnectHandler({ userId: 'user1' });
+      expect(SimplePeer).toHaveBeenCalledTimes(1);
+      
+      // Immediately after peer creation, signals should be handleable
+      // This tests our fix where we moved peers.set() to happen immediately
+      signalHandler({ 
+        userId: 'user1', 
+        signalData: { type: 'answer', sdp: 'immediate-answer' } 
+      });
+      
+      const firstPeer = SimplePeer.mock.results[0].value;
+      
+      // Signal should be handled by the peer that was just created
+      expect(firstPeer.signal).toHaveBeenCalledWith({ 
+        type: 'answer', 
+        sdp: 'immediate-answer' 
+      });
+      
+      // Verify the peer is properly stored and accessible
+      expect(controller.getActivePeerIds().has('user1')).toBe(false); // Not connected yet
     });
   });
 
