@@ -25,8 +25,8 @@ class Metronome {
     getTransport().bpm.value = bpm;
     
     // Schedule repeat using quarter notes (will follow Transport BPM)
-    this.loopId = getTransport().scheduleRepeat(() => {
-      this.playBeat();
+    this.loopId = getTransport().scheduleRepeat((time) => {
+      this.handleBeat(time);
     }, '4n', 0);
     
     // Start the transport
@@ -51,7 +51,7 @@ class Metronome {
     }
   }
 
-  private static playBeat() {
+  private static handleBeat(time: number) {
     const metronome = selectMetronome(store);
     const maxLatency = selectMaxLatency(store);
     
@@ -64,11 +64,12 @@ class Metronome {
     // Broadcast to other clients immediately
     MetronomeClient.tick(tickType);
     
-    // Play locally with max latency delay (leader delays their own audio)
+    // Schedule audio at precise time with latency compensation using Tone.js scheduler
+    // This avoids JS timing dependency by letting Tone.js handle the exact timing
     if (tickType === TICK_TYPE.HI) {
-      ClickSampler.high(maxLatency);
+      ClickSampler.scheduleHigh(time + maxLatency / 1000);
     } else {
-      ClickSampler.low(maxLatency);
+      ClickSampler.scheduleLow(time + maxLatency / 1000);
     }
     
     this.currentBeat = (this.currentBeat + 1) % metronome.beatsPerMeasure;

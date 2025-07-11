@@ -127,6 +127,66 @@ describe('ClickSampler', () => {
     });
   });
 
+  describe('scheduleHigh', () => {
+    it('should schedule high note at specific time', async () => {
+      await ClickSampler.initialize();
+      const time = 1.5;
+      
+      ClickSampler.scheduleHigh(time);
+
+      expect(mockSampler.triggerAttackRelease).toHaveBeenCalledWith(
+        'C4',
+        '8n',
+        time
+      );
+    });
+
+    it('should not schedule if sampler not initialized', () => {
+      ClickSampler.scheduleHigh(1.0);
+      
+      expect(mockSampler.triggerAttackRelease).not.toHaveBeenCalled();
+    });
+
+    it('should not schedule if sampler not loaded', async () => {
+      await ClickSampler.initialize();
+      mockSampler.loaded = false;
+      
+      ClickSampler.scheduleHigh(1.0);
+      
+      expect(mockSampler.triggerAttackRelease).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('scheduleLow', () => {
+    it('should schedule low note at specific time', async () => {
+      await ClickSampler.initialize();
+      const time = 2.0;
+      
+      ClickSampler.scheduleLow(time);
+
+      expect(mockSampler.triggerAttackRelease).toHaveBeenCalledWith(
+        'C3',
+        '8n',
+        time
+      );
+    });
+
+    it('should not schedule if sampler not initialized', () => {
+      ClickSampler.scheduleLow(1.0);
+      
+      expect(mockSampler.triggerAttackRelease).not.toHaveBeenCalled();
+    });
+
+    it('should not schedule if sampler not loaded', async () => {
+      await ClickSampler.initialize();
+      mockSampler.loaded = false;
+      
+      ClickSampler.scheduleLow(1.0);
+      
+      expect(mockSampler.triggerAttackRelease).not.toHaveBeenCalled();
+    });
+  });
+
   describe('dispose', () => {
     it('should dispose the sampler and clear reference', async () => {
       await ClickSampler.initialize();

@@ -47,6 +47,30 @@ class ClickSampler {
     );
   }
 
+  static scheduleHigh(time: number) {
+    if (!this.sampler || !this.sampler.loaded) {
+      Logger.WARN('ClickSampler not initialized or samples not loaded');
+      return;
+    }
+    this.sampler.triggerAttackRelease(
+      ClickSampler.HI_NOTE,
+      '8n',
+      time,
+    );
+  }
+
+  static scheduleLow(time: number) {
+    if (!this.sampler || !this.sampler.loaded) {
+      Logger.WARN('ClickSampler not initialized or samples not loaded');
+      return;
+    }
+    this.sampler.triggerAttackRelease(
+      ClickSampler.LOW_NOTE,
+      '8n',
+      time,
+    );
+  }
+
   static dispose() {
     if (this.sampler) {
       this.sampler.dispose();
