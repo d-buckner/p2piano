@@ -209,7 +209,7 @@ export default class WebRtcController extends AbstractNetworkController {
     });
 
     peer.on(PEER_EVENT.ERROR, (err: SimplePeerError) => {
-      Logger.ERROR(`[WebRTC] Error ${userId}: ${err.message}`);
+      Logger.DEBUG(`[WebRTC] Error ${userId}: ${err.message}`);
 
       const peerConnection = selectPeerConnection(userId)(store);
 
