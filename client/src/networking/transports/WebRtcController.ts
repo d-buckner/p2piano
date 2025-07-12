@@ -51,6 +51,7 @@ export default class WebRtcController extends AbstractNetworkController {
   private initiator = false;
   private peers = new Map<string, SimplePeer.Instance>();
   private activePeerIds = new Set<string>();
+  private pendingConnections = new Set<string>();
   private textDecoder = new TextDecoder();
 
   private constructor() {
@@ -134,6 +135,12 @@ export default class WebRtcController extends AbstractNetworkController {
     const isInitiator = this.initiator; // capture now for later use in disconnect handler
     Logger.DEBUG(`[WebRTC] Adding peer ${userId}, initiator: ${isInitiator}`);
 
+    // Check if we're already trying to connect to this peer
+    if (this.pendingConnections.has(userId)) {
+      Logger.DEBUG(`[WebRTC] Connection already pending for ${userId}, skipping duplicate attempt`);
+      return;
+    }
+
     if (this.peers.has(userId)) {
       Logger.WARN(`[WebRTC] Peer ${userId} already exists, destroying first`);
       const existingPeer = this.peers.get(userId);
@@ -141,6 +148,9 @@ export default class WebRtcController extends AbstractNetworkController {
       this.activePeerIds.delete(userId);
       existingPeer?.destroy();
     }
+
+    // Mark this connection as pending
+    this.pendingConnections.add(userId);
 
     const peer = new SimplePeer({
       initiator: this.initiator,
@@ -156,6 +166,7 @@ export default class WebRtcController extends AbstractNetworkController {
     peer.on(PEER_EVENT.CONNECT, () => {
       Logger.DEBUG(`[WebRTC] Peer ${userId} connected on attempt ${attempt}`);
       this.activePeerIds.add(userId);
+      this.pendingConnections.delete(userId);
       updatePeerTransport(userId, Transport.WEBRTC);
     });
 
@@ -177,6 +188,7 @@ export default class WebRtcController extends AbstractNetworkController {
       // Always remove from active peers and peers map immediately
       this.activePeerIds.delete(userId);
       this.peers.delete(userId);
+      this.pendingConnections.delete(userId);
 
       const peerConnection = selectPeerConnection(userId)(store);
       if (peerConnection) {
@@ -213,6 +225,7 @@ export default class WebRtcController extends AbstractNetworkController {
         // Remove failed peer and retry immediately
         this.peers.delete(userId);
         this.activePeerIds.delete(userId);
+        this.pendingConnections.delete(userId);
         this.addPeer(userId, attempt + 1);
       }
     });

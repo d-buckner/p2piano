@@ -536,6 +536,80 @@ describe('WebRtcController', () => {
     });
   });
 
+  describe('duplicate connection prevention', () => {
+    it('should prevent duplicate peer connections from simultaneous addPeer calls', () => {
+      WebRtcController.getInstance();
+
+      const userConnectHandler = mockWebsocketInstance.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
+
+      // First connection attempt
+      userConnectHandler({ userId: 'user1' });
+      expect(SimplePeer).toHaveBeenCalledTimes(1);
+
+      // Attempt to create another connection for same user while first is pending
+      userConnectHandler({ userId: 'user1' });
+      expect(SimplePeer).toHaveBeenCalledTimes(1); // Should not create duplicate
+    });
+
+    it('should clear pending connection on retryable error and allow retry', () => {
+      // Ensure selectPeerConnection returns a valid peer connection for retry logic
+      vi.mocked(selectPeerConnection).mockReturnValue(() => ({ transport: 'WEBRTC' }));
+      
+      WebRtcController.getInstance();
+
+      const userConnectHandler = mockWebsocketInstance.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
+
+      // Initial connection as initiator
+      userConnectHandler({ userId: 'user1' });
+      expect(SimplePeer).toHaveBeenCalledTimes(1);
+
+      const firstPeer = SimplePeer.mock.results[0].value;
+      
+      // Simulate retryable error
+      const errorHandler = firstPeer.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === 'error')?.[1];
+      errorHandler({ code: 'ERR_CONNECTION_FAILURE', message: 'Connection failed' });
+
+      // Should have created retry peer
+      expect(SimplePeer).toHaveBeenCalledTimes(2);
+
+      // Attempting another connection while retry is in progress should be prevented
+      userConnectHandler({ userId: 'user1' });
+      expect(SimplePeer).toHaveBeenCalledTimes(2); // Should not create another peer
+    });
+
+    it('should prevent race condition between error retry and peer rejoin', () => {
+      // Ensure selectPeerConnection returns a valid peer connection for retry logic
+      vi.mocked(selectPeerConnection).mockReturnValue(() => ({ transport: 'WEBRTC' }));
+      
+      WebRtcController.getInstance();
+
+      const userConnectHandler = mockWebsocketInstance.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
+
+      // User connects, making this peer the initiator
+      userConnectHandler({ userId: 'user1' });
+      expect(SimplePeer).toHaveBeenCalledTimes(1);
+
+      const firstPeer = SimplePeer.mock.results[0].value;
+
+      // Simulate connection failure that triggers retry
+      const errorHandler = firstPeer.on.mock.calls
+        .find((call: [string, EventHandler]) => call[0] === 'error')?.[1];
+      
+      // This will trigger a retry (creates second peer)
+      errorHandler({ code: 'ERR_CONNECTION_FAILURE', message: 'Connection failed' });
+      expect(SimplePeer).toHaveBeenCalledTimes(2);
+
+      // While retry is in progress, remote peer tries to rejoin
+      // This should be prevented due to pending connection
+      userConnectHandler({ userId: 'user1' });
+      expect(SimplePeer).toHaveBeenCalledTimes(2); // Should still be 2, not 3
+    });
+  });
+
   describe('cleanup', () => {
     it('should destroy all peers and reset instance', () => {
       WebRtcController.getInstance();
