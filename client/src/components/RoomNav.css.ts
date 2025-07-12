@@ -13,6 +13,7 @@ export const roomNav = style({
   gridTemplateAreas: '"left center right"',
   alignItems: 'center',
   color: 'white',
+  fontFamily: vars.fonts.heading,
 });
 
 export const navLeft = style({
@@ -37,8 +38,4 @@ export const navLink = style({
   ':hover': {
     textDecoration: 'underline',
   },
-});
-
-export const roomId = style({
-  fontWeight: 'bold',
 });

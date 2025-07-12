@@ -6,6 +6,7 @@ import getDelayTime from './getDelayTime';
 import type { Instrument } from './Instrument';
 
 
+const VOLUME = -3;
 const URL = '/assets/samples/piano/';
 
 export default class Piano implements Instrument {
@@ -89,6 +90,12 @@ export default class Piano implements Instrument {
     const instrument = new DPiano({
       url: URL,
       velocities,
+      volume: {
+        pedal: VOLUME,
+        strings: VOLUME,
+        keybed: VOLUME,
+        harmonics: VOLUME - 20,
+      }
     });
 
     Logger.DEBUG(`Piano: Loading velocity layer ${velocities}`);

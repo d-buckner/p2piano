@@ -37,7 +37,7 @@ function RoomNav(props: Props) {
         <Toolbar />
       </div>
       <a onClick={shareRoom} class={clsx(styles.navLink, styles.navRight)}>
-        room: <span class={styles.roomId}>{props.workspace.roomId}</span>
+        {`room: ${props.workspace.roomId}kj`}
       </a>
     </nav>
   );

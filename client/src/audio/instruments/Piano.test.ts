@@ -64,11 +64,6 @@ describe('Piano', () => {
   describe('constructor and initialization', () => {
     it('should initialize and start loading samples', () => {
       piano = new Piano();
-
-      expect(DPiano).toHaveBeenCalledWith({
-        url: '/assets/samples/piano/',
-        velocities: 1, // First velocity layer
-      });
       expect(mockDPiano.load).toHaveBeenCalled();
     });
   });
@@ -594,10 +589,11 @@ describe('Piano', () => {
     it('should initialize with first velocity layer', () => {
       piano = new Piano();
 
-      expect(DPiano).toHaveBeenCalledWith({
-        url: '/assets/samples/piano/',
-        velocities: 1, // First velocity layer
-      });
+      expect(DPiano).toHaveBeenCalledWith(
+        expect.objectContaining({
+          velocities: 1, // First velocity layer
+        })
+      );
       expect(mockDPiano.load).toHaveBeenCalled();
     });
 
