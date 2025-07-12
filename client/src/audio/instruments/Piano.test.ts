@@ -67,7 +67,7 @@ describe('Piano', () => {
 
       expect(DPiano).toHaveBeenCalledWith({
         url: '/assets/samples/piano/',
-        velocities: 2, // First velocity layer
+        velocities: 1, // First velocity layer
       });
       expect(mockDPiano.load).toHaveBeenCalled();
     });
@@ -596,7 +596,7 @@ describe('Piano', () => {
 
       expect(DPiano).toHaveBeenCalledWith({
         url: '/assets/samples/piano/',
-        velocities: 2, // First velocity layer
+        velocities: 1, // First velocity layer
       });
       expect(mockDPiano.load).toHaveBeenCalled();
     });

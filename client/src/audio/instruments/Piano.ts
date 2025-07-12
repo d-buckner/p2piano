@@ -9,7 +9,7 @@ import type { Instrument } from './Instrument';
 const URL = '/assets/samples/piano/';
 
 export default class Piano implements Instrument {
-  private static readonly velocityOptions: number[] = [2, 8];
+  private static readonly velocityProgression: number[] = [1, 8];
   private loadStart = Date.now();
   private instrument?: DPiano;
   private velocityIndex: number = 0;
@@ -76,8 +76,8 @@ export default class Piano implements Instrument {
 
   private async load(): Promise<void> {
     this.onIdle = null;
-    const velocities = Piano.velocityOptions[this.velocityIndex];
-    if (this.velocityIndex === Piano.velocityOptions.length) {
+    const velocities = Piano.velocityProgression[this.velocityIndex];
+    if (this.velocityIndex === Piano.velocityProgression.length) {
       Logger.DEBUG(
         'Piano: full samples loaded in',
         this.getSecondsFromLoad(),
