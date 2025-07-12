@@ -94,7 +94,7 @@ export default class Piano implements Instrument {
         pedal: VOLUME,
         strings: VOLUME,
         keybed: VOLUME,
-        harmonics: VOLUME - 20,
+        harmonics: VOLUME,
       }
     });
 
