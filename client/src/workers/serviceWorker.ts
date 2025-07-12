@@ -5,12 +5,10 @@
 const CACHE_NAME = 'p2piano-audio-v1';
 
 self.addEventListener('install', () => {
-  console.log('Audio Service Worker: Installing');
   self.skipWaiting();
 });
 
 self.addEventListener('activate', () => {
-  console.log('Audio Service Worker: Activating');
   self.clients.claim();
 });
 
@@ -37,8 +35,6 @@ async function handleAudioRequest(request: Request) {
       return cachedResponse;
     }
     
-    // Fetch and cache
-    console.log('Service Worker: Fetching and caching', request.url);
     const response = await fetch(request);
     
     if (response.ok) {

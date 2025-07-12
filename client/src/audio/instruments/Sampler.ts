@@ -6,7 +6,7 @@ import type { Instrument } from './Instrument';
 
 
 const BASE_PATH = '/assets/samples/';
-const FILE_TYPE = 'mp3';
+const FILE_TYPE = 'ogg';
 
 export default class Sampler implements Instrument {
   protected instrument: ToneSampler;

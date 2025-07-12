@@ -40,9 +40,9 @@ describe('Sampler', () => {
 
     expect(ToneSampler).toHaveBeenCalledWith({
       urls: {
-        'C3': 'C3.mp3',
-        'E3': 'E3.mp3', 
-        'G3': 'G3.mp3',
+        'C3': 'C3.ogg',
+        'E3': 'E3.ogg', 
+        'G3': 'G3.ogg',
       },
       baseUrl: '/assets/samples/test-instrument/',
     });
@@ -54,8 +54,8 @@ describe('Sampler', () => {
 
     expect(ToneSampler).toHaveBeenCalledWith({
       urls: {
-        'C#3': 'C#3.mp3',
-        'Bb4': 'Bb4.mp3',
+        'C#3': 'C#3.ogg',
+        'Bb4': 'Bb4.ogg',
       },
       baseUrl: '/assets/samples/test/',
     });

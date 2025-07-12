@@ -3,7 +3,7 @@ http://:8345 {
 	encode zstd gzip
 
 	@audio_samples {
-		path /assets/samples/**/*.mp3
+		path /assets/samples/**/*.ogg
 	}
 
 	@js_assets {
