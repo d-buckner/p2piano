@@ -26,7 +26,7 @@ export function initializeOtelemetry(): void {
   }
 
   // Enable OTEL diagnostic logging for export errors
-  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.WARN);
+  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.INFO);
 
   const endpoint = ConfigProvider.getOtelEndpoint();
   const protocol = ConfigProvider.getOtelProtocol();
@@ -37,7 +37,7 @@ export function initializeOtelemetry(): void {
 
   const metricReader = new PeriodicExportingMetricReader({
     exporter: metricsExporter,
-    exportIntervalMillis: 30000,
+    exportIntervalMillis: 5000, // Export every 5 seconds for testing
   });
 
   const logsExporter = protocol === 'grpc' 
