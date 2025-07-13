@@ -7,6 +7,7 @@ import { OTLPMetricExporter as MetricExporterHTTP } from '@opentelemetry/exporte
 import { BatchLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { NodeSDK } from '@opentelemetry/sdk-node';
+import { NoopSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import ConfigProvider from '../config/ConfigProvider';
 
 
@@ -48,6 +49,7 @@ export function initializeOtelemetry(): void {
   sdk = new NodeSDK({
     metricReader,
     logRecordProcessor: logProcessor,
+    spanProcessor: new NoopSpanProcessor(),
     instrumentations: [getNodeAutoInstrumentations({
       '@opentelemetry/instrumentation-fs': { enabled: false },
     })],
