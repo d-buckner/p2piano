@@ -196,6 +196,7 @@ export class Room {
       const roomData = await roomEntity.leave(sessionId);
       applicationMetrics.recordUserLeftRoom(roomId);
       applicationMetrics.recordWebSocketDisconnection(reason, roomId);
+      applicationMetrics.recordWebSocketDisconnected(roomId);
       broadcast(socket, RoomEvents.USER_DISCONNECT, {
         userId: sessionId,
         room: roomData,
