@@ -1,4 +1,12 @@
 http://:8345 {
+	log {
+		output stdout
+		format json {
+			time_format iso8601
+			duration_format seconds
+		}
+	}
+
 	root * /www
 	encode zstd gzip
 

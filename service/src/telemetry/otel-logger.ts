@@ -1,5 +1,5 @@
-import { ConsoleLogger } from '@nestjs/common';
 import { logs } from '@opentelemetry/api-logs';
+import { StructuredLogger } from './structured-logger';
 import type { LogLevel } from '@nestjs/common';
 import type { AnyValueMap} from '@opentelemetry/api-logs';
 
@@ -12,12 +12,11 @@ interface SeverityMapping {
 }
 
 /**
- * NestJS logger that extends ConsoleLogger to forward logs to OpenTelemetry.
+ * NestJS logger that extends StructuredLogger to forward logs to OpenTelemetry.
  * 
- * Maintains all existing NestJS logging behavior while adding OTEL integration.
- * When OTEL is enabled, logs are sent to both console and the configured OTLP endpoint.
+ * Outputs clean formatted logs while sending telemetry data to the configured OTLP endpoint.
  */
-export class OtelLogger extends ConsoleLogger {
+export class OtelLogger extends StructuredLogger {
   private readonly otelLogger = logs.getLogger('p2piano-service');
 
   protected printMessages(
@@ -26,8 +25,10 @@ export class OtelLogger extends ConsoleLogger {
     logLevel?: LogLevel,
     writeStreamType?: WriteStreamType,
   ): void {
+    // Use parent's clean formatting for console output
     super.printMessages(messages, context, logLevel, writeStreamType);
 
+    // Send to OpenTelemetry
     if (messages.length > 0) {
       const message = messages.join(' ');
       const severity = this.mapLogLevelToSeverity(logLevel);

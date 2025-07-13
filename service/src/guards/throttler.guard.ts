@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { applicationMetrics } from '../telemetry/metrics';
 import { extractSessionIdFromSocket } from '../websockets/utils';
 import type { ExecutionContext } from '@nestjs/common';
 import type { ThrottlerRequest } from '@nestjs/throttler';
@@ -55,6 +56,10 @@ export class WsThrottlerGuard extends ThrottlerGuard {
     const client = context.switchToWs().getClient<Socket>();
     const eventName = context.getHandler().name;
     const ip = throttlerLimitDetail.tracker;
+    const sessionId = extractSessionIdFromSocket(client);
+
+    // Record rate limit violation metric
+    applicationMetrics.recordRateLimitViolation(`websocket:${eventName}`, sessionId || ip);
 
     this.logger.warn(
       `🚫 WebSocket throttle limit exceeded for ${eventName} from ${ip}`,

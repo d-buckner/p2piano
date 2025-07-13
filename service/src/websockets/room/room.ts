@@ -108,7 +108,7 @@ export class Room {
 
       try {
         // Retry logic for race condition handling in the case the room was just created
-        const roomData = await this.retryRoomJoin(roomEntity, sessionId, displayName as string, 5);
+        const roomData = await this.retryRoomJoin(roomEntity, sessionId, displayName, 5);
 
         // Join both the shared room (for room-wide broadcasts) and personal room (for direct user targeting)
         socket.join(roomId);

@@ -10,6 +10,7 @@ import { AppModule } from './app.module';
 import ConfigProvider from './config/ConfigProvider';
 import { shutdownOtelemetry } from './telemetry/otel';
 import { OtelLogger } from './telemetry/otel-logger';
+import { StructuredLogger } from './telemetry/structured-logger';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 
 
@@ -20,10 +21,10 @@ async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule, 
     new FastifyAdapter(),
-    {
-      logger: ConfigProvider.isOtelEnabled() ? new OtelLogger() : undefined,
-    }
   );
+
+  // Set the global logger for all Logger instances
+  app.useLogger(ConfigProvider.isOtelEnabled() ? new OtelLogger() : new StructuredLogger());
  
   // Use custom WebSocket adapter for session validation and Redis clustering
   const sessionAdapter = new SessionIoAdapter(app);
