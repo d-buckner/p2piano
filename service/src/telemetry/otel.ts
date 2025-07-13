@@ -1,3 +1,4 @@
+import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { OTLPLogExporter as LogExporterGRPC } from '@opentelemetry/exporter-logs-otlp-grpc';
 import { OTLPLogExporter as LogExporterHTTP } from '@opentelemetry/exporter-logs-otlp-http';
@@ -22,6 +23,9 @@ export function initializeOtelemetry(): void {
   if (!ConfigProvider.isOtelEnabled()) {
     return;
   }
+
+  // Enable OTEL diagnostic logging for export errors
+  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.WARN);
 
   const endpoint = ConfigProvider.getOtelEndpoint();
   const protocol = ConfigProvider.getOtelProtocol();

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Room from './entities/Room';
+import { applicationMetrics } from './telemetry/metrics';
 import { getErrorInfo } from './utils/ErrorUtils';
 
 
@@ -17,11 +18,13 @@ export class AppService {
       const result = await Room.create();
       const duration = Date.now() - startTime;
       this.logger.log(`Room created: ${result.roomId} (${duration}ms)`);
+      applicationMetrics.recordRoomCreated(duration);
       return result;
     } catch (error) {
       const duration = Date.now() - startTime;
       const { message, stack } = getErrorInfo(error);
       this.logger.error(`Failed to create room after ${duration}ms: ${message}`, stack);
+      applicationMetrics.recordRoomCreationFailed(duration);
       throw error;
     }
   }

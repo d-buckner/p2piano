@@ -13,6 +13,7 @@ import { WsThrottlerGuard } from '../../guards/throttler.guard';
 import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
 import { SessionValidatorService } from '../../services/session-validator.service';
 import { SessionService } from '../../services/session.service';
+import { applicationMetrics } from '../../telemetry/metrics';
 import { getErrorMessage } from '../../utils/ErrorUtils';
 import {
   broadcast,
@@ -156,7 +157,9 @@ export class Room {
   private async retryRoomJoin(roomEntity: RoomEntity, sessionId: string, displayName: string, maxRetries: number): Promise<IRoom> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        return await roomEntity.join(sessionId, displayName);
+        const result = await roomEntity.join(sessionId, displayName);
+        applicationMetrics.recordUserJoinedRoom(roomEntity.roomId);
+        return result;
       } catch (err) {
         if (attempt >= maxRetries) throw err;
 
@@ -189,6 +192,7 @@ export class Room {
 
     try {
       const roomData = await roomEntity.leave(sessionId);
+      applicationMetrics.recordUserLeftRoom(roomId);
       broadcast(socket, RoomEvents.USER_DISCONNECT, {
         userId: sessionId,
         room: roomData,
