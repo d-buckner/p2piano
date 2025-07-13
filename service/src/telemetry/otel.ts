@@ -49,7 +49,7 @@ export function initializeOtelemetry(): void {
   sdk = new NodeSDK({
     metricReader,
     logRecordProcessor: logProcessor,
-    spanProcessor: new NoopSpanProcessor(),
+    spanProcessors: [new NoopSpanProcessor()],
     instrumentations: [getNodeAutoInstrumentations({
       '@opentelemetry/instrumentation-fs': { enabled: false },
     })],
