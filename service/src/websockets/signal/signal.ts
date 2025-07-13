@@ -13,7 +13,7 @@ import type { Socket } from 'socket.io';
 export class Signal {
   private readonly logger = new Logger(Signal.name);
 
-  @UseGuards(SignalThrottlerGuard) 
+  @UseGuards(SignalThrottlerGuard)
   @SubscribeMessage(SignalEvents.SIGNAL)
   async onSignal(@MessageBody(new WsValidationPipe()) payload: SignalPayloadDto, @ConnectedSocket() socket: Socket) {
     try {
@@ -23,27 +23,17 @@ export class Signal {
         return;
       }
 
+      const { signalData } = payload;
       // Direct room targeting - target user's personal room (sessionId)
       // Redis adapter handles cross-server routing automatically
       socket.to(payload.userId).emit(SignalEvents.SIGNAL, {
-        signalData: payload.signalData,
+        signalData,
         userId,
       });
 
-      this.logger.debug('WebRTC signal routed to user room', {
-        from: userId,
-        to: payload.userId,
-        signalType: payload.signalData.type
-      });
-
+      this.logger.debug(`WebRTC signal ${signalData.type} routed from ${userId} to ${payload.userId}`);
     } catch (error) {
-      this.logger.error('Error processing WebRTC signal', {
-        error: getErrorMessage(error),
-        socketId: socket.id,
-        targetUserId: payload.userId,
-        signalType: payload.signalData.type
-      });
-      
+      this.logger.error(`Error processing WebRTC signal: ${getErrorMessage(error)}`);
       socket.emit('exception', {
         status: 'error',
         code: 500,
