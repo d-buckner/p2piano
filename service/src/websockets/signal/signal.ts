@@ -3,7 +3,7 @@ import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway } from
 import { SignalThrottlerGuard } from '../../guards/signalthrottler.guard';
 import { WsValidationPipe } from '../../pipes/ws-validation.pipe';
 import { getErrorMessage } from '../../utils/ErrorUtils';
-import { getWebSocketGatewayOptions, extractSessionIdFromSocket } from '../utils';
+import { getWebSocketGatewayOptions, extractSessionIdFromSocket, sendTo } from '../utils';
 import { SignalEvents } from './events';
 import type { SignalPayloadDto } from '../../dto/ws/signal.dto';
 import type { Socket } from 'socket.io';
@@ -26,7 +26,7 @@ export class Signal {
       const { signalData } = payload;
       // Direct room targeting - target user's personal room (sessionId)
       // Redis adapter handles cross-server routing automatically
-      socket.to(payload.userId).emit(SignalEvents.SIGNAL, {
+      sendTo(socket, payload.userId, SignalEvents.SIGNAL, {
         signalData,
         userId,
       });

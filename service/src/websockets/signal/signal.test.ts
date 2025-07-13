@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { extractSessionIdFromSocket } from '../utils';
+import { extractSessionIdFromSocket, sendTo } from '../utils';
 import { SignalEvents } from './events';
 import { Signal } from './signal';
 import type { SignalPayloadDto } from '../../dto/ws/signal.dto';
@@ -7,20 +7,19 @@ import type { SignalPayloadDto } from '../../dto/ws/signal.dto';
 // Mock dependencies
 vi.mock('../utils', () => ({
   extractSessionIdFromSocket: vi.fn(),
+  sendTo: vi.fn(),
   getWebSocketGatewayOptions: () => {},
 }));
 
 describe('Signal Gateway (Simplified)', () => {
   let gateway: Signal;
   let mockSocket: any;
-  const mockGetSocketSessionId = extractSessionIdFromSocket as any;
 
   beforeEach(() => {
     gateway = new Signal();
 
     mockSocket = {
       id: 'sender-socket-id',
-      to: vi.fn().mockReturnValue({ emit: vi.fn() }),
       emit: vi.fn(),
     } as any;
 
@@ -32,7 +31,7 @@ describe('Signal Gateway (Simplified)', () => {
     const targetUserId = 'target-user-id';
 
     beforeEach(() => {
-      mockGetSocketSessionId.mockReturnValue(senderUserId);
+      (extractSessionIdFromSocket as any).mockReturnValue(senderUserId);
     });
 
     it('should route signal to target user room directly', async () => {
@@ -46,8 +45,11 @@ describe('Signal Gateway (Simplified)', () => {
 
       await gateway.onSignal(payload, mockSocket);
 
-      expect(mockGetSocketSessionId).toHaveBeenCalledWith(mockSocket);
-      expect(mockSocket.to).toHaveBeenCalledWith(targetUserId); // Routes to user's room directly
+      expect(extractSessionIdFromSocket).toHaveBeenCalledWith(mockSocket);
+      expect(sendTo).toHaveBeenCalledWith(mockSocket, targetUserId, SignalEvents.SIGNAL, {
+        signalData: payload.signalData,
+        userId: senderUserId,
+      });
     });
 
     it('should emit signal with correct payload structure', async () => {
@@ -59,19 +61,16 @@ describe('Signal Gateway (Simplified)', () => {
         }
       };
 
-      const mockEmit = vi.fn();
-      mockSocket.to.mockReturnValue({ emit: mockEmit });
-
       await gateway.onSignal(payload, mockSocket);
 
-      expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
+      expect(sendTo).toHaveBeenCalledWith(mockSocket, targetUserId, SignalEvents.SIGNAL, {
         signalData: payload.signalData,
         userId: senderUserId,
       });
     });
 
     it('should handle missing sender user ID gracefully', async () => {
-      mockGetSocketSessionId.mockReturnValue(null);
+      (extractSessionIdFromSocket as any).mockReturnValue(null);
 
       const payload: SignalPayloadDto = {
         userId: targetUserId,
@@ -81,14 +80,11 @@ describe('Signal Gateway (Simplified)', () => {
       await gateway.onSignal(payload, mockSocket);
 
       // Should not emit signal when sender is not authenticated
-      expect(mockSocket.to).not.toHaveBeenCalled();
+      expect(sendTo).not.toHaveBeenCalled();
     });
 
     it('should still emit to room even if target user is not connected', async () => {
       const targetUserId = 'non-existent-user';
-      
-      const mockEmit = vi.fn();
-      mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
 
       const payload: SignalPayloadDto = {
         userId: targetUserId,
@@ -97,8 +93,11 @@ describe('Signal Gateway (Simplified)', () => {
 
       await gateway.onSignal(payload, mockSocket);
 
-      // Should still emit to the user's room (Socket.IO handles if room is empty)
-      expect(mockSocket.to).toHaveBeenCalledWith(targetUserId);
+      // Should still emit to the user's room (sendTo handles if room is empty)
+      expect(sendTo).toHaveBeenCalledWith(mockSocket, targetUserId, SignalEvents.SIGNAL, {
+        signalData: payload.signalData,
+        userId: senderUserId,
+      });
     });
 
     it('should preserve signal data integrity', async () => {
@@ -115,13 +114,12 @@ describe('Signal Gateway (Simplified)', () => {
         signalData: complexSignalData
       };
 
-      const mockEmit = vi.fn();
-      mockSocket.to.mockReturnValue({ emit: mockEmit });
-
       await gateway.onSignal(payload, mockSocket);
 
-      const emittedData = mockEmit.mock.calls[0]?.[1];
-      expect(emittedData.signalData).toEqual(complexSignalData);
+      expect(sendTo).toHaveBeenCalledWith(mockSocket, targetUserId, SignalEvents.SIGNAL, {
+        signalData: complexSignalData,
+        userId: senderUserId,
+      });
     });
   });
 });

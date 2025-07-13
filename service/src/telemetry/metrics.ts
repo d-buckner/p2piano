@@ -32,7 +32,7 @@ class ApplicationMetrics {
   });
 
   private readonly websocketMessageRateCounter = this.meter.createCounter('websocket_messages_total', {
-    description: 'Total WebSocket messages by event type and direction',
+    description: 'Total WebSocket messages by event type',
   });
 
   // Error tracking metrics
@@ -135,10 +135,8 @@ class ApplicationMetrics {
   /**
    * Records a WebSocket message.
    */
-  recordWebSocketMessage(eventType: string, direction: 'inbound' | 'outbound', roomId?: string): void {
-    const attributes: Record<string, string> = { event_type: eventType, direction };
-    if (roomId) attributes.room_id = roomId;
-    this.websocketMessageRateCounter.add(1, attributes);
+  recordWebSocketMessage(eventType: string, sessionId: string): void {
+    this.websocketMessageRateCounter.add(1, { event_type: eventType, session_id: sessionId });
   }
 
   /**

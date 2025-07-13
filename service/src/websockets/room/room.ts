@@ -120,6 +120,8 @@ export class Room {
           return;
         }
 
+        applicationMetrics.recordWebSocketConnection(roomId);
+
         broadcast(socket, RoomEvents.USER_CONNECT, {
           userId: sessionId,
           room: roomData,
@@ -193,6 +195,7 @@ export class Room {
     try {
       const roomData = await roomEntity.leave(sessionId);
       applicationMetrics.recordUserLeftRoom(roomId);
+      applicationMetrics.recordWebSocketDisconnection(reason, roomId);
       broadcast(socket, RoomEvents.USER_DISCONNECT, {
         userId: sessionId,
         room: roomData,

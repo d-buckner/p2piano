@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { extractSessionIdFromSocket } from '../utils';
+import { extractSessionIdFromSocket, sendTo } from '../utils';
 import { SignalEvents } from './events';
 import { Signal } from './signal';
 import type { SignalPayloadDto } from '../../dto/ws/signal.dto';
@@ -8,6 +8,7 @@ import type { Socket } from 'socket.io';
 // Mock dependencies
 vi.mock('../utils', () => ({
   extractSessionIdFromSocket: vi.fn(),
+  sendTo: vi.fn(),
   getWebSocketGatewayOptions: () => {},
 }));
 
@@ -38,22 +39,18 @@ vi.mock('../../pipes/ws-validation.pipe', () => ({
 describe('Signal Gateway Message Flow', () => {
   let gateway: Signal;
   let mockSocket: any;
-  let mockExtractSessionId: any;
 
   beforeEach(() => {
-    mockExtractSessionId = extractSessionIdFromSocket as any;
-
     gateway = new Signal();
 
     // Setup mock socket
     mockSocket = {
       id: 'sender-socket-id',
-      to: vi.fn().mockReturnThis(),
       emit: vi.fn(),
     } as any;
 
     // Setup session extraction mock to return a valid user ID
-    mockExtractSessionId.mockReturnValue('sender-user-id');
+    (extractSessionIdFromSocket as any).mockReturnValue('sender-user-id');
 
     vi.clearAllMocks();
   });
@@ -68,13 +65,9 @@ describe('Signal Gateway Message Flow', () => {
         }
       };
 
-      const mockEmit = vi.fn();
-      mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
-
       await gateway.onSignal(offerPayload, mockSocket);
 
-      expect(mockSocket.to).toHaveBeenCalledWith('target-user-id');
-      expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
+      expect(sendTo).toHaveBeenCalledWith(mockSocket, 'target-user-id', SignalEvents.SIGNAL, {
         signalData: offerPayload.signalData,
         userId: 'sender-user-id',
       });
@@ -89,13 +82,9 @@ describe('Signal Gateway Message Flow', () => {
         }
       };
 
-      const mockEmit = vi.fn();
-      mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
-
       await gateway.onSignal(answerPayload, mockSocket);
 
-      expect(mockSocket.to).toHaveBeenCalledWith('target-user-id');
-      expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
+      expect(sendTo).toHaveBeenCalledWith(mockSocket, 'target-user-id', SignalEvents.SIGNAL, {
         signalData: answerPayload.signalData,
         userId: 'sender-user-id',
       });
@@ -112,13 +101,9 @@ describe('Signal Gateway Message Flow', () => {
         }
       };
 
-      const mockEmit = vi.fn();
-      mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
-
       await gateway.onSignal(candidatePayload, mockSocket);
 
-      expect(mockSocket.to).toHaveBeenCalledWith('target-user-id');
-      expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
+      expect(sendTo).toHaveBeenCalledWith(mockSocket, 'target-user-id', SignalEvents.SIGNAL, {
         signalData: candidatePayload.signalData,
         userId: 'sender-user-id',
       });
@@ -138,15 +123,17 @@ describe('Signal Gateway Message Flow', () => {
         signalData: { type: 'offer', sdp: 'test-sdp-2' }
       };
 
-      const mockEmit = vi.fn();
-      mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
-
       await gateway.onSignal(payload1, mockSocket);
       await gateway.onSignal(payload2, mockSocket);
 
-      expect(mockSocket.to).toHaveBeenCalledWith('user-2');
-      expect(mockSocket.to).toHaveBeenCalledWith('user-3');
-      expect(mockEmit).toHaveBeenCalledTimes(2);
+      expect(sendTo).toHaveBeenCalledWith(mockSocket, 'user-2', SignalEvents.SIGNAL, {
+        signalData: payload1.signalData,
+        userId: 'sender-user-id',
+      });
+      expect(sendTo).toHaveBeenCalledWith(mockSocket, 'user-3', SignalEvents.SIGNAL, {
+        signalData: payload2.signalData,
+        userId: 'sender-user-id',
+      });
     });
   });
 
@@ -157,32 +144,29 @@ describe('Signal Gateway Message Flow', () => {
         signalData: { type: 'offer', sdp: 'test-sdp' }
       };
 
-      const mockEmit = vi.fn();
-      mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
-
       // Should not throw an error
       await expect(gateway.onSignal(payload, mockSocket)).resolves.toBeUndefined();
 
-      // Signal should still be sent to the target room (Redis adapter handles if user exists)
-      expect(mockSocket.to).toHaveBeenCalledWith('non-existent-user');
+      // Signal should still be sent to the target room (sendTo handles if user exists)
+      expect(sendTo).toHaveBeenCalledWith(mockSocket, 'non-existent-user', SignalEvents.SIGNAL, {
+        signalData: payload.signalData,
+        userId: 'sender-user-id',
+      });
     });
 
     it('should handle unauthenticated sockets gracefully', async () => {
       // Mock extract session to return null (unauthenticated)
-      mockExtractSessionId.mockReturnValue(null);
+      (extractSessionIdFromSocket as any).mockReturnValue(null);
 
       const payload: SignalPayloadDto = {
         userId: 'target-user-id',
         signalData: { type: 'offer', sdp: 'test-sdp' }
       };
 
-      const mockEmit = vi.fn();
-      mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
-
       await gateway.onSignal(payload, mockSocket);
 
       // Should not emit signal when socket is unauthenticated
-      expect(mockEmit).not.toHaveBeenCalled();
+      expect(sendTo).not.toHaveBeenCalled();
     });
 
     it('should handle malformed signal data gracefully', async () => {
@@ -191,15 +175,11 @@ describe('Signal Gateway Message Flow', () => {
         signalData: { type: 'candidate' } // Missing required candidate fields
       };
 
-      const mockEmit = vi.fn();
-      mockSocket.to.mockReturnValue({ emit: mockEmit } as any);
-
       // Should not throw an error
       await expect(gateway.onSignal(payload, mockSocket)).resolves.toBeUndefined();
 
       // Signal should still be forwarded (validation is client-side responsibility)
-      expect(mockSocket.to).toHaveBeenCalledWith('target-user-id');
-      expect(mockEmit).toHaveBeenCalledWith(SignalEvents.SIGNAL, {
+      expect(sendTo).toHaveBeenCalledWith(mockSocket, 'target-user-id', SignalEvents.SIGNAL, {
         signalData: payload.signalData,
         userId: 'sender-user-id',
       });

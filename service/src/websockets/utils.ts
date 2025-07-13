@@ -1,4 +1,5 @@
 import ConfigProvider from '../config/ConfigProvider';
+import { applicationMetrics } from '../telemetry/metrics';
 import type { Socket } from 'socket.io';
 
 
@@ -30,7 +31,6 @@ export function extractSessionIdFromSocket(socket: Socket): string | null {
     }
   }
 
-  // Don't trust query parameters - they can be modified by clients
   return null;
 }
 
@@ -54,6 +54,11 @@ export function getSocketMetadata(socket: Socket) {
   };
 }
 
+export function sendTo<T>(socket: Socket, sessionId: string, eventType: string, payload: T) {
+  socket.to(sessionId).emit(eventType, payload);
+  recordWebSocketMessage(socket, eventType);
+}
+
 export function broadcast<T>(socket: Socket, eventType: string, payload: T) {
   const roomId = getSocketRoomId(socket);
   const userId = extractSessionIdFromSocket(socket);
@@ -65,6 +70,7 @@ export function broadcast<T>(socket: Socket, eventType: string, payload: T) {
     userId,
   };
   socket.to(roomId).emit(eventType, decoratedPayload);
+  recordWebSocketMessage(socket, eventType);
 }
 
 /**
@@ -94,4 +100,11 @@ export function broadcastToSubset<T>(socket: Socket, sessionIds: string[], event
   sessionIds.forEach((targetSessionId) => {
     socket.to(targetSessionId).emit(eventType, decoratedPayload);
   });
+  
+  // Record one metric per broadcast (not per target)
+  recordWebSocketMessage(socket, eventType);
+}
+
+function recordWebSocketMessage(socket: Socket, eventType: string) {
+  applicationMetrics.recordWebSocketMessage(eventType, extractSessionIdFromSocket(socket) ?? 'unknown');
 }
