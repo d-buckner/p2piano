@@ -68,6 +68,30 @@ export default class ConfigProvider {
   }
 
   /**
+   * Gets the OpenTelemetry OTLP endpoint.
+   * @returns OTLP endpoint URL or undefined if not configured
+   */
+  static getOtelEndpoint(): string | undefined {
+    return process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
+  }
+
+  /**
+   * Gets the OpenTelemetry OTLP protocol.
+   * @returns OTLP protocol ('grpc' or 'http/protobuf') or 'grpc' as default
+   */
+  static getOtelProtocol(): string {
+    return process.env.OTEL_EXPORTER_OTLP_PROTOCOL || 'grpc';
+  }
+
+  /**
+   * Checks if OpenTelemetry is enabled.
+   * @returns True if OTEL_EXPORTER_OTLP_ENDPOINT is configured
+   */
+  static isOtelEnabled(): boolean {
+    return Boolean(process.env.OTEL_EXPORTER_OTLP_ENDPOINT);
+  }
+
+  /**
    * Gets the cookie signing secret with validation.
    * @returns Cookie secret string
    * @throws Error if secret is missing in production

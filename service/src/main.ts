@@ -5,14 +5,25 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SessionIoAdapter } from './adapters/session-io.adapter';
 import { AppModule } from './app.module';
 import ConfigProvider from './config/ConfigProvider';
+import { initializeOtelemetry } from './telemetry/otel';
+import { OtelLogger } from './telemetry/otel-logger';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 
 
 async function bootstrap() {
+  // Initialize OpenTelemetry first, before any other imports or initialization
+  initializeOtelemetry();
+  
   // Validate environment variables before starting the application
   ConfigProvider.validateEnvironment();
   
-  const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter());
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule, 
+    new FastifyAdapter(),
+    {
+      logger: ConfigProvider.isOtelEnabled() ? new OtelLogger() : undefined,
+    }
+  );
  
   // Use custom WebSocket adapter for session validation and Redis clustering
   const sessionAdapter = new SessionIoAdapter(app);
