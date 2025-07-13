@@ -1,3 +1,6 @@
+// Initialize OpenTelemetry first, before any other imports
+import './instrument';
+
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
@@ -5,15 +8,12 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { SessionIoAdapter } from './adapters/session-io.adapter';
 import { AppModule } from './app.module';
 import ConfigProvider from './config/ConfigProvider';
-import { initializeOtelemetry } from './telemetry/otel';
+import { shutdownOtelemetry } from './telemetry/otel';
 import { OtelLogger } from './telemetry/otel-logger';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 
 
 async function bootstrap() {
-  // Initialize OpenTelemetry first, before any other imports or initialization
-  initializeOtelemetry();
-  
   // Validate environment variables before starting the application
   ConfigProvider.validateEnvironment();
   
@@ -101,5 +101,16 @@ async function bootstrap() {
   console.log(`p2piano service listening on port ${port}`);
   console.log(`api documentation available at http://localhost:${port}/api`);
 }
+
+// Handle graceful shutdown
+process.on('SIGINT', async () => {
+  await shutdownOtelemetry();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  await shutdownOtelemetry();
+  process.exit(0);
+});
 
 bootstrap();
