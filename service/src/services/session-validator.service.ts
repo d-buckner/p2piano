@@ -236,8 +236,11 @@ export class SessionValidatorService {
     const directIp = request.socket?.remoteAddress;
     
     // Check for forwarded headers only if from trusted domain
-    const forwardedFor = request.headers['x-forwarded-for'] as string;
-    const realIp = request.headers['x-real-ip'] as string;
+    const forwardedForHeader = request.headers['x-forwarded-for'];
+    const forwardedFor = Array.isArray(forwardedForHeader) ? forwardedForHeader[0] : forwardedForHeader;
+    
+    const realIpHeader = request.headers['x-real-ip'];
+    const realIp = Array.isArray(realIpHeader) ? realIpHeader[0] : realIpHeader;
     
     // If we have forwarded headers, validate the proxy domain
     if ((forwardedFor || realIp) && directIp) {
