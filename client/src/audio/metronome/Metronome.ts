@@ -52,18 +52,9 @@ class Metronome {
   }
 
   private static handleBeat(time: number) {
-    const metronome = selectMetronome(store);
     const maxLatency = selectMaxLatency(store);
-    
-    // Update Transport BPM in case it changed
-    getTransport().bpm.value = metronome.bpm;
-    
     // Determine tick type
     const tickType = this.currentBeat === 0 ? TICK_TYPE.HI : TICK_TYPE.LOW;
-    
-    // Broadcast to other clients immediately
-    MetronomeClient.tick(tickType);
-    
     // Schedule audio at precise time with latency compensation using Tone.js scheduler
     // This avoids JS timing dependency by letting Tone.js handle the exact timing
     if (tickType === TICK_TYPE.HI) {
@@ -71,6 +62,12 @@ class Metronome {
     } else {
       ClickSampler.scheduleLow(time + maxLatency / 1000);
     }
+    // Broadcast to other clients immediately
+    MetronomeClient.tick(tickType);
+
+    const metronome = selectMetronome(store);
+    // Update Transport BPM in case it changed
+    getTransport().bpm.value = metronome.bpm;
     
     this.currentBeat = (this.currentBeat + 1) % metronome.beatsPerMeasure;
   }
