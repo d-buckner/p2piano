@@ -43,7 +43,10 @@ describe('Security Regression Tests', () => {
 
       for (const maliciousId of maliciousSessionIds) {
         const mockRequest = createMockHttpRequest({
-          headers: { authorization: `Bearer ${maliciousId}` },
+          headers: { 
+            authorization: `Bearer ${maliciousId}`,
+            'x-forwarded-for': '192.168.1.1'
+          },
           ip: '192.168.1.1'
         });
 
@@ -70,7 +73,10 @@ describe('Security Regression Tests', () => {
 
       for (const injection of noSqlInjections) {
         const mockRequest = createMockHttpRequest({
-          headers: { authorization: `Bearer ${injection}` },
+          headers: { 
+            authorization: `Bearer ${injection}`,
+            'x-forwarded-for': '192.168.1.1'
+          },
           ip: '192.168.1.1'
         });
 
@@ -88,7 +94,10 @@ describe('Security Regression Tests', () => {
     it('should handle extremely long session IDs without performance degradation', async () => {
       const veryLongSessionId = 'a'.repeat(10000); // 10KB session ID
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${veryLongSessionId}` },
+        headers: { 
+          authorization: `Bearer ${veryLongSessionId}`,
+          'x-forwarded-for': '192.168.1.1'
+        },
         ip: '192.168.1.1'
       });
 
@@ -113,7 +122,10 @@ describe('Security Regression Tests', () => {
       mockSessionProvider.get.mockRejectedValue(sensitiveError);
 
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': '192.168.1.1'
+        },
         ip: '192.168.1.1'
       });
 
@@ -141,7 +153,10 @@ describe('Security Regression Tests', () => {
       mockSessionProvider.get.mockResolvedValue(malformedData as any);
 
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': '192.168.1.1'
+        },
         ip: '192.168.1.1'
       });
 
@@ -162,7 +177,8 @@ describe('Security Regression Tests', () => {
         headers: { 
           authorization: `Bearer ${sessionId}`,
           'user-agent': hugePayload,
-          'x-custom-header': hugePayload
+          'x-custom-header': hugePayload,
+          'x-forwarded-for': '192.168.1.1'
         },
         ip: '192.168.1.1'
       });

@@ -42,7 +42,10 @@ describe('SessionValidatorService', () => {
       const sessionId = createUUID();
       const mockSession = createMockSessionWithId({ sessionId });
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': '192.168.1.1'
+        },
         ip: '192.168.1.1'
       });
 
@@ -59,6 +62,9 @@ describe('SessionValidatorService', () => {
       const mockSession = createMockSessionWithId({ sessionId });
       const mockRequest = createMockHttpRequest({
         cookies: { sessionId },
+        headers: {
+          'x-forwarded-for': '192.168.1.1'
+        },
         ip: '192.168.1.1'
       });
 
@@ -82,7 +88,10 @@ describe('SessionValidatorService', () => {
     it('should return null when session validation fails', async () => {
       const sessionId = createUUID();
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': '192.168.1.1'
+        },
         ip: '192.168.1.1'
       });
 
@@ -96,7 +105,10 @@ describe('SessionValidatorService', () => {
     it('should return null when session provider returns null', async () => {
       const sessionId = createUUID();
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': '192.168.1.1'
+        },
         ip: '192.168.1.1'
       });
 
@@ -116,7 +128,10 @@ describe('SessionValidatorService', () => {
       (mockSocket as any).handshake = {
         ...(mockSocket.handshake || {}),
         auth: { sessionId },
-        address: '192.168.1.1'
+        address: '192.168.1.1',
+        headers: {
+          'x-forwarded-for': '192.168.1.1'
+        }
       };
 
       mockSessionProvider.get.mockResolvedValue(mockSession);
@@ -133,7 +148,10 @@ describe('SessionValidatorService', () => {
       const mockSocket = createMockWsClient();
       (mockSocket as any).handshake = {
         ...(mockSocket.handshake || {}),
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': '192.168.1.1'
+        },
         address: '192.168.1.1'
       };
 
@@ -160,7 +178,10 @@ describe('SessionValidatorService', () => {
       (mockSocket as any).handshake = {
         ...(mockSocket.handshake || {}),
         auth: { sessionId },
-        address: '192.168.1.1'
+        address: '192.168.1.1',
+        headers: {
+          'x-forwarded-for': '192.168.1.1'
+        }
       };
 
       mockSessionProvider.get.mockRejectedValue(new Error('Session not found'));
@@ -177,7 +198,9 @@ describe('SessionValidatorService', () => {
       const mockSession = createMockSessionWithId({ sessionId });
       const mockRawRequest = { 
         url: `/socket.io/?auth.sessionId=${sessionId}`, 
-        headers: {},
+        headers: {
+          'x-forwarded-for': '192.168.1.1'
+        },
         socket: { remoteAddress: '192.168.1.1' }
       };
 
@@ -194,7 +217,10 @@ describe('SessionValidatorService', () => {
       const mockSession = createMockSessionWithId({ sessionId });
       const mockRawRequest = { 
         url: '/socket.io/', 
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': '192.168.1.1'
+        },
         socket: { remoteAddress: '192.168.1.1' }
       };
 
@@ -221,7 +247,10 @@ describe('SessionValidatorService', () => {
       const sessionId = createUUID();
       const mockSession = createMockSessionWithId({ sessionId });
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': '192.168.1.1'
+        },
         ip: '192.168.1.1'
       });
 
@@ -251,7 +280,10 @@ describe('SessionValidatorService', () => {
       (mockSocket as any).handshake = {
         ...(mockSocket.handshake || {}),
         auth: { sessionId },
-        address: '192.168.1.1'
+        address: '192.168.1.1',
+        headers: {
+          'x-forwarded-for': '192.168.1.1'
+        }
       };
 
       mockSessionProvider.get.mockResolvedValue(mockSession);
@@ -277,7 +309,10 @@ describe('SessionValidatorService', () => {
       const sessionId = createUUID();
       const mockSession = createMockSessionWithId({ sessionId });
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': '192.168.1.1'
+        },
         ip: '192.168.1.1'
       });
       const mockReply = { cookie: vi.fn() };
@@ -294,7 +329,12 @@ describe('SessionValidatorService', () => {
     it('should create new session when no existing session', async () => {
       const newSessionId = createUUID();
       const newSession = createMockSessionWithId({ sessionId: newSessionId });
-      const mockRequest = createMockHttpRequest({ ip: '192.168.1.1' });
+      const mockRequest = createMockHttpRequest({ 
+        headers: {
+          'x-forwarded-for': '192.168.1.1'
+        },
+        ip: '192.168.1.1' 
+      });
       const mockReply = { cookie: vi.fn() };
 
       mockSessionProvider.create.mockResolvedValue(newSession);

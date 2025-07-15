@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { applicationMetrics } from '../telemetry/metrics';
+import { extractIpFromSocket } from '../utils/IpExtractor';
 import { extractSessionIdFromSocket } from '../websockets/utils';
 import type { ExecutionContext } from '@nestjs/common';
 import type { ThrottlerRequest } from '@nestjs/throttler';
@@ -29,7 +30,7 @@ export class WsThrottlerGuard extends ThrottlerGuard {
     
     // Use a combination of IP and session id
     // This helps distinguish between multiple users on the same network
-    const ip = client.handshake.address || 'unknown';
+    const ip = extractIpFromSocket(client) || 'unknown';
     const sessionId = extractSessionIdFromSocket(client);
     if (!sessionId) {
       throw new Error('Socket session ID is required for throttling');

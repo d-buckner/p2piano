@@ -67,7 +67,10 @@ describe('Session Validation Flow (E2E)', () => {
       const sessionId = createUUID();
       const mockSession = createMockSessionWithId({ sessionId });
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': '192.168.1.100'
+        },
         ip: '192.168.1.100'
       });
 
@@ -86,7 +89,10 @@ describe('Session Validation Flow (E2E)', () => {
     it('should handle complete HTTP request flow with invalid session', async () => {
       const sessionId = createUUID();
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': '192.168.1.100'
+        },
         ip: '192.168.1.100'
       });
 
@@ -101,7 +107,12 @@ describe('Session Validation Flow (E2E)', () => {
     it('should handle session creation flow for auto-session scenarios', async () => {
       const newSessionId = createUUID();
       const newSession = createMockSessionWithId({ sessionId: newSessionId });
-      const mockRequest = createMockHttpRequest({ ip: '192.168.1.100' });
+      const mockRequest = createMockHttpRequest({ 
+        headers: {
+          'x-forwarded-for': '192.168.1.100'
+        },
+        ip: '192.168.1.100' 
+      });
       const mockReply = { cookie: vi.fn() } as any;
 
       // Mock session creation
@@ -122,7 +133,10 @@ describe('Session Validation Flow (E2E)', () => {
       const mockSocket = createMockWsClient({
         handshake: {
           auth: { sessionId },
-          address: '192.168.1.100'
+          address: '192.168.1.100',
+          headers: {
+            'x-forwarded-for': '192.168.1.100'
+          }
         }
       });
 
@@ -142,7 +156,9 @@ describe('Session Validation Flow (E2E)', () => {
       const mockSession = createMockSessionWithId({ sessionId });
       const mockRawRequest = {
         url: `/socket.io/?auth.sessionId=${sessionId}`,
-        headers: {},
+        headers: {
+          'x-forwarded-for': '192.168.1.100'
+        },
         socket: { remoteAddress: '192.168.1.100' }
       };
 
@@ -165,7 +181,10 @@ describe('Session Validation Flow (E2E)', () => {
 
       // HTTP request validation
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': ipAddress
+        },
         ip: ipAddress
       });
 
@@ -173,7 +192,10 @@ describe('Session Validation Flow (E2E)', () => {
       const mockSocket = createMockWsClient({
         handshake: {
           auth: { sessionId },
-          address: ipAddress
+          address: ipAddress,
+          headers: {
+            'x-forwarded-for': ipAddress
+          }
         }
       });
 
@@ -202,14 +224,20 @@ describe('Session Validation Flow (E2E)', () => {
       const ipAddress = '192.168.1.100';
 
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': ipAddress
+        },
         ip: ipAddress
       });
 
       const mockSocket = createMockWsClient({
         handshake: {
           auth: { sessionId },
-          address: ipAddress
+          address: ipAddress,
+          headers: {
+            'x-forwarded-for': ipAddress
+          }
         }
       });
 
@@ -234,7 +262,10 @@ describe('Session Validation Flow (E2E)', () => {
 
       // Test HTTP request validation
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${sessionId}` },
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': ipAddress
+        },
         ip: ipAddress
       });
 
@@ -242,14 +273,19 @@ describe('Session Validation Flow (E2E)', () => {
       const mockSocket = createMockWsClient({
         handshake: {
           auth: { sessionId },
-          address: ipAddress
+          address: ipAddress,
+          headers: {
+            'x-forwarded-for': ipAddress
+          }
         }
       });
 
       // Test raw request validation
       const mockRawRequest = {
         url: `/socket.io/?auth.sessionId=${sessionId}`,
-        headers: {},
+        headers: {
+          'x-forwarded-for': ipAddress
+        },
         socket: { remoteAddress: ipAddress }
       };
 
@@ -274,16 +310,26 @@ describe('Session Validation Flow (E2E)', () => {
       const error = new Error('Database connection failed');
 
       const mockRequest = createMockHttpRequest({
-        headers: { authorization: `Bearer ${sessionId}` }
+        headers: { 
+          authorization: `Bearer ${sessionId}`,
+          'x-forwarded-for': '192.168.1.100'
+        }
       });
       
       const mockSocket = createMockWsClient({
-        handshake: { auth: { sessionId } }
+        handshake: { 
+          auth: { sessionId },
+          headers: {
+            'x-forwarded-for': '192.168.1.100'
+          }
+        }
       });
 
       const mockRawRequest = {
         url: `/socket.io/?auth.sessionId=${sessionId}`,
-        headers: {}
+        headers: {
+          'x-forwarded-for': '192.168.1.100'
+        }
       };
 
       // Setup mocks to throw error
@@ -325,7 +371,10 @@ describe('Session Validation Flow (E2E)', () => {
       // Perform many validations
       const validations = Array(100).fill(0).map(async () => {
         const mockRequest = createMockHttpRequest({
-          headers: { authorization: `Bearer ${sessionId}` }
+          headers: { 
+            authorization: `Bearer ${sessionId}`,
+            'x-forwarded-for': '192.168.1.100'
+          }
         });
         
         return sessionValidatorService.validateAndAttachToRequest(mockRequest as any);
@@ -349,7 +398,10 @@ describe('Session Validation Flow (E2E)', () => {
       // Create concurrent validations for different sessions
       const validations = sessionIds.map(async (sessionId) => {
         const mockRequest = createMockHttpRequest({
-          headers: { authorization: `Bearer ${sessionId}` }
+          headers: { 
+            authorization: `Bearer ${sessionId}`,
+            'x-forwarded-for': '192.168.1.100'
+          }
         });
         
         const result = await sessionValidatorService.validateAndAttachToRequest(mockRequest as any);

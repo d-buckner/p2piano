@@ -3,6 +3,7 @@ import * as cookie from 'cookie';
 import { SessionConfigService } from '../config/session-config.service';
 import SessionProvider from '../entities/Session';
 import { getErrorMessage } from '../utils/ErrorUtils';
+import { extractIpFromRequest, extractIpFromSocket, extractIpFromRawRequest } from '../utils/IpExtractor';
 import type { Session } from '../entities/Session';
 import type { RawHttpRequest } from '../types/raw-request';
 import type { Request, Reply } from '../types/request';
@@ -13,7 +14,7 @@ import type { AuthenticatedSocket } from '../types/socket';
 export class SessionValidatorService {
   private readonly logger = new Logger(SessionValidatorService.name);
 
-  constructor(private readonly sessionConfig: SessionConfigService) {}
+  constructor(private readonly sessionConfig: SessionConfigService) { }
 
   /**
    * Validates a session for an HTTP request
@@ -25,7 +26,7 @@ export class SessionValidatorService {
       return null;
     }
 
-    const ipAddress = await this.extractIpFromRequest(request);
+    const ipAddress = extractIpFromRequest(request);
     return this.validateSession(sessionId, ipAddress);
   }
 
@@ -39,7 +40,7 @@ export class SessionValidatorService {
       return null;
     }
 
-    const ipAddress = await this.extractIpFromSocket(socket);
+    const ipAddress = extractIpFromSocket(socket);
     return this.validateSession(sessionId, ipAddress);
   }
 
@@ -53,7 +54,7 @@ export class SessionValidatorService {
       return null;
     }
 
-    const ipAddress = await this.extractIpFromRawRequest(req);
+    const ipAddress = extractIpFromRawRequest(req);
     return this.validateSession(sessionId, ipAddress);
   }
 
@@ -96,9 +97,9 @@ export class SessionValidatorService {
     }
 
     // Create new session
-    const ipAddress = await this.extractIpFromRequest(request);
+    const ipAddress = extractIpFromRequest(request);
     const newSession = await SessionProvider.create(ipAddress);
-    
+
     // Set session cookie
     reply.cookie('sessionId', newSession.sessionId, {
       httpOnly: true,
@@ -228,120 +229,20 @@ export class SessionValidatorService {
     return null;
   }
 
-  /**
-   * Extract IP address from HTTP request with trusted domain validation
-   */
-  private async extractIpFromRequest(request: Request): Promise<string | undefined> {
-    // Direct connection IP
-    const directIp = request.socket?.remoteAddress;
-    
-    // Check for forwarded headers only if from trusted domain
-    const forwardedForHeader = request.headers['x-forwarded-for'];
-    const forwardedFor = Array.isArray(forwardedForHeader) ? forwardedForHeader[0] : forwardedForHeader;
-    
-    const realIpHeader = request.headers['x-real-ip'];
-    const realIp = Array.isArray(realIpHeader) ? realIpHeader[0] : realIpHeader;
-    
-    // If we have forwarded headers, validate the proxy domain
-    if ((forwardedFor || realIp) && directIp) {
-      const isFromTrustedDomain = await this.isFromTrustedDomain(directIp);
-      
-      if (isFromTrustedDomain) {
-        // Use the first IP in x-forwarded-for chain (original client)
-        if (forwardedFor) {
-          const firstIp = forwardedFor.split(',')[0]!.trim();
-          return this.isValidIp(firstIp) ? firstIp : directIp;
-        }
-        
-        // Use x-real-ip if available
-        if (realIp) {
-          return this.isValidIp(realIp) ? realIp : directIp;
-        }
-      }
-    }
-    
-    // Fall back to direct connection IP or Fastify's processed IP
-    return request.ip || directIp;
-  }
-
-  /**
-   * Extract IP address from WebSocket with trusted domain validation
-   */
-  private async extractIpFromSocket(socket: AuthenticatedSocket): Promise<string | undefined> {
-    // Direct connection IP
-    const directIp = socket.conn?.remoteAddress;
-    
-    // Check for forwarded headers in handshake
-    const forwardedFor = socket.handshake?.headers?.['x-forwarded-for'] as string;
-    const realIp = socket.handshake?.headers?.['x-real-ip'] as string;
-    
-    // If we have forwarded headers, validate the proxy domain
-    if ((forwardedFor || realIp) && directIp) {
-      const isFromTrustedDomain = await this.isFromTrustedDomain(directIp);
-      
-      if (isFromTrustedDomain) {
-        // Use the first IP in x-forwarded-for chain (original client)
-        if (forwardedFor) {
-          const firstIp = forwardedFor.split(',')[0]!.trim();
-          return this.isValidIp(firstIp) ? firstIp : directIp || 'unknown';
-        }
-        
-        // Use x-real-ip if available
-        if (realIp) {
-          return this.isValidIp(realIp) ? realIp : directIp || 'unknown';
-        }
-      }
-    }
-    
-    // Fall back to handshake address or direct connection
-    return socket.handshake?.address || directIp || 'unknown';
-  }
-
-  /**
-   * Extract IP address from raw request with trusted domain validation
-   */
-  private async extractIpFromRawRequest(req: RawHttpRequest): Promise<string | undefined> {
-    // Direct connection IP
-    const directIp = req.socket?.remoteAddress || req.connection?.remoteAddress;
-    
-    // Check for forwarded headers
-    const forwardedFor = req.headers?.['x-forwarded-for'] as string;
-    const realIp = req.headers?.['x-real-ip'] as string;
-    
-    // If we have forwarded headers, validate the proxy domain
-    if ((forwardedFor || realIp) && directIp) {
-      const isFromTrustedDomain = await this.isFromTrustedDomain(directIp);
-      
-      if (isFromTrustedDomain) {
-        // Use the first IP in x-forwarded-for chain (original client)
-        if (forwardedFor) {
-          const firstIp = forwardedFor.split(',')[0]!.trim();
-          return this.isValidIp(firstIp) ? firstIp : directIp || 'unknown';
-        }
-        
-        // Use x-real-ip if available
-        if (realIp) {
-          return this.isValidIp(realIp) ? realIp : directIp || 'unknown';
-        }
-      }
-    }
-    
-    return directIp || 'unknown';
-  }
 
   /**
    * Basic IP address validation
    */
   private isValidIp(ip: string): boolean {
     if (!ip) return false;
-    
+
     // Basic IPv4 validation
     const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
     if (ipv4Regex.test(ip)) {
       const parts = ip.split('.').map(Number);
       return parts.every(part => part >= 0 && part <= 255);
     }
-    
+
     // Basic IPv6 validation (simplified)
     const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^::1$|^::$/;
     return ipv6Regex.test(ip);
