@@ -1,6 +1,5 @@
 import type { RawHttpRequest } from '../types/raw-request';
 import type { Request } from '../types/request';
-import type { AuthenticatedSocket } from '../types/socket';
 import type { Socket } from 'socket.io';
 
 /**
@@ -33,7 +32,7 @@ export function extractIpFromRequest(request: Request): string | undefined {
  * Extract IP address from WebSocket
  * Only uses x-forwarded-for header as per security requirements
  */
-export function extractIpFromSocket(socket: AuthenticatedSocket | Socket): string | undefined {
+export function extractIpFromSocket(socket: Socket): string | undefined {
   const forwardedFor = socket.handshake?.headers?.['x-forwarded-for'];
   return extractFromForwardedFor(forwardedFor);
 }

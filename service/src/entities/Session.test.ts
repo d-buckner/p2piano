@@ -246,14 +246,18 @@ describe('SessionProvider', () => {
       expect(mockRedisClient.hSet).toHaveBeenCalled();
     });
 
-    it('should reject IP mismatch in production mode', async () => {
+    it('should allow IP mismatch even in production mode (validation disabled)', async () => {
       mockConfigProvider.isProduction.mockReturnValue(true);
       mockRedisClient.hGet.mockResolvedValue(JSON.stringify(mockSession));
+      mockRedisClient.hSet.mockResolvedValue('OK');
+      mockRedisClient.expire.mockResolvedValue(1);
 
-      await expect(SessionProvider.get(sessionId, differentIp)).rejects.toThrow(SessionNotFoundError);
+      const result = await SessionProvider.get(sessionId, differentIp);
       
+      expect(result.sessionId).toBe(sessionId);
+      expect(result.ipAddress).toBe(differentIp); // IP should be updated
       expect(mockRedisClient.hGet).toHaveBeenCalledWith(`session:${sessionId}`, 'data');
-      expect(mockRedisClient.hSet).not.toHaveBeenCalled();
+      expect(mockRedisClient.hSet).toHaveBeenCalled();
     });
 
     it('should allow matching IP addresses in production', async () => {

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { SessionValidatorService } from '../services/session-validator.service';
-import type { AuthenticatedSocket } from '../types/socket';
 import type { CanActivate, ExecutionContext } from '@nestjs/common';
+import type { Socket } from 'socket.io';
 
 
 @Injectable()
@@ -9,14 +9,14 @@ export class WsAuthGuard implements CanActivate {
   constructor(private readonly sessionValidator: SessionValidatorService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const client = context.switchToWs().getClient<AuthenticatedSocket>();
+    const client = context.switchToWs().getClient<Socket>();
     
     if (!client) {
       return false;
     }
     
     try {
-      const isValid = await this.sessionValidator.validateAndAttachToSocket(client);
+      const isValid = await this.sessionValidator.isValidSocket(client);
       
       if (!isValid) {
         client.disconnect();

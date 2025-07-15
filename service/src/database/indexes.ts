@@ -18,9 +18,6 @@ export function createSessionIndexes() {
   
   // TTL index for automatic session cleanup (24 hours)
   SessionCollection.createIndex({ lastActivity: 1 }, { expireAfterSeconds: 86400 });
-  
-  // Compound index for IP validation queries
-  SessionCollection.createIndex({ sessionId: 1, ipAddress: 1 });
 }
 
 /**
@@ -53,7 +50,6 @@ export function initializeIndexes() {
  * 
  * 1. Session queries:
  *    - Always query by sessionId first
- *    - Include ipAddress in validation queries for compound index usage
  * 
  * 2. Room queries:
  *    - Always query by roomId first

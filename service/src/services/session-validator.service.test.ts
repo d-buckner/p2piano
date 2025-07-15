@@ -120,8 +120,8 @@ describe('SessionValidatorService', () => {
     });
   });
 
-  describe('validateSocket', () => {
-    it('should return session when socket has valid session in auth', async () => {
+  describe('isValidSocket', () => {
+    it('should return true when socket has valid session in auth', async () => {
       const sessionId = createUUID();
       const mockSession = createMockSessionWithId({ sessionId });
       const mockSocket = createMockWsClient();
@@ -136,13 +136,13 @@ describe('SessionValidatorService', () => {
 
       mockSessionProvider.get.mockResolvedValue(mockSession);
 
-      const result = await service.validateSocket(mockSocket as any);
+      const result = await service.isValidSocket(mockSocket as any);
 
-      expect(result).toBe(mockSession);
+      expect(result).toBe(true);
       expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, '192.168.1.1');
     });
 
-    it('should return session when socket has valid session in headers', async () => {
+    it('should return true when socket has valid session in headers', async () => {
       const sessionId = createUUID();
       const mockSession = createMockSessionWithId({ sessionId });
       const mockSocket = createMockWsClient();
@@ -157,22 +157,22 @@ describe('SessionValidatorService', () => {
 
       mockSessionProvider.get.mockResolvedValue(mockSession);
 
-      const result = await service.validateSocket(mockSocket as any);
+      const result = await service.isValidSocket(mockSocket as any);
 
-      expect(result).toBe(mockSession);
+      expect(result).toBe(true);
       expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, '192.168.1.1');
     });
 
-    it('should return null when no session ID found in socket', async () => {
+    it('should return false when no session ID found in socket', async () => {
       const mockSocket = createMockWsClient(); // No session info
 
-      const result = await service.validateSocket(mockSocket as any);
+      const result = await service.isValidSocket(mockSocket as any);
 
-      expect(result).toBeNull();
+      expect(result).toBe(false);
       expect(mockSessionProvider.get).not.toHaveBeenCalled();
     });
 
-    it('should return null when socket session validation fails', async () => {
+    it('should return false when socket session validation fails', async () => {
       const sessionId = createUUID();
       const mockSocket = createMockWsClient();
       (mockSocket as any).handshake = {
@@ -186,9 +186,9 @@ describe('SessionValidatorService', () => {
 
       mockSessionProvider.get.mockRejectedValue(new Error('Session not found'));
 
-      const result = await service.validateSocket(mockSocket as any);
+      const result = await service.isValidSocket(mockSocket as any);
 
-      expect(result).toBeNull();
+      expect(result).toBe(false);
     });
   });
 
@@ -272,8 +272,8 @@ describe('SessionValidatorService', () => {
     });
   });
 
-  describe('validateAndAttachToSocket', () => {
-    it('should attach session to socket when validation succeeds', async () => {
+  describe('isValidSocket', () => {
+    it('should return true when validation succeeds', async () => {
       const sessionId = createUUID();
       const mockSession = createMockSessionWithId({ sessionId });
       const mockSocket = createMockWsClient();
@@ -288,19 +288,17 @@ describe('SessionValidatorService', () => {
 
       mockSessionProvider.get.mockResolvedValue(mockSession);
 
-      const result = await service.validateAndAttachToSocket(mockSocket as any);
+      const result = await service.isValidSocket(mockSocket as any);
 
       expect(result).toBe(true);
-      expect((mockSocket as any).session).toBe(mockSession);
     });
 
-    it('should not attach session when validation fails', async () => {
+    it('should return false when validation fails', async () => {
       const mockSocket = createMockWsClient(); // No session info
 
-      const result = await service.validateAndAttachToSocket(mockSocket as any);
+      const result = await service.isValidSocket(mockSocket as any);
 
       expect(result).toBe(false);
-      expect((mockSocket as any).session).toBeUndefined();
     });
   });
 

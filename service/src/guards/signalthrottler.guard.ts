@@ -1,8 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import type { AuthenticatedSocket } from '../types/socket';
+import { extractSessionIdFromSocket } from 'src/websockets/utils';
 import type { ExecutionContext } from '@nestjs/common';
 import type { ThrottlerRequest } from '@nestjs/throttler';
+import type { Socket } from 'socket.io';
 
 
 interface ThrottlerLimitDetail {
@@ -23,8 +24,8 @@ export class SignalThrottlerGuard extends ThrottlerGuard {
 
   async handleRequest(requestProps: ThrottlerRequest): Promise<boolean> {
     const { context, limit, ttl, throttler, blockDuration, generateKey } = requestProps;
-    const client = context.switchToWs().getClient<AuthenticatedSocket>();
-    const tracker = client.session?.ipAddress || client.id;
+    const socket = context.switchToWs().getClient<Socket>();
+    const tracker = extractSessionIdFromSocket(socket);
     if (!tracker) {
       throw new Error('Client identifier is required for throttling');
     }

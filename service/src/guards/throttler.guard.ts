@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { applicationMetrics } from '../telemetry/metrics';
-import { extractIpFromSocket } from '../utils/IpExtractor';
 import { extractSessionIdFromSocket } from '../websockets/utils';
 import type { ExecutionContext } from '@nestjs/common';
 import type { ThrottlerRequest } from '@nestjs/throttler';
@@ -28,14 +27,10 @@ export class WsThrottlerGuard extends ThrottlerGuard {
     const { context, limit, ttl, throttler, blockDuration, generateKey } = requestProps;
     const client = context.switchToWs().getClient<Socket>();
     
-    // Use a combination of IP and session id
-    // This helps distinguish between multiple users on the same network
-    const ip = extractIpFromSocket(client) || 'unknown';
-    const sessionId = extractSessionIdFromSocket(client);
-    if (!sessionId) {
+    const tracker = extractSessionIdFromSocket(client);
+    if (!tracker) {
       throw new Error('Socket session ID is required for throttling');
     }
-    const tracker = `${ip}:${sessionId}`;
     
     const throttlerName = throttler.name ?? 'default';
     const key = generateKey(context, tracker, throttlerName);

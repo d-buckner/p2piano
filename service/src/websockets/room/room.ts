@@ -115,6 +115,11 @@ export class Room {
         socket.join(sessionId);
         socket.on(SocketEvents.DISCONNECT, reason => this.destroyConnection(socket, reason));
 
+        socket.emit(RoomEvents.ROOM_JOIN, {
+          userId: sessionId,
+          room: roomData,
+        });
+
         if (isReconnection) {
           // Client reconnect, no need to send connection events
           return;
@@ -123,11 +128,6 @@ export class Room {
         applicationMetrics.recordWebSocketConnection(roomId);
 
         broadcast(socket, RoomEvents.USER_CONNECT, {
-          userId: sessionId,
-          room: roomData,
-        });
-
-        socket.emit(RoomEvents.ROOM_JOIN, {
           userId: sessionId,
           room: roomData,
         });

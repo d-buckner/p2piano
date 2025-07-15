@@ -16,7 +16,7 @@ describe('WsAuthGuard', () => {
   beforeEach(async () => {
     // Create mock session validator service
     sessionValidatorService = {
-      validateAndAttachToSocket: vi.fn(),
+      isValidSocket: vi.fn(),
     };
 
     const module = await Test.createTestingModule({
@@ -54,12 +54,12 @@ describe('WsAuthGuard', () => {
         }
       });
 
-      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(true);
+      sessionValidatorService.isValidSocket.mockResolvedValue(true);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(true);
-      expect(sessionValidatorService.validateAndAttachToSocket).toHaveBeenCalledWith(expect.any(Object));
+      expect(sessionValidatorService.isValidSocket).toHaveBeenCalledWith(expect.any(Object));
     });
 
     it('should reject connection when session validation fails', async () => {
@@ -77,12 +77,12 @@ describe('WsAuthGuard', () => {
         }
       });
 
-      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(false);
+      sessionValidatorService.isValidSocket.mockResolvedValue(false);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(false);
-      expect(sessionValidatorService.validateAndAttachToSocket).toHaveBeenCalledWith(expect.any(Object));
+      expect(sessionValidatorService.isValidSocket).toHaveBeenCalledWith(expect.any(Object));
       const client = mockExecutionContext.switchToWs().getClient();
       expect(client.disconnect).toHaveBeenCalled();
     });
@@ -103,7 +103,7 @@ describe('WsAuthGuard', () => {
       });
 
       const error = new Error('Database connection failed');
-      sessionValidatorService.validateAndAttachToSocket.mockRejectedValue(error);
+      sessionValidatorService.isValidSocket.mockRejectedValue(error);
 
       const result = await guard.canActivate(mockExecutionContext);
 
@@ -130,12 +130,12 @@ describe('WsAuthGuard', () => {
         }
       });
 
-      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(true);
+      sessionValidatorService.isValidSocket.mockResolvedValue(true);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(true);
-      expect(sessionValidatorService.validateAndAttachToSocket).toHaveBeenCalledWith(expect.any(Object));
+      expect(sessionValidatorService.isValidSocket).toHaveBeenCalledWith(expect.any(Object));
     });
 
     it('should validate sessions from authorization headers', async () => {
@@ -154,12 +154,12 @@ describe('WsAuthGuard', () => {
         }
       });
 
-      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(true);
+      sessionValidatorService.isValidSocket.mockResolvedValue(true);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(true);
-      expect(sessionValidatorService.validateAndAttachToSocket).toHaveBeenCalledWith(expect.any(Object));
+      expect(sessionValidatorService.isValidSocket).toHaveBeenCalledWith(expect.any(Object));
     });
 
     it('should validate sessions from cookies', async () => {
@@ -178,12 +178,12 @@ describe('WsAuthGuard', () => {
         }
       });
 
-      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(true);
+      sessionValidatorService.isValidSocket.mockResolvedValue(true);
 
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(true);
-      expect(sessionValidatorService.validateAndAttachToSocket).toHaveBeenCalledWith(expect.any(Object));
+      expect(sessionValidatorService.isValidSocket).toHaveBeenCalledWith(expect.any(Object));
     });
   });
 
@@ -201,7 +201,7 @@ describe('WsAuthGuard', () => {
       const result = await guard.canActivate(mockExecutionContext);
 
       expect(result).toBe(false);
-      expect(sessionValidatorService.validateAndAttachToSocket).not.toHaveBeenCalled();
+      expect(sessionValidatorService.isValidSocket).not.toHaveBeenCalled();
     });
 
     it('should handle malformed clients gracefully', async () => {
@@ -216,7 +216,7 @@ describe('WsAuthGuard', () => {
         getHandler: () => ({}),
       } as ExecutionContext;
 
-      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(false);
+      sessionValidatorService.isValidSocket.mockResolvedValue(false);
 
       const result = await guard.canActivate(mockExecutionContext);
 
@@ -242,7 +242,7 @@ describe('WsAuthGuard', () => {
         })
       );
 
-      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(true);
+      sessionValidatorService.isValidSocket.mockResolvedValue(true);
 
       const promises = mockExecutionContexts.map(context => 
         guard.canActivate(context)
@@ -251,7 +251,7 @@ describe('WsAuthGuard', () => {
       const results = await Promise.all(promises);
 
       expect(results.every(result => result === true)).toBe(true);
-      expect(sessionValidatorService.validateAndAttachToSocket).toHaveBeenCalledTimes(5);
+      expect(sessionValidatorService.isValidSocket).toHaveBeenCalledTimes(5);
     });
   });
 
@@ -271,7 +271,7 @@ describe('WsAuthGuard', () => {
         }
       });
 
-      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(false);
+      sessionValidatorService.isValidSocket.mockResolvedValue(false);
 
       const result = await guard.canActivate(mockExecutionContext);
 
@@ -295,7 +295,7 @@ describe('WsAuthGuard', () => {
         }
       });
 
-      sessionValidatorService.validateAndAttachToSocket.mockResolvedValue(false);
+      sessionValidatorService.isValidSocket.mockResolvedValue(false);
 
       const result = await guard.canActivate(mockExecutionContext);
 

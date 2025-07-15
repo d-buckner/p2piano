@@ -3,7 +3,6 @@ import { ObjectId } from 'mongodb';
 import { vi } from 'vitest';
 import type { Session } from '../entities/Session';
 import type { Request, Reply } from '../types/request';
-import type { AuthenticatedSocket } from '../types/socket';
 import type { ExecutionContext } from '@nestjs/common';
 import type { ValidationError } from 'class-validator';
 import type { IncomingHttpHeaders } from 'http';
@@ -177,7 +176,7 @@ export function createMockWsClient(overrides: MockWsClientOptions = {}): MockSoc
 /**
  * Helper to create mock authenticated WebSocket client
  */
-export function createMockAuthenticatedSocket(session: Session, overrides: MockWsClientOptions = {}): AuthenticatedSocket {
+export function createMockAuthenticatedSocket(session: Session, overrides: MockWsClientOptions = {}): Socket {
   const baseSocket = createMockWsClient(overrides);
   return {
     ...baseSocket,
@@ -187,7 +186,7 @@ export function createMockAuthenticatedSocket(session: Session, overrides: MockW
     emit: vi.fn(),
     join: vi.fn(),
     leave: vi.fn(),
-  } as unknown as AuthenticatedSocket;
+  } as unknown as Socket;
 }
 
 /**

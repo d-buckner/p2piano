@@ -1,5 +1,4 @@
 import RedisClient from '../clients/RedisClient';
-import ConfigProvider from '../config/ConfigProvider';
 import { SessionNotFoundError } from '../errors';
 
 
@@ -50,9 +49,10 @@ export default class SessionProvider {
     session.createdAt = new Date(session.createdAt);
     session.lastActivity = new Date(session.lastActivity);
 
-    // Validate IP address if provided and stored (only in production)
-    if (ipAddress && session.ipAddress && session.ipAddress !== ipAddress && ConfigProvider.isProduction()) {
-      throw new SessionNotFoundError(`Session ${sessionId} IP mismatch`);
+    // IP validation disabled - users commonly switch networks (mobile data, WiFi, etc.)
+    // Update IP address when it changes
+    if (ipAddress && ipAddress !== session.ipAddress) {
+      session.ipAddress = ipAddress;
     }
 
     // Update last activity

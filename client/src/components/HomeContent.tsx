@@ -59,7 +59,7 @@ export default function HomeContent() {
             {
               isRoomCreating()
                 ? <div class={styles.spinner} />
-                : 'create room'
+                : 'start playing'
             }
           </button>
           <span class={styles.orText}>or</span>

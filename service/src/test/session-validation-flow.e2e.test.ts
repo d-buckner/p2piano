@@ -142,10 +142,9 @@ describe('Session Validation Flow (E2E)', () => {
 
       mockSessionProvider.get.mockResolvedValue(mockSession);
 
-      const result = await sessionValidatorService.validateAndAttachToSocket(mockSocket as any);
+      const result = await sessionValidatorService.isValidSocket(mockSocket as any);
 
       expect(result).toBe(true);
-      expect(mockSocket.session).toBe(mockSession);
       
       // Verify session was fetched
       expect(mockSessionProvider.get).toHaveBeenCalledWith(sessionId, '192.168.1.100');
@@ -206,12 +205,11 @@ describe('Session Validation Flow (E2E)', () => {
       const httpResult = await sessionValidatorService.validateAndAttachToRequest(mockRequest as any);
       
       // Test WebSocket validation
-      const wsResult = await sessionValidatorService.validateAndAttachToSocket(mockSocket as any);
+      const wsResult = await sessionValidatorService.isValidSocket(mockSocket as any);
 
       expect(httpResult).toBe(true);
       expect(wsResult).toBe(true);
       expect(mockRequest.session).toEqual(mockSession);
-      expect(mockSocket.session).toEqual(mockSession);
 
       // Verify both calls used the same session validation
       expect(mockSessionProvider.get).toHaveBeenCalledTimes(2);
@@ -245,12 +243,11 @@ describe('Session Validation Flow (E2E)', () => {
       mockSessionProvider.get.mockResolvedValue(null); // Session not found
 
       const httpResult = await sessionValidatorService.validateAndAttachToRequest(mockRequest as any);
-      const wsResult = await sessionValidatorService.validateAndAttachToSocket(mockSocket as any);
+      const wsResult = await sessionValidatorService.isValidSocket(mockSocket as any);
 
       expect(httpResult).toBe(false);
       expect(wsResult).toBe(false);
       expect(mockRequest.session).toBeUndefined();
-      expect(mockSocket.session).toBeUndefined();
     });
   });
 
@@ -293,14 +290,13 @@ describe('Session Validation Flow (E2E)', () => {
 
       // Test all contexts
       const httpResult = await sessionValidatorService.validateAndAttachToRequest(mockRequest as any);
-      const wsResult = await sessionValidatorService.validateAndAttachToSocket(mockSocket as any);
+      const wsResult = await sessionValidatorService.isValidSocket(mockSocket as any);
       const rawResult = await sessionValidatorService.validateRawRequest(mockRawRequest);
 
       expect(httpResult).toBe(true);
       expect(wsResult).toBe(true);
       expect(rawResult).toBe(mockSession);
       expect(mockRequest.session).toBe(mockSession);
-      expect(mockSocket.session).toBe(mockSession);
     });
   });
 
@@ -337,7 +333,7 @@ describe('Session Validation Flow (E2E)', () => {
 
       // Test all contexts handle errors gracefully
       const httpResult = await sessionValidatorService.validateAndAttachToRequest(mockRequest as any);
-      const wsResult = await sessionValidatorService.validateAndAttachToSocket(mockSocket as any);
+      const wsResult = await sessionValidatorService.isValidSocket(mockSocket as any);
       const rawResult = await sessionValidatorService.validateRawRequest(mockRawRequest);
 
       expect(httpResult).toBe(false);

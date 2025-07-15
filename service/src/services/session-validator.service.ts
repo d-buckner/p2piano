@@ -7,7 +7,7 @@ import { extractIpFromRequest, extractIpFromSocket, extractIpFromRawRequest } fr
 import type { Session } from '../entities/Session';
 import type { RawHttpRequest } from '../types/raw-request';
 import type { Request, Reply } from '../types/request';
-import type { AuthenticatedSocket } from '../types/socket';
+import type { Socket } from 'socket.io';
 
 
 @Injectable()
@@ -32,16 +32,17 @@ export class SessionValidatorService {
 
   /**
    * Validates a session for a WebSocket connection
-   * @returns The validated session or null if invalid
+   * @returns True if valid, false otherwise
    */
-  async validateSocket(socket: AuthenticatedSocket): Promise<Session | null> {
+  async isValidSocket(socket: Socket): Promise<boolean> {
     const sessionId = this.extractSessionIdFromSocket(socket);
     if (!sessionId) {
-      return null;
+      return false;
     }
 
     const ipAddress = extractIpFromSocket(socket);
-    return this.validateSession(sessionId, ipAddress);
+    const session = await this.validateSession(sessionId, ipAddress);
+    return session !== null;
   }
 
   /**
@@ -71,18 +72,6 @@ export class SessionValidatorService {
     return false;
   }
 
-  /**
-   * Validates and attaches a session to a WebSocket
-   * @returns true if session is valid and attached, false otherwise
-   */
-  async validateAndAttachToSocket(socket: AuthenticatedSocket): Promise<boolean> {
-    const session = await this.validateSocket(socket);
-    if (session) {
-      socket.session = session;
-      return true;
-    }
-    return false;
-  }
 
   /**
    * Creates or validates a session for auto-session scenarios
@@ -157,7 +146,7 @@ export class SessionValidatorService {
   /**
    * Extract session ID from WebSocket
    */
-  private extractSessionIdFromSocket(socket: AuthenticatedSocket): string | null {
+  private extractSessionIdFromSocket(socket: Socket): string | null {
     // Check handshake auth
     const auth = socket.handshake?.auth;
     if (auth?.sessionId) {
