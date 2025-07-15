@@ -12,6 +12,7 @@ export const metronomeContainer = style({
 });
 
 export const metronomeButton = style({
+  width: '1.75rem',
   color: vars.colors.foreground,
   backgroundColor: 'transparent',
   cursor: 'pointer',
