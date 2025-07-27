@@ -35,7 +35,9 @@ export async function joinRoom(roomId: string) {
   setStore('workspace', 'isLoading', false);
 
   if (isValid) {
-    EventCoordinator.register();
+    EventCoordinator.register().catch(error => {
+      console.error('Failed to register event coordinators:', error);
+    });
   }
 }
 

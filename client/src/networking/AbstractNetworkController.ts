@@ -43,4 +43,11 @@ export default abstract class AbstractNetworkController {
   public sendToPeers(peerIds: string[], action: string, message?: Message) {
     throw new Error('Not implemented');
   }
+
+  protected emit<T>(eventType: string, data: T) {
+    const handlers = this.messageHandlers.get(eventType);
+    if (handlers) {
+      handlers.forEach(handler => handler(data));
+    }
+  }
 }

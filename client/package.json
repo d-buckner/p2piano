@@ -4,6 +4,7 @@
   "license": "AGPL-3.0-only",
   "type": "module",
   "dependencies": {
+    "@automerge/automerge": "^3.0.0",
     "@solidjs/router": "^0.15.3",
     "clsx": "^2.1.1",
     "d-piano": "^1.0.1",
@@ -53,6 +54,8 @@
     "vite-bundle-visualizer": "^1.2.1",
     "vite-plugin-node-polyfills": "^0.23.0",
     "vite-plugin-solid": "^2.11.7",
+    "vite-plugin-top-level-await": "^1.6.0",
+    "vite-plugin-wasm": "^3.5.0",
     "vitest": "^3.2.4"
   }
 }

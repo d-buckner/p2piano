@@ -1,9 +1,8 @@
 import clsx from 'clsx';
 import { createSignal, onCleanup } from 'solid-js';
-import { setMetronomeActive, setMetronomeBpm, setMetronomeLeader } from '../actions/MetronomeActions';
 import { useAppSelector } from '../app/hooks';
-import MetronomeClient from '../clients/MetronomeClient';
 import { MIN_BPM, MAX_BPM } from '../constants/metronome';
+import { metronomeActions } from '../crdt';
 import { selectMetronome } from '../selectors/metronomeSelectors';
 import { selectMyUser } from '../selectors/workspaceSelectors';
 import * as styles from './Metronome.css';
@@ -12,8 +11,6 @@ import * as styles from './Metronome.css';
 function Metronome() {
   const metronome = useAppSelector(selectMetronome);
   const myUser = useAppSelector(selectMyUser);
-  
-  const isLeader = () => metronome().leaderId === myUser()?.userId;
   
   const [holdTimeout, setHoldTimeout] = createSignal<number | null>(null);
   const [holdInterval, setHoldInterval] = createSignal<number | null>(null);
@@ -30,14 +27,8 @@ function Metronome() {
     const target = e.target as HTMLInputElement;
     const newBpm = Number(target.value);
     
-    // Always update optimistically
-    setMetronomeBpm(newBpm);
-    
-    // If you're the leader, effects will broadcast
-    // If you're a follower, send request to leader
-    if (!isLeader()) {
-      MetronomeClient.setBpm(newBpm);
-    }
+    // Update via CRDT - automatically synced
+    metronomeActions.setBpm(newBpm);
   }
 
   function toggleMetronome() {
@@ -46,18 +37,13 @@ function Metronome() {
     if (newActive) {
       // Starting metronome - become leader
       const myUserId = myUser()?.userId;
-      setMetronomeActive(true);
-      setMetronomeLeader(myUserId);
-    } else {
-      // Stopping metronome - optimistically update
-      setMetronomeActive(false);
-      setMetronomeLeader(undefined);
-      
-      // If you're not the leader, also send request
-      if (!isLeader()) {
-        MetronomeClient.stop();
-      }
+      if (!myUserId) return;
+      metronomeActions.start(myUserId);
+      return;
     }
+    
+    // Stopping metronome - automatically synced via CRDT
+    metronomeActions.stop();
   }
 
   function changeBpm(delta: number) {
@@ -65,13 +51,8 @@ function Metronome() {
     const newBpm = Math.max(MIN_BPM, Math.min(MAX_BPM, currentBpm + delta));
     
     if (newBpm !== currentBpm) {
-      // Always update optimistically
-      setMetronomeBpm(newBpm);
-      
-      // If you're a follower, also send request to leader
-      if (!isLeader()) {
-        MetronomeClient.setBpm(newBpm);
-      }
+      // Update via CRDT - automatically synced
+      metronomeActions.setBpm(newBpm);
     }
   }
 

@@ -3,6 +3,7 @@ import * as NoteActions from '../actions/NoteActions';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import AudioSyncCoordinator from '../audio/syncronization/AudioSyncCoordinator';
 import KeyboardController from '../controllers/KeyboardController';
+import { sharedStoreRoot } from '../crdt';
 import MetronomeHandlers from '../handlers/MetronomeHandlers';
 import RoomHandlers from '../handlers/RoomHandlers';
 import RealTimeController from '../networking/RealTimeController';
@@ -11,16 +12,8 @@ import type { MessageHandler } from '../networking/AbstractNetworkController';
 
 
 
-const RTC_HANDLERS = {
-  KEY_DOWN: RoomHandlers.keyDownHandler,
-  KEY_UP: RoomHandlers.keyUpHandler,
-  SUSTAIN_DOWN: RoomHandlers.sustainDownHandler,
-  SUSTAIN_UP: RoomHandlers.sustainUpHandler,
-  METRONOME_TICK: MetronomeHandlers.tickHandler,
-  METRONOME_START: MetronomeHandlers.startHandler,
-  METRONOME_STOP: MetronomeHandlers.stopHandler,
-  SET_BPM: MetronomeHandlers.bpmHandler,
-} as const;
+// Create handlers object that will be populated based on CRDT availability
+let RTC_HANDLERS: Record<string, MessageHandler>;
 const WEBSOCKET_HANDLERS = {
   ROOM_JOIN: RoomHandlers.roomJoinHandler,
   USER_CONNECT: RoomHandlers.userConnectHandler,
@@ -40,10 +33,11 @@ interface EventEmitter {
   on(event: string | symbol, listener: (...args: any[]) => void): any;
 }
 
-export function register() {
+export async function register() {
   subscribe(HuMIDI as EventEmitter, MIDI_HANDLERS);
   const websocketController = WebsocketController.getInstance();
-  subscribe(RealTimeController.getInstance(), RTC_HANDLERS);
+  const realTimeController = RealTimeController.getInstance();
+  
   subscribe(websocketController, WEBSOCKET_HANDLERS);
   window.addEventListener('blur', RoomHandlers.blurHandler);
 
@@ -51,8 +45,33 @@ export function register() {
   keyboardController.registerKeyDownHandler(NoteActions.keyDown);
   keyboardController.registerKeyUpHandler(NoteActions.keyUp);
 
-  // establish websocket connection only after all listeners have been setup
+  // Configure RTC handlers first
+  RTC_HANDLERS = {
+    KEY_DOWN: RoomHandlers.keyDownHandler,
+    KEY_UP: RoomHandlers.keyUpHandler,
+    SUSTAIN_DOWN: RoomHandlers.sustainDownHandler,
+    SUSTAIN_UP: RoomHandlers.sustainUpHandler,
+    METRONOME_TICK: MetronomeHandlers.tickHandler,
+  };
+
+  // Subscribe to RTC handlers
+  subscribe(realTimeController, RTC_HANDLERS);
+
+  // Establish websocket connection first
   websocketController.connect();
+  
+  // Wait for ROOM_JOIN before initializing CRDT system
+  await new Promise<void>((resolve) => {
+    const handleRoomJoin = () => {
+      realTimeController.off('ROOM_JOIN', handleRoomJoin);
+      resolve();
+    };
+    
+    realTimeController.on('ROOM_JOIN', handleRoomJoin);
+  });
+
+  // Now initialize CRDT system after room has been joined and userId is set
+  await sharedStoreRoot.initialize(realTimeController);
   AudioSyncCoordinator.start();
 }
 
@@ -62,6 +81,9 @@ export function destroy() {
   KeyboardController.getInstance().destroy();
   AudioSyncCoordinator.stop();
   window.removeEventListener('blur', RoomHandlers.blurHandler);
+  
+  // Dispose CRDT system
+  sharedStoreRoot.dispose();
 }
 
 function subscribe(
