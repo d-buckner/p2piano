@@ -41,20 +41,18 @@ export class MetronomeController {
         const isLeader = leaderId === myUserId;
         const wasLeader = prevLeaderId === myUserId;
         
-        Logger.DEBUG('[CRDT] MetronomeController state change:', { active, isLeader, wasLeader, prevActive });
         
         // User just became leader and metronome is active
         if (active && isLeader && (!wasLeader || !prevActive)) {
           Logger.INFO('[CRDT] MetronomeController starting audio metronome');
           this.metronome.start();
+          return;
         }
         
         // User stopped being leader or metronome stopped
-        if (!active || !isLeader) {
-          if (wasLeader) {
-            Logger.INFO('[CRDT] MetronomeController stopping audio metronome');
-            this.metronome.stop();
-          }
+        if ((!active || !isLeader) && wasLeader) {
+          Logger.INFO('[CRDT] MetronomeController stopping audio metronome');
+          this.metronome.stop();
         }
       }
     ));

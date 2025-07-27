@@ -31,7 +31,6 @@ async function handleAudioRequest(request: Request) {
     // Check cache first
     const cachedResponse = await cache.match(request);
     if (cachedResponse) {
-      console.log('Service Worker: Cache hit for', request.url);
       return cachedResponse;
     }
     
@@ -43,7 +42,6 @@ async function handleAudioRequest(request: Request) {
     
     return response;
   } catch (error) {
-    console.error('Service Worker: Failed to fetch', request.url, error);
     throw error;
   }
 }

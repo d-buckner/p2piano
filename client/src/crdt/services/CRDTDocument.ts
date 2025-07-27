@@ -24,7 +24,6 @@ export class CRDTDocument {
       Object.assign(doc, initialState);
     });
 
-    Logger.INFO('[CRDT] CRDTDocument initialized with actorId:', this.actorId);
   }
 
   /**
@@ -40,7 +39,6 @@ export class CRDTDocument {
     this.actorId = newActorId;
     this.doc = Automerge.clone(this.doc, { actor: this.actorId });
     
-    Logger.INFO('[CRDT] Updated actorId to:', this.actorId);
   }
 
   /**
@@ -51,7 +49,6 @@ export class CRDTDocument {
     changeFn: (state: SharedStore[K]) => void,
     message?: string
   ): void {
-    Logger.DEBUG('[CRDT] Applying change to:', storeKey);
     
     this.doc = Automerge.change(this.doc, message || `Update ${storeKey}`, doc => {
       changeFn(doc[storeKey]);
@@ -90,7 +87,6 @@ export class CRDTDocument {
         const newHeads = Automerge.getHeads(newDoc);
         patches = Automerge.diff(newDoc, oldHeads, newHeads);
         this.doc = newDoc;
-        Logger.DEBUG('[CRDT] Document updated from sync message with patches:', patches.length);
       }
       
       return [newSyncState, hasChanges, patches];

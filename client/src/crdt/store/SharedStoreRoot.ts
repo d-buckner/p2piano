@@ -25,7 +25,6 @@ export class SharedStoreRoot {
   constructor() {
     // Initialize CRDT document with default state
     this.document = new CRDTDocument(initialSharedStore);
-    Logger.INFO('[CRDT] SharedStoreRoot initialized');
   }
 
   async initialize(realTimeController: RealTimeController) {
@@ -42,8 +41,6 @@ export class SharedStoreRoot {
     
     // Start syncing with connected peers
     this.initiateSyncWithConnectedPeers();
-    
-    Logger.INFO('[CRDT] SharedStoreRoot fully initialized');
   }
 
   /**
@@ -197,7 +194,6 @@ export class SharedStoreRoot {
     const hasRootChange = patches.some(p => p.path.length === 0);
     if (hasRootChange) {
       setStore('shared', docState);
-      Logger.DEBUG('[CRDT] Applied root level change to SolidJS store');
       return;
     }
     
@@ -216,7 +212,6 @@ export class SharedStoreRoot {
       setStore('shared', key, docState[key]);
     });
     
-    Logger.DEBUG('[CRDT] Applied patches to SolidJS store, updated keys:', Array.from(updatedKeys));
   }
 
   /**
@@ -226,7 +221,6 @@ export class SharedStoreRoot {
     const docState = this.document.getState();
     setStore('shared', storeKey, docState[storeKey]);
     
-    Logger.DEBUG('[CRDT] Synced key to SolidJS store:', storeKey);
   }
 
   /**
@@ -236,7 +230,6 @@ export class SharedStoreRoot {
     const docState = this.document.getState();
     setStore('shared', docState);
     
-    Logger.DEBUG('[CRDT] Synced full document to SolidJS store');
   }
 
   /**

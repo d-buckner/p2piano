@@ -1,8 +1,8 @@
 import Logger from '../../lib/Logger';
 import { MessageTypeGuards } from '../types/MessageTypes';
+import type { MessageHandler } from '../../networking/AbstractNetworkController';
 import type RealTimeController from '../../networking/RealTimeController';
 import type { AutomergeSyncMessage } from '../types/MessageTypes';
-import type { MessageHandler } from '../../networking/AbstractNetworkController';
 
 /**
  * Handles message passing between CRDT system and RealTimeController.
@@ -45,7 +45,6 @@ export class NetworkBridge {
     // Handle peer disconnections
     this.rtc.on('USER_DISCONNECT', this.boundHandlePeerDisconnect);
 
-    Logger.INFO('[CRDT] NetworkBridge event handlers set up');
   }
 
   /**
@@ -60,7 +59,6 @@ export class NetworkBridge {
       return; // Ignore own messages
     }
 
-    Logger.DEBUG('[CRDT] Received sync message from:', message.userId);
     
     // Convert array back to Uint8Array
     const syncMessage = new Uint8Array(message.syncMessage);
@@ -102,7 +100,6 @@ export class NetworkBridge {
    */
   sendSyncMessage(peerId: string, message: Uint8Array): void {
     if (!this.rtc.isWebSocketConnected()) {
-      Logger.DEBUG('[CRDT] WebSocket not connected, dropping sync message for:', peerId);
       return;
     }
 
@@ -112,7 +109,6 @@ export class NetworkBridge {
     };
 
     this.rtc.sendToPeer(peerId, 'AUTOMERGE_PROTOCOL', messageData);
-    Logger.DEBUG('[CRDT] Sent sync message to:', peerId);
   }
 
   /**
