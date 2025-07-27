@@ -1,6 +1,5 @@
 import { MIN_BPM, MAX_BPM } from '../constants/metronome';
 import { SharedStoreActions } from '../crdt/store/SharedStoreActions';
-import Logger from '../lib/Logger';
 import type { SharedStoreRoot } from '../crdt/store/SharedStoreRoot';
 import type { SharedMetronomeState } from '../crdt/types/StoreTypes';
 

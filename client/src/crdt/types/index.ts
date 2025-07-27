@@ -3,4 +3,10 @@
  */
 
 // Specific store structure types
-export * from './StoreTypes';
+export { 
+  type SharedStore, 
+  type SharedMetronomeState, 
+  type SharedStoreKey, 
+  type SharedStateFromKey,
+  initialSharedStore 
+} from './StoreTypes';

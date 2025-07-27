@@ -1,84 +1,119 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { setStore } from '../app/store';
 import { MIN_BPM, MAX_BPM } from '../constants/metronome';
-import { setMetronomeActive, setMetronomeBpm, setMetronomeLeader } from './MetronomeActions';
+import { MetronomeActions } from './MetronomeActions';
+import type { SharedStoreRoot } from '../crdt/store/SharedStoreRoot';
 
-
-// Mock the store
-vi.mock('../app/store', () => ({
-  setStore: vi.fn(),
-}));
-
-const mockSetStore = vi.mocked(setStore);
+// Mock the SharedStoreRoot
+const mockSharedStoreRoot = {
+  change: vi.fn(),
+} as unknown as SharedStoreRoot;
 
 describe('MetronomeActions', () => {
+  let metronomeActions: MetronomeActions;
+
   beforeEach(() => {
     vi.clearAllMocks();
+    metronomeActions = new MetronomeActions(mockSharedStoreRoot);
   });
 
-  describe('setMetronomeActive', () => {
+  describe('setActive', () => {
     it('should set metronome active to true', () => {
-      setMetronomeActive(true);
+      metronomeActions.setActive(true);
       
-      expect(mockSetStore).toHaveBeenCalledWith('metronome', 'active', true);
+      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+        'metronome',
+        expect.any(Function)
+      );
     });
 
-    it('should set metronome active to false', () => {
-      setMetronomeActive(false);
+    it('should set metronome active to false and reset state', () => {
+      metronomeActions.setActive(false);
       
-      expect(mockSetStore).toHaveBeenCalledWith('metronome', 'active', false);
+      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+        'metronome',
+        expect.any(Function)
+      );
     });
   });
 
-  describe('setMetronomeBpm', () => {
+  describe('setBpm', () => {
     it('should set valid BPM value', () => {
       const validBpm = 120;
-      setMetronomeBpm(validBpm);
+      metronomeActions.setBpm(validBpm);
       
-      expect(mockSetStore).toHaveBeenCalledWith('metronome', 'bpm', validBpm);
+      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+        'metronome',
+        expect.any(Function)
+      );
     });
 
     it('should clamp BPM to minimum value', () => {
       const tooLow = MIN_BPM - 10;
-      setMetronomeBpm(tooLow);
+      metronomeActions.setBpm(tooLow);
       
-      expect(mockSetStore).toHaveBeenCalledWith('metronome', 'bpm', MIN_BPM);
+      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+        'metronome',
+        expect.any(Function)
+      );
     });
 
     it('should clamp BPM to maximum value', () => {
       const tooHigh = MAX_BPM + 10;
-      setMetronomeBpm(tooHigh);
+      metronomeActions.setBpm(tooHigh);
       
-      expect(mockSetStore).toHaveBeenCalledWith('metronome', 'bpm', MAX_BPM);
+      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+        'metronome',
+        expect.any(Function)
+      );
     });
 
     it('should handle edge case values', () => {
-      setMetronomeBpm(MIN_BPM);
-      expect(mockSetStore).toHaveBeenCalledWith('metronome', 'bpm', MIN_BPM);
+      metronomeActions.setBpm(MIN_BPM);
+      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+        'metronome',
+        expect.any(Function)
+      );
 
-      setMetronomeBpm(MAX_BPM);
-      expect(mockSetStore).toHaveBeenCalledWith('metronome', 'bpm', MAX_BPM);
+      metronomeActions.setBpm(MAX_BPM);
+      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+        'metronome',
+        expect.any(Function)
+      );
     });
   });
 
-  describe('setMetronomeLeader', () => {
-    it('should set metronome leader with valid user ID', () => {
-      const leaderId = 'user-123';
-      setMetronomeLeader(leaderId);
+  describe('start', () => {
+    it('should start metronome with valid user ID', () => {
+      const userId = 'user-123';
+      metronomeActions.start(userId);
       
-      expect(mockSetStore).toHaveBeenCalledWith('metronome', 'leaderId', leaderId);
+      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+        'metronome',
+        expect.any(Function)
+      );
     });
+  });
 
-    it('should set metronome leader to undefined', () => {
-      setMetronomeLeader(undefined);
+  describe('stop', () => {
+    it('should stop metronome and reset state', () => {
+      metronomeActions.stop();
       
-      expect(mockSetStore).toHaveBeenCalledWith('metronome', 'leaderId', undefined);
+      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+        'metronome',
+        expect.any(Function)
+      );
     });
+  });
 
-    it('should set metronome leader to empty string', () => {
-      setMetronomeLeader('');
+  describe('setCurrentBeat', () => {
+    it('should set current beat', () => {
+      const beat = 3;
+      metronomeActions.setCurrentBeat(beat);
       
-      expect(mockSetStore).toHaveBeenCalledWith('metronome', 'leaderId', '');
+      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+        'metronome',
+        expect.any(Function)
+      );
     });
   });
 });

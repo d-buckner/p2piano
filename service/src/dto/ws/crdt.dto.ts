@@ -1,5 +1,6 @@
 import { IsArray, IsUUID, ArrayMaxSize } from 'class-validator';
 
+
 export class CrdtMessageDto {
   @IsArray()
   @IsUUID(4, { each: true })

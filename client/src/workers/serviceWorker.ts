@@ -27,21 +27,17 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 async function handleAudioRequest(request: Request) {
   const cache = await caches.open(CACHE_NAME);
   
-  try {
-    // Check cache first
-    const cachedResponse = await cache.match(request);
-    if (cachedResponse) {
-      return cachedResponse;
-    }
-    
-    const response = await fetch(request);
-    
-    if (response.ok) {
-      await cache.put(request, response.clone());
-    }
-    
-    return response;
-  } catch (error) {
-    throw error;
+  // Check cache first
+  const cachedResponse = await cache.match(request);
+  if (cachedResponse) {
+    return cachedResponse;
   }
+  
+  const response = await fetch(request);
+  
+  if (response.ok) {
+    await cache.put(request, response.clone());
+  }
+  
+  return response;
 }

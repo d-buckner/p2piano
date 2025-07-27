@@ -1,15 +1,25 @@
-import * as Automerge from '@automerge/automerge';
+import { 
+  init, 
+  change, 
+  clone, 
+  generateSyncMessage, 
+  receiveSyncMessage, 
+  getHeads, 
+  diff,
+  type Doc, 
+  type SyncState, 
+  type Patch 
+} from '@automerge/automerge';
 import Logger from '../../lib/Logger';
 import { generateRandomHexActorId, toHex } from '../utils/actorUtils';
 import type { SharedStore, SharedStoreKey } from '../types/StoreTypes';
-import type { Patch } from '@automerge/automerge';
 
 /**
  * Pure Automerge document operations.
  * Handles all CRDT document lifecycle and sync message generation/reception.
  */
 export class CRDTDocument {
-  private doc: Automerge.Doc<SharedStore>;
+  private doc: Doc<SharedStore>;
   private actorId: string;
 
   constructor(initialState: SharedStore, userId?: string) {
@@ -17,10 +27,10 @@ export class CRDTDocument {
     this.actorId = userId ? toHex(userId) : generateRandomHexActorId();
     
     // Initialize document
-    this.doc = Automerge.init<SharedStore>({ actor: this.actorId });
+    this.doc = init<SharedStore>({ actor: this.actorId });
     
     // Set initial state
-    this.doc = Automerge.change(this.doc, 'Initialize document', doc => {
+    this.doc = change(this.doc, 'Initialize document', doc => {
       Object.assign(doc, initialState);
     });
 
@@ -37,7 +47,7 @@ export class CRDTDocument {
     }
 
     this.actorId = newActorId;
-    this.doc = Automerge.clone(this.doc, { actor: this.actorId });
+    this.doc = clone(this.doc, { actor: this.actorId });
     
   }
 
@@ -50,7 +60,7 @@ export class CRDTDocument {
     message?: string
   ): void {
     
-    this.doc = Automerge.change(this.doc, message || `Update ${storeKey}`, doc => {
+    this.doc = change(this.doc, message || `Update ${storeKey}`, doc => {
       changeFn(doc[storeKey]);
     });
   }
@@ -58,22 +68,22 @@ export class CRDTDocument {
   /**
    * Generate a sync message for a peer
    */
-  generateSyncMessage(syncState: Automerge.SyncState): [Automerge.SyncState, Uint8Array | null] {
-    return Automerge.generateSyncMessage(this.doc, syncState);
+  generateSyncMessage(syncState: SyncState): [SyncState, Uint8Array | null] {
+    return generateSyncMessage(this.doc, syncState);
   }
 
   /**
    * Receive and apply a sync message from a peer
    */
   receiveSyncMessage(
-    syncState: Automerge.SyncState,
+    syncState: SyncState,
     message: Uint8Array
-  ): [Automerge.SyncState, boolean, Patch[]] {
+  ): [SyncState, boolean, Patch[]] {
     try {
       // Store the old heads before receiving the message
-      const oldHeads = Automerge.getHeads(this.doc);
+      const oldHeads = getHeads(this.doc);
       
-      const [newDoc, newSyncState] = Automerge.receiveSyncMessage(
+      const [newDoc, newSyncState] = receiveSyncMessage(
         this.doc,
         syncState,
         message
@@ -84,8 +94,8 @@ export class CRDTDocument {
       
       if (hasChanges) {
         // Get patches showing what changed between the old and new document states
-        const newHeads = Automerge.getHeads(newDoc);
-        patches = Automerge.diff(newDoc, oldHeads, newHeads);
+        const newHeads = getHeads(newDoc);
+        patches = diff(newDoc, oldHeads, newHeads);
         this.doc = newDoc;
       }
       

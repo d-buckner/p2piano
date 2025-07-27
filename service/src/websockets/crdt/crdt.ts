@@ -8,6 +8,7 @@ import { CrdtEvents } from './events';
 import type { CrdtMessageDto } from '../../dto/ws/crdt.dto';
 import type { Socket } from 'socket.io';
 
+
 @WebSocketGateway(getWebSocketGatewayOptions())
 export class Crdt {
     @Throttle({ default: { limit: 100, ttl: 10000 } }) // Reasonable limit for CRDT sync messages

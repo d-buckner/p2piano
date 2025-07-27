@@ -1,4 +1,4 @@
-import * as Automerge from '@automerge/automerge';
+import { initSyncState, type SyncState, type Patch } from '@automerge/automerge';
 import { setStore, store } from '../../app/store';
 import Logger from '../../lib/Logger';
 import { selectConnectedPeerIds } from '../../selectors/connectionSelectors';
@@ -8,7 +8,6 @@ import { NetworkBridge } from '../services/NetworkBridge';
 import { initialSharedStore } from '../types/StoreTypes';
 import type RealTimeController from '../../networking/RealTimeController';
 import type { SharedStore, SharedStoreKey } from '../types/StoreTypes';
-import type { Patch } from '@automerge/automerge';
 
 /**
  * Root manager for the shared CRDT store.
@@ -20,7 +19,7 @@ import type { Patch } from '@automerge/automerge';
 export class SharedStoreRoot {
   private document: CRDTDocument;
   private networkBridge: NetworkBridge | null = null;
-  private syncStates: Map<string, Automerge.SyncState> = new Map();
+  private syncStates: Map<string, SyncState> = new Map();
 
   constructor() {
     // Initialize CRDT document with default state
@@ -90,7 +89,7 @@ export class SharedStoreRoot {
   private handleSyncMessage(peerId: string, message: Uint8Array): void {
     // Initialize sync state for new peer if needed
     if (!this.syncStates.has(peerId)) {
-      this.syncStates.set(peerId, Automerge.initSyncState());
+      this.syncStates.set(peerId, initSyncState());
     }
     
     const syncState = this.syncStates.get(peerId)!;
@@ -115,7 +114,7 @@ export class SharedStoreRoot {
     Logger.INFO('[CRDT] Peer connected:', peerId);
     
     // Initialize sync state for the peer
-    this.syncStates.set(peerId, Automerge.initSyncState());
+    this.syncStates.set(peerId, initSyncState());
     
     // Send initial sync
     this.sendSyncToPeer(peerId);
