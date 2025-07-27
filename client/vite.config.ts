@@ -6,6 +6,8 @@ import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
 import { defineConfig } from 'vite';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import solidPlugin from 'vite-plugin-solid';
+import topLevelAwait from 'vite-plugin-top-level-await';
+import wasm from 'vite-plugin-wasm';
 /// <reference types="vitest" />
 
 
@@ -32,6 +34,9 @@ export default defineConfig(({ mode }) => {
     plugins: [
       vanillaExtractPlugin(),
       solidPlugin(),
+      // for Automerge WASM support
+      wasm(),
+      topLevelAwait(),
       // for simple-peer
       nodePolyfills({
         globals: {

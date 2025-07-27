@@ -45,6 +45,9 @@ export default class WebsocketController extends AbstractNetworkController {
 
     this.on(WEBSOCKET_ACTIONS.USER_CONNECT, this.onUserConnect);
     this.on(WEBSOCKET_ACTIONS.USER_DISCONNECT, this.onUserDisconnect);
+    this.on('AUTOMERGE_PROTOCOL', (message: unknown) => {
+      Logger.INFO('[WebSocket] AUTOMERGE_PROTOCOL message received:', message);
+    });
     this.on('exception', (error: Error & { code?: number }) => {
       if (error?.code === 429) {
         Logger.ERROR('You have exceeded websocket message limits, please slow down!');
@@ -69,7 +72,15 @@ export default class WebsocketController extends AbstractNetworkController {
       return;
     }
 
-    this.socket.on(action, callback);
+    // Wrap callback to add logging for AUTOMERGE_PROTOCOL
+    const wrappedCallback = action === 'AUTOMERGE_PROTOCOL' 
+      ? (message: T) => {
+          Logger.DEBUG(`[WebSocket] Received ${action}`, message);
+          callback(message);
+        }
+      : callback;
+
+    this.socket.on(action, wrappedCallback);
   }
 
   off<T>(action: string, callback: (message: T) => void) {
@@ -83,7 +94,7 @@ export default class WebsocketController extends AbstractNetworkController {
   }
 
   public broadcast(action: string, payload?: Message): void {
-    if (!this.socket) {
+    if (!this.socket || !this.socket.connected) {
       Logger.WARN('Cannot send message before websocket is connected');
       return;
     }
@@ -92,6 +103,7 @@ export default class WebsocketController extends AbstractNetworkController {
   }
 
   public sendToPeer(peerId: string, action: string, payload?: Message): void {
+    Logger.DEBUG(`[WebSocket] Sending ${action} to peer ${peerId}`, payload);
     this.broadcast(action, {
       ...payload,
       targetUserIds: [peerId],
@@ -105,8 +117,14 @@ export default class WebsocketController extends AbstractNetworkController {
     });
   }
 
+  public isConnected(): boolean {
+    return this.socket?.connected || false;
+  }
+
   private onUserConnect(message: UserConnectionMessage) {
+    Logger.INFO('[WebSocket] onUserConnect called with userId:', message.userId);
     addPeerConnection(message.userId, Transport.WEBSOCKET, 0);
+    Logger.INFO('[WebSocket] addPeerConnection completed for userId:', message.userId);
   }
 
   private onUserDisconnect(message: UserConnectionMessage) {

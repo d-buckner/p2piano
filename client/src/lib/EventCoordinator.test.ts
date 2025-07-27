@@ -72,7 +72,13 @@ const mockKeyboardController = {
 };
 
 const mockRealTimeController = {
-  on: vi.fn(),
+  on: vi.fn((event: string, handler: () => void) => {
+    // For ROOM_JOIN event, immediately call the handler to simulate room joining
+    if (event === 'ROOM_JOIN') {
+      handler();
+    }
+  }),
+  off: vi.fn(),
 };
 
 const mockWebsocketController = {
@@ -126,8 +132,8 @@ describe('EventCoordinator', () => {
       expect(mockKeyboardController.registerKeyUpHandler).toHaveBeenCalledWith(NoteActions.keyUp);
     });
 
-    it('should start audio sync coordinator', () => {
-      register();
+    it('should start audio sync coordinator', async () => {
+      await register();
 
       expect(AudioSyncCoordinator.start).toHaveBeenCalled();
     });
@@ -189,8 +195,8 @@ describe('EventCoordinator', () => {
       expect(window.removeEventListener).toHaveBeenCalled();
     });
 
-    it('should register all handler types correctly', () => {
-      register();
+    it('should register all handler types correctly', async () => {
+      await register();
 
       // MIDI handlers
       expect(HuMIDI.on).toHaveBeenCalledWith('noteon', RoomHandlers.keyDownHandler);
@@ -199,10 +205,9 @@ describe('EventCoordinator', () => {
       // RTC handlers
       expect(mockRealTimeController.on).toHaveBeenCalledWith('KEY_DOWN', RoomHandlers.keyDownHandler);
       expect(mockRealTimeController.on).toHaveBeenCalledWith('KEY_UP', RoomHandlers.keyUpHandler);
+      expect(mockRealTimeController.on).toHaveBeenCalledWith('SUSTAIN_DOWN', RoomHandlers.sustainDownHandler);
+      expect(mockRealTimeController.on).toHaveBeenCalledWith('SUSTAIN_UP', RoomHandlers.sustainUpHandler);
       expect(mockRealTimeController.on).toHaveBeenCalledWith('METRONOME_TICK', MetronomeHandlers.tickHandler);
-      expect(mockRealTimeController.on).toHaveBeenCalledWith('METRONOME_START', MetronomeHandlers.startHandler);
-      expect(mockRealTimeController.on).toHaveBeenCalledWith('METRONOME_STOP', MetronomeHandlers.stopHandler);
-      expect(mockRealTimeController.on).toHaveBeenCalledWith('SET_BPM', MetronomeHandlers.bpmHandler);
       
       // WebSocket handlers
       expect(mockWebsocketController.on).toHaveBeenCalledWith('ROOM_JOIN', RoomHandlers.roomJoinHandler);

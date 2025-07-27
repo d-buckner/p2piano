@@ -4,7 +4,7 @@ import { joinRoom } from '../actions/WorkspaceActions';
 import { useAppSelector } from '../app/hooks';
 import PianoRenderer from '../components/PianoRenderer';
 import RoomNav from '../components/RoomNav';
-import { initMetronomeEffects } from '../effects/MetronomeEffects';
+import { metronomeController } from '../controllers/MetronomeController';
 import { selectNotes } from '../selectors/noteSelectors';
 import { selectWorkspace } from '../selectors/workspaceSelectors';
 import * as styles from './Room.css';
@@ -21,7 +21,7 @@ const Room = () => {
     }
 
     joinRoom(roomId);
-    initMetronomeEffects();
+    metronomeController.initialize();
   });
 
   return (

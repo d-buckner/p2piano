@@ -1,7 +1,7 @@
 import {getTransport} from 'tone';
 import { store } from '../../app/store';
-import MetronomeClient from '../../clients/MetronomeClient';
 import { TICK_TYPE } from '../../constants/metronome';
+import RealTimeController from '../../networking/RealTimeController';
 import { selectMaxLatency } from '../../selectors/connectionSelectors';
 import { selectMetronome } from '../../selectors/metronomeSelectors';
 import ClickSampler from './ClickSampler';
@@ -16,9 +16,6 @@ class Metronome {
   static start() {
     this.stop(); // Stop any existing metronome
     this.currentBeat = 0;
-    
-    // Broadcast start to other clients
-    MetronomeClient.start();
     
     // Set transport BPM
     const bpm = selectMetronome(store).bpm;
@@ -41,8 +38,6 @@ class Metronome {
     }
     
     transport.stop();
-    // Broadcast stop to other clients
-    MetronomeClient.stop();
   }
 
   static restart() {
@@ -62,8 +57,8 @@ class Metronome {
     } else {
       ClickSampler.scheduleLow(time + maxLatency / 1000);
     }
-    // Broadcast to other clients immediately
-    MetronomeClient.tick(tickType);
+    // Broadcast tick to other clients
+    RealTimeController.getInstance().broadcast('METRONOME_TICK', { type: tickType });
 
     const metronome = selectMetronome(store);
     // Update Transport BPM in case it changed

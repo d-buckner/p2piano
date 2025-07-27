@@ -1,16 +1,57 @@
-import { setStore } from '../app/store';
 import { MIN_BPM, MAX_BPM } from '../constants/metronome';
+import { SharedStoreActions } from '../crdt/store/SharedStoreActions';
+import type { SharedStoreRoot } from '../crdt/store/SharedStoreRoot';
+import type { SharedMetronomeState } from '../crdt/types/StoreTypes';
 
+/**
+ * CRDT-based metronome actions that synchronize metronome state across peers.
+ * 
+ * This class doesn't need to know about CRDT internals - it just uses the
+ * change() method from SharedStoreActions to make modifications.
+ */
+export class MetronomeActions extends SharedStoreActions<SharedMetronomeState> {
+  constructor(sharedRoot: SharedStoreRoot) {
+    super('metronome', sharedRoot);
+  }
 
-export function setMetronomeActive(active: boolean) {
-  setStore('metronome', 'active', active);
-}
+  setActive(active: boolean) {
+    this.change(metronome => {
+      metronome.active = active;
+      if (!active) {
+        metronome.leaderId = '';
+        metronome.startTimestamp = 0;
+        metronome.currentBeat = 0;
+      }
+    });
+  }
 
-export function setMetronomeBpm(bpm: number) {
-  const validBpm = Math.max(MIN_BPM, Math.min(MAX_BPM, bpm));
-  setStore('metronome', 'bpm', validBpm);
-}
+  start(userId: string) {
+    this.change(metronome => {
+      metronome.active = true;
+      metronome.leaderId = userId;
+      metronome.startTimestamp = Date.now();
+      metronome.currentBeat = 0;
+    });
+  }
 
-export function setMetronomeLeader(leaderId?: string) {
-  setStore('metronome', 'leaderId', leaderId);
+  stop() {
+    this.change(metronome => {
+      metronome.active = false;
+      metronome.leaderId = '';
+      metronome.startTimestamp = 0;
+      metronome.currentBeat = 0;
+    });
+  }
+
+  setBpm(bpm: number) {
+    this.change(metronome => {
+      metronome.bpm = Math.max(MIN_BPM, Math.min(MAX_BPM, bpm));
+    });
+  }
+
+  setCurrentBeat(beat: number) {
+    this.change(metronome => {
+      metronome.currentBeat = beat;
+    });
+  }
 }

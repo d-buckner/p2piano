@@ -35,17 +35,12 @@ vi.mock('../../lib/Logger', () => ({
     ERROR: vi.fn(),
     WARN: vi.fn(),
     INFO: vi.fn(),
+    DEBUG: vi.fn(),
   },
 }));
 
 vi.mock('../../selectors/workspaceSelectors', () => ({
   selectRoomId: vi.fn(() => 'test-room'),
-}));
-
-vi.mock('../../lib/Logger', () => ({
-  default: {
-    ERROR: vi.fn(),
-  },
 }));
 
 // Mock socket instance
@@ -54,6 +49,7 @@ const mockSocket = {
   off: vi.fn(),
   emit: vi.fn(),
   disconnect: vi.fn(),
+  connected: true,
 };
 
 describe('WebsocketController', () => {

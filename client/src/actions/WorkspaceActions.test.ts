@@ -41,6 +41,9 @@ describe('WorkspaceActions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
+    // Mock EventCoordinator.register to return a resolved promise
+    vi.mocked(EventCoordinator.register).mockResolvedValue(undefined);
+    
     // Mock WebsocketController instance
     mockWebsocketController = {
       broadcast: vi.fn(),

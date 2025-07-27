@@ -22,11 +22,15 @@ describe('metronomeSelectors', () => {
         midi: {
           enabled: false,
         },
-        metronome: {
-          active: true,
-          bpm: 120,
-          beatsPerMeasure: 4,
-          leaderId: 'user-123',
+        shared: {
+          metronome: {
+            active: true,
+            bpm: 120,
+            beatsPerMeasure: 4,
+            leaderId: 'user-123',
+            startTimestamp: 0,
+            currentBeat: 0,
+          },
         },
       };
 
@@ -37,6 +41,8 @@ describe('metronomeSelectors', () => {
         bpm: 120,
         beatsPerMeasure: 4,
         leaderId: 'user-123',
+        startTimestamp: 0,
+        currentBeat: 0,
       });
     });
 
@@ -57,11 +63,15 @@ describe('metronomeSelectors', () => {
         midi: {
           enabled: false,
         },
-        metronome: {
-          active: false,
-          bpm: 60,
-          beatsPerMeasure: 4,
-          leaderId: undefined,
+        shared: {
+          metronome: {
+            active: false,
+            bpm: 60,
+            beatsPerMeasure: 4,
+            leaderId: '',
+            startTimestamp: 0,
+            currentBeat: 0,
+          },
         },
       };
 
@@ -71,7 +81,9 @@ describe('metronomeSelectors', () => {
         active: false,
         bpm: 60,
         beatsPerMeasure: 4,
-        leaderId: undefined,
+        leaderId: '',
+        startTimestamp: 0,
+        currentBeat: 0,
       });
     });
   });

@@ -102,6 +102,10 @@ export default class RealTimeController extends AbstractNetworkController {
     fallback();
   }
 
+  public isWebSocketConnected(): boolean {
+    return this.websocketController.isConnected();
+  }
+
   static destroy() {
     RealTimeController.instance = undefined;
   }
