@@ -23,22 +23,7 @@ export const pianoContainer = style({
   borderRadius: '20px',
   padding: '2rem',
   boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',
-  transform: 'perspective(1000px) rotateY(-10deg) rotateX(5deg)',
-  transition: 'transform 0.3s ease',
   position: 'relative',
-  
-  ':hover': {
-    transform: 'perspective(1000px) rotateY(-5deg) rotateX(2deg)',
-  },
-  
-  '@media': {
-    '(max-width: 768px)': {
-      transform: 'none',
-      ':hover': {
-        transform: 'none',
-      },
-    },
-  },
 });
 
 export const whiteKeysContainer = style({
@@ -105,6 +90,9 @@ export const userAvatars = style({
   alignItems: 'center',
   justifyContent: 'center',
   flexWrap: 'wrap',
+  marginTop: vars.spacing.lg,
+  paddingTop: vars.spacing.md,
+  borderTop: '1px solid rgba(255, 255, 255, 0.1)',
 });
 
 export const userAvatar = style({

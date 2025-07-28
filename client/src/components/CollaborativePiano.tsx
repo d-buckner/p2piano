@@ -43,18 +43,28 @@ export default function CollaborativePiano() {
     setActiveKeys(prev => new Map([...prev, [key, user.color]]));
     setActiveUsers(prev => new Set([...prev, userId]));
     
-    // Both should end at the same time
+    // Remove key after duration
     setTimeout(() => {
       setActiveKeys(prev => {
         const newMap = new Map(prev);
         newMap.delete(key);
         return newMap;
       });
-      setActiveUsers(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(userId);
-        return newSet;
-      });
+      
+      // Check if user has any other active keys before removing from active users
+      setTimeout(() => {
+        setActiveUsers(prev => {
+          const currentKeys = activeKeys();
+          const userHasActiveKeys = Array.from(currentKeys.values()).some(color => color === user.color);
+          
+          if (!userHasActiveKeys) {
+            const newSet = new Set(prev);
+            newSet.delete(userId);
+            return newSet;
+          }
+          return prev;
+        });
+      }, 10); // Small delay to ensure activeKeys state has updated
     }, 400);
   };
   
@@ -127,9 +137,9 @@ export default function CollaborativePiano() {
             }}
           </For>
         </div>
-      </div>
-      
-      <div class={styles.userAvatars}>
+        
+        {/* User avatars inside piano */}
+        <div class={styles.userAvatars}>
         <For each={USERS}>
           {(user) => {
             const isUserActive = () => activeUsers().has(user.id);
@@ -149,6 +159,7 @@ export default function CollaborativePiano() {
             );
           }}
         </For>
+        </div>
       </div>
       
       <div class={styles.description}>

@@ -9,7 +9,6 @@ export const page = style({
 });
 
 export const main = style({
-  flex: 1,
   position: 'relative',
 });
 

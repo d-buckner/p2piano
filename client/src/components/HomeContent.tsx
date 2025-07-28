@@ -23,38 +23,38 @@ interface StepData {
 const FEATURES: FeatureData[] = [
   {
     icon: '⚡',
-    title: 'Ultra-Low Latency',
-    description: 'Play together in perfect sync with our optimized real-time audio engine. Works best when collaborators are within 500 miles of each other.',
+    title: 'Real-Time Synchronization',
+    description: 'Play together with minimal delay. Works excellent locally and surprisingly well across distances. Optimized for the best possible timing.',
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   },
   {
     icon: '🎵',
-    title: 'Professional Sound Quality',
-    description: 'High-fidelity piano samples and crystal-clear audio processing ensure every note sounds exactly as intended.',
+    title: 'High-Quality Piano Sounds',
+    description: 'Carefully sampled piano with rich, expressive sound. Multiple velocity layers give you natural playing dynamics.',
     gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
   },
   {
     icon: '👥',
-    title: 'Perfect for Teaching',
-    description: 'Music teachers can easily demonstrate techniques, guide students, and conduct virtual lessons with seamless collaboration.',
+    title: 'Perfect for Music Education',
+    description: 'Ideal for piano lessons, ensemble practice, and collaborative learning. Teachers and students love the instant connection.',
     gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
   },
   {
     icon: '💝',
     title: 'Completely Free',
-    description: 'No subscriptions, no hidden fees, no ads. Just pure musical collaboration, hosted with love for the music community.',
+    description: 'No subscriptions, no ads, no premium tiers. Built for the music community with love and supported by donations.',
     gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
   },
   {
     icon: '🌐',
-    title: 'Works Everywhere',
-    description: 'Browser-based solution that works on any device. No downloads required – just share a link and start playing.',
+    title: 'Universal Compatibility',
+    description: 'Works instantly in any modern browser. Supports desktop, tablet, and mobile. MIDI keyboards work seamlessly when available.',
     gradient: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
   },
   {
     icon: '🎙️',
-    title: 'Recording (Coming Soon)',
-    description: 'Recording tools are in development. Soon you\'ll be able to capture and share your collaborative sessions.',
+    title: 'Active Development',
+    description: 'Regular updates with new instruments and features. Built with modern web technology and continuously improving.',
     gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
   },
 ];
@@ -63,22 +63,23 @@ const STEPS: StepData[] = [
   {
     number: '1',
     title: 'Create a Room',
-    description: 'Click the button above to instantly create your collaborative piano room with a unique shareable link.',
+    description: 'Click create and get a simple 5-letter room code. That\'s it.',
   },
   {
     number: '2',
-    title: 'Invite Friends',
-    description: 'Share the room code or link with your students, fellow musicians, or friends who want to play together.',
+    title: 'Share the Code',
+    description: 'Send the code to whoever you want to play with. They just type it in and join.',
   },
   {
     number: '3',
     title: 'Start Playing',
-    description: 'Everyone joins the room and can immediately start playing piano together in perfect real-time synchronization.',
+    description: 'Everyone can play piano together. Use your keyboard, mouse, or touch screen.',
   },
 ];
 
 export default function HomeContent() {
   const [isRoomCreating, setRoomCreating] = createSignal(false);
+  const [roomCode, setRoomCode] = createSignal('');
   const navigate = useNavigate();
 
   const navigateToRoom = (roomId: string) => navigate(`/${roomId}`);
@@ -95,6 +96,21 @@ export default function HomeContent() {
     }
   };
 
+  const joinRoom = () => {
+    const code = roomCode().trim().toUpperCase();
+    if (code.length === 5) {
+      AudioManager.activate();
+      navigateToRoom(code);
+    }
+  };
+
+  const handleRoomCodeInput = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    const value = target.value.toUpperCase().slice(0, 5);
+    setRoomCode(value);
+    target.value = value;
+  };
+
   return (
     <div class={styles.container}>
       {/* Hero Section */}
@@ -102,28 +118,61 @@ export default function HomeContent() {
         <div class={styles.heroContent}>
           <div class={styles.heroText}>
             <h1 class={styles.mainHeading}>
-              Play Piano Together with <span class={styles.brand}>p2piano</span>
+              The Best Way to Play Piano Together Online
             </h1>
             <p class={styles.subHeading}>
-              Connect with music teachers and friends for real-time piano collaboration. Play together in perfect sync, completely free.
+              Make music together online. Perfect for music lessons, jamming with friends, or connecting with other musicians. Create a room, get a simple 5-letter code, and invite anyone to play.
             </p>
-            <button
-              class={styles.ctaButton}
-              onClick={createRoom}
-              disabled={isRoomCreating()}
-            >
-              {isRoomCreating() ? (
-                <div class={styles.spinner} />
-              ) : (
-                <>
-                  <span>🎹</span>
-                  Create Room and Start Playing
-                </>
-              )}
-            </button>
+            
+            <div class={styles.actionSection}>
+              <button
+                class={styles.ctaButton}
+                onClick={createRoom}
+                disabled={isRoomCreating()}
+              >
+                {isRoomCreating() ? (
+                  <div class={styles.spinner} />
+                ) : (
+                  <>
+                    <span>🎹</span>
+                    Create New Room
+                  </>
+                )}
+              </button>
+
+              <div class={styles.orDivider}>
+                <span>or</span>
+              </div>
+
+              <div class={styles.joinSection}>
+                <label class={styles.joinLabel}>Have a room code?</label>
+                <div class={styles.joinInputGroup}>
+                  <input
+                    class={styles.roomCodeInput}
+                    placeholder="ABCDE"
+                    maxLength="5"
+                    onInput={handleRoomCodeInput}
+                    onKeyPress={(e) => e.key === 'Enter' && joinRoom()}
+                  />
+                  <button
+                    class={styles.joinButton}
+                    onClick={joinRoom}
+                    disabled={roomCode().length !== 5}
+                  >
+                    Join
+                  </button>
+                </div>
+              </div>
+            </div>
+
           </div>
           <div class={styles.heroVisual}>
-            <CollaborativePiano />
+            <div class={styles.demoContext}>
+              <CollaborativePiano />
+              <p class={styles.demoDescription}>
+                ↑ This is what it looks like when multiple people play together
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -131,7 +180,7 @@ export default function HomeContent() {
       {/* Features Section */}
       <section class={styles.features}>
         <div class={styles.featuresContainer}>
-          <h2 class={styles.sectionHeading}>Why Teachers & Musicians Love p2piano</h2>
+          <h2 class={styles.sectionHeading}>What to Expect</h2>
           <div class={styles.featuresGrid}>
             <For each={FEATURES}>
               {(feature) => (
@@ -154,10 +203,43 @@ export default function HomeContent() {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section class={styles.faq}>
+        <div class={styles.faqContainer}>
+          <h2 class={styles.sectionHeading}>Quick Questions</h2>
+          <div class={styles.faqGrid}>
+            <div class={styles.faqItem}>
+              <div class={styles.faqQuestion}>❓ Do I need to download anything?</div>
+              <div class={styles.faqAnswer}><strong>No downloads needed</strong>, runs instantly in your browser</div>
+            </div>
+            <div class={styles.faqItem}>
+              <div class={styles.faqQuestion}>❓ Is it really free?</div>
+              <div class={styles.faqAnswer}><strong>Completely free</strong>, no subscriptions, ads, or hidden costs</div>
+            </div>
+            <div class={styles.faqItem}>
+              <div class={styles.faqQuestion}>❓ Do I need a MIDI keyboard?</div>
+              <div class={styles.faqAnswer}><strong>Not required</strong>, works great with mouse, touch, or computer keyboard</div>
+            </div>
+            <div class={styles.faqItem}>
+              <div class={styles.faqQuestion}>❓ How well does it work across distances?</div>
+              <div class={styles.faqAnswer}><strong>Surprisingly well</strong>, excellent locally, good quality worldwide</div>
+            </div>
+            <div class={styles.faqItem}>
+              <div class={styles.faqQuestion}>❓ Are my sessions private?</div>
+              <div class={styles.faqAnswer}><strong>Completely private</strong>, only people with your room code can join</div>
+            </div>
+            <div class={styles.faqItem}>
+              <div class={styles.faqQuestion}>❓ Does it work on mobile?</div>
+              <div class={styles.faqAnswer}><strong>Works everywhere</strong>, phones, tablets, desktops, any modern browser</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works Section */}
       <section class={styles.howItWorks}>
         <div class={styles.howContainer}>
-          <h2 class={styles.sectionHeading}>Get Started in Seconds</h2>
+          <h2 class={styles.sectionHeading}>How It Works</h2>
           <div class={styles.steps}>
             <For each={STEPS}>
               {(step) => (
@@ -168,6 +250,51 @@ export default function HomeContent() {
                 </div>
               )}
             </For>
+          </div>
+        </div>
+      </section>
+
+      {/* Performance & Privacy Section */}
+      <section class={styles.expectations}>
+        <div class={styles.expectationsContainer}>
+          <h2 class={styles.sectionHeading}>Performance & Privacy</h2>
+          <div class={styles.expectationsList}>
+            <div class={styles.expectationItem}>
+              <span class={styles.expectationIcon}>🚀</span>
+              <div>
+                <strong>Optimized for low latency</strong>, excellent performance when nearby, good quality across distances
+              </div>
+            </div>
+            <div class={styles.expectationItem}>
+              <span class={styles.expectationIcon}>🔒</span>
+              <div>
+                <strong>Private by design</strong>, only people with your room code can join. No recording or data collection
+              </div>
+            </div>
+            <div class={styles.expectationItem}>
+              <span class={styles.expectationIcon}>⚡</span>
+              <div>
+                <strong>Instant access</strong>, no downloads, accounts, or setup required. Works in any modern browser
+              </div>
+            </div>
+            <div class={styles.expectationItem}>
+              <span class={styles.expectationIcon}>🆓</span>
+              <div>
+                <strong>Always free</strong>, no premium features, subscriptions, or ads. Supported by the community
+              </div>
+            </div>
+            <div class={styles.expectationItem}>
+              <span class={styles.expectationIcon}>🔧</span>
+              <div>
+                <strong>Actively maintained</strong>, regular updates and improvements based on user feedback
+              </div>
+            </div>
+            <div class={styles.expectationItem}>
+              <span class={styles.expectationIcon}>🌍</span>
+              <div>
+                <strong>Works worldwide</strong>, distance affects timing, but collaboration works everywhere
+              </div>
+            </div>
           </div>
         </div>
       </section>

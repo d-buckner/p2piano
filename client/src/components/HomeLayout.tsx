@@ -10,7 +10,7 @@ type Props = {
 
 const HomeLayout = (props: Props) => (
     <div class={styles.page}>
-        <Navbar floating={true} />
+        <Navbar />
         <main class={styles.main}>
             {props.children}
         </main>

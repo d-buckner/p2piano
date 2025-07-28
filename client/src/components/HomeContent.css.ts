@@ -19,7 +19,7 @@ const fadeInUp = keyframes({
 });
 
 export const container = style({
-  fontFamily: 'Ysabeau, sans-serif',
+  fontFamily: vars.fonts.body,
   lineHeight: 1.6,
   color: '#333',
   overflowX: 'hidden',
@@ -29,11 +29,19 @@ export const container = style({
 export const hero = style({
   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   color: 'white',
-  minHeight: '100vh',
+  height: 'calc(100vh - 40px)', // Full viewport minus new navbar height
   display: 'flex',
   alignItems: 'center',
   position: 'relative',
   overflow: 'hidden',
+  '@media': {
+    '(max-width: 768px)': {
+      minHeight: 'calc(100vh - 40px)',
+      height: 'auto',
+      paddingTop: '2rem',
+      paddingBottom: '2rem',
+    },
+  },
   '::before': {
     content: '""',
     position: 'absolute',
@@ -62,6 +70,7 @@ export const heroContent = style({
       gridTemplateColumns: '1fr',
       textAlign: 'center',
       gap: '2rem',
+      paddingTop: '2rem',
     },
   },
 });
@@ -72,22 +81,22 @@ export const heroText = style({
 });
 
 export const mainHeading = style({
-  fontFamily: 'Ysabeau Office, sans-serif',
-  fontSize: '3.5rem',
+  fontFamily: vars.fonts.heading,
+  fontSize: '2.5rem',
   fontWeight: 700,
-  marginBottom: '1rem',
+  marginBottom: '0.75rem',
   letterSpacing: '-0.02em',
-  lineHeight: 1.1,
+  lineHeight: 1.2,
   '@media': {
     '(max-width: 768px)': {
-      fontSize: '2.5rem',
+      fontSize: '2rem',
     },
   },
 });
 
 export const brand = style({
   color: '#fbbf24',
-  fontFamily: '"Courier New", monospace',
+  fontFamily: vars.fonts.heading,
 });
 
 export const subHeading = style({
@@ -278,7 +287,7 @@ export const featuresContainer = style({
 });
 
 export const sectionHeading = style({
-  fontFamily: 'Ysabeau Office, sans-serif',
+  fontFamily: vars.fonts.heading,
   textAlign: 'center',
   fontSize: '2.5rem',
   marginBottom: '3rem',
@@ -321,7 +330,7 @@ export const featureIcon = style({
 });
 
 export const featureTitle = style({
-  fontFamily: 'Ysabeau Office, sans-serif',
+  fontFamily: vars.fonts.heading,
   fontSize: '1.25rem',
   marginBottom: '1rem',
   color: '#1f2937',
@@ -337,7 +346,7 @@ export const featureText = style({
 // How It Works Section
 export const howItWorks = style({
   padding: '4rem 2rem',
-  background: 'white',
+  background: '#f8fafc',
 });
 
 export const howContainer = style({
@@ -371,7 +380,7 @@ export const stepNumber = style({
 });
 
 export const stepTitle = style({
-  fontFamily: 'Ysabeau Office, sans-serif',
+  fontFamily: vars.fonts.heading,
   fontSize: '1.25rem',
   marginBottom: '1rem',
   color: '#1f2937',
@@ -427,4 +436,201 @@ export const spinner = style({
   borderTop: '2px solid currentColor',
   borderRadius: '50%',
   animation: `${spin} 1s linear infinite`,
+});
+
+// New Action Section Styles
+export const actionSection = style({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '1.5rem',
+  marginBottom: '2rem',
+});
+
+export const orDivider = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1rem',
+  color: 'rgba(255, 255, 255, 0.7)',
+  fontSize: '0.9rem',
+  '::before': {
+    content: '""',
+    height: '1px',
+    width: '50px',
+    background: 'rgba(255, 255, 255, 0.3)',
+  },
+  '::after': {
+    content: '""',
+    height: '1px',
+    width: '50px',
+    background: 'rgba(255, 255, 255, 0.3)',
+  },
+});
+
+export const joinSection = style({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '0.5rem',
+});
+
+export const joinLabel = style({
+  color: 'rgba(255, 255, 255, 0.8)',
+  fontSize: '0.9rem',
+  marginBottom: '0.5rem',
+});
+
+export const joinInputGroup = style({
+  display: 'flex',
+  gap: '0.5rem',
+  alignItems: 'center',
+});
+
+export const roomCodeInput = style({
+  padding: '0.75rem 1rem',
+  borderRadius: '8px',
+  border: '2px solid rgba(255, 255, 255, 0.2)',
+  background: 'rgba(255, 255, 255, 0.1)',
+  color: 'white',
+  fontFamily: vars.fonts.body,
+  fontSize: '1.1rem',
+  textAlign: 'center',
+  textTransform: 'uppercase',
+  width: '120px',
+  ':focus': {
+    outline: 'none',
+    borderColor: '#fbbf24',
+    background: 'rgba(255, 255, 255, 0.15)',
+  },
+  '::placeholder': {
+    color: 'rgba(255, 255, 255, 0.5)',
+  },
+});
+
+export const joinButton = style({
+  padding: '0.75rem 1.5rem',
+  borderRadius: '8px',
+  border: 'none',
+  background: 'rgba(255, 255, 255, 0.2)',
+  color: 'white',
+  fontWeight: 600,
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  ':hover': {
+    background: 'rgba(255, 255, 255, 0.3)',
+  },
+  ':disabled': {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  },
+});
+
+export const simpleFlow = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5rem',
+  color: 'rgba(255, 255, 255, 0.8)',
+  fontSize: '0.9rem',
+  marginTop: '1rem',
+  '@media': {
+    '(max-width: 768px)': {
+      flexDirection: 'column',
+      gap: '0.25rem',
+    },
+  },
+});
+
+export const demoContext = style({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '1rem',
+});
+
+export const demoDescription = style({
+  color: 'rgba(255, 255, 255, 0.8)',
+  fontSize: '0.9rem',
+  textAlign: 'center',
+  margin: 0,
+  fontStyle: 'italic',
+});
+
+// FAQ Section Styles
+export const faq = style({
+  padding: '4rem 2rem',
+  background: 'white',
+});
+
+export const faqContainer = style({
+  maxWidth: '1200px',
+  margin: '0 auto',
+});
+
+export const faqGrid = style({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+  gap: '1.5rem',
+  '@media': {
+    '(max-width: 768px)': {
+      gridTemplateColumns: '1fr',
+    },
+  },
+});
+
+export const faqItem = style({
+  background: '#f8fafc',
+  padding: '1.5rem',
+  borderRadius: '12px',
+  border: '1px solid #e2e8f0',
+});
+
+export const faqQuestion = style({
+  fontSize: '1rem',
+  marginBottom: '0.5rem',
+  color: '#374151',
+});
+
+export const faqAnswer = style({
+  fontSize: '0.95rem',
+  color: '#6b7280',
+  margin: 0,
+});
+
+// Expectations Section Styles
+export const expectations = style({
+  padding: '4rem 2rem',
+  background: 'white',
+});
+
+export const expectationsContainer = style({
+  maxWidth: '800px',
+  margin: '0 auto',
+});
+
+export const expectationsList = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1rem',
+});
+
+export const expectationItem = style({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '1rem',
+  padding: '1rem',
+  background: 'white',
+  borderRadius: '8px',
+  border: '1px solid #e2e8f0',
+});
+
+export const expectationIcon = style({
+  fontSize: '1.2rem',
+  minWidth: '24px',
+  textAlign: 'center',
+});
+
+export const expectationText = style({
+  color: '#374151',
+  fontSize: '0.95rem',
+  lineHeight: 1.5,
 });

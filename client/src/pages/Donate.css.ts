@@ -1,8 +1,9 @@
 import { style } from '@vanilla-extract/css';
+import { vars } from '../styles/theme.css';
 
 
 export const container = style({
-  fontFamily: 'Ysabeau, sans-serif',
+  fontFamily: vars.fonts.body,
   lineHeight: 1.6,
   color: '#333',
 });
@@ -28,7 +29,7 @@ export const heroContent = style({
 });
 
 export const heroHeading = style({
-  fontFamily: 'Ysabeau Office, sans-serif',
+  fontFamily: vars.fonts.heading,
   fontSize: '3rem',
   fontWeight: 700,
   marginBottom: '1.5rem',
@@ -65,7 +66,7 @@ export const contentContainer = style({
 });
 
 export const sectionHeading = style({
-  fontFamily: 'Ysabeau Office, sans-serif',
+  fontFamily: vars.fonts.heading,
   textAlign: 'center',
   fontSize: '2.5rem',
   marginBottom: '3rem',
@@ -107,7 +108,7 @@ export const donationIcon = style({
 });
 
 export const donationTitle = style({
-  fontFamily: 'Ysabeau Office, sans-serif',
+  fontFamily: vars.fonts.heading,
   fontSize: '1.5rem',
   fontWeight: 600,
   marginBottom: '1rem',
