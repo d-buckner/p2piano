@@ -14,6 +14,7 @@ function MidiButton() {
     if (!midi().enabled) {
       try {
         await HuMIDI.requestAccess();
+        HuMIDI.setEnabled(true);
         setMidiEnabled(true);
       } catch (error) {
         console.warn('MIDI access denied or failed:', error);

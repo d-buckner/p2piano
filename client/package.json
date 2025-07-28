@@ -8,7 +8,7 @@
     "@solidjs/router": "^0.15.3",
     "clsx": "^2.1.1",
     "d-piano": "^1.0.1",
-    "humidi": "^1.0.0",
+    "humidi": "^1.1.0",
     "piano-visualizer": "^1.0.20",
     "simple-peer": "^9.11.1",
     "socket.io-client": "^4.5.4",

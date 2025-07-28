@@ -1,6 +1,7 @@
 import { useNavigate } from '@solidjs/router';
 import HuMIDI from 'humidi';
 import { createSignal } from 'solid-js';
+import { setMidiEnabled } from '../../actions/MidiActions';
 import AudioManager from '../../audio/AudioManager';
 import ClientPreferences from '../../lib/ClientPreferences';
 import DisplayName from './DisplayName';
@@ -44,6 +45,16 @@ function SettingsModal(props: Props) {
     setDisplayNameError(!isDisplayNameValid(name));
   };
 
+  const handleMidiEnable = async () => {
+    try {
+      await HuMIDI.requestAccess();
+      HuMIDI.setEnabled(true);
+      setMidiEnabled(true);
+    } catch (error) {
+      console.warn('MIDI access denied or failed:', error);
+    }
+  };
+
   const onSubmit = () => {
     AudioManager.activate();
     ClientPreferences.setDisplayName(displayName());
@@ -74,7 +85,7 @@ function SettingsModal(props: Props) {
               <input
                 type="checkbox"
                 class={styles.checkbox}
-                onChange={HuMIDI.requestAccess}
+                onChange={handleMidiEnable}
               />
               <span>enable usb midi (browser will ask for permissions)</span>
             </div>
