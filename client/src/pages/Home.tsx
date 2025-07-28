@@ -33,7 +33,7 @@ const FEATURES: FeatureData[] = [
   {
     icon: '⚡',
     title: 'Real-Time Synchronization',
-    description: 'Play together with minimal delay. Excellent performance locally and reliable quality across distances. Optimized for the best possible timing.',
+    description: 'Minimal delay when playing together. Excellent performance locally, reliable quality across distances. Optimized for the best possible timing.',
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   },
   {
@@ -72,7 +72,7 @@ const STEPS: StepData[] = [
   {
     number: '1',
     title: 'Create a Room',
-    description: 'Click create and get a simple 5-letter room code. That\'s it.',
+    description: 'Click "Start Now" and get a simple 5-letter room code.',
   },
   {
     number: '2',
@@ -130,7 +130,7 @@ function HomeContent() {
               The Best Way to Play Piano Together Online
             </h1>
             <p class={styles.subHeading}>
-              Perfect for music lessons, jamming with friends, or connecting with nearby musicians. Just create a room and share the 5-letter code to start playing together instantly.
+              Perfect for music lessons, jamming with friends, or connecting with nearby musicians. Create a room and share the 5-letter code to start playing together instantly.
             </p>
             
             <div class={styles.actionSection}>
@@ -272,7 +272,7 @@ function HomeContent() {
             <div class={styles.expectationItem}>
               <span class={styles.expectationIcon}>🚀</span>
               <div>
-                <strong>Optimized for low latency</strong>, excellent performance when nearby, good quality across distances
+                <strong>Optimized for low latency</strong>, excellent performance nearby, good quality across distances
               </div>
             </div>
             <div class={styles.expectationItem}>
@@ -302,7 +302,7 @@ function HomeContent() {
             <div class={styles.expectationItem}>
               <span class={styles.expectationIcon}>🌍</span>
               <div>
-                <strong>Distance affects timing</strong>, best performance within 500 miles, playable at any distance
+                <strong>Distance affects timing</strong>, best performance within 500 miles, works at any distance
               </div>
             </div>
           </div>

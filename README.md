@@ -3,9 +3,9 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/d-buckner/p2piano/test-coverage.yml?branch=main&label=CI)](https://github.com/d-buckner/p2piano/actions)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
-**A peer-to-peer collaborative music platform for the musically inclined**
+**The Best Way to Play Piano Together Online**
 
-p2piano enables musical collaboration through your web browser. Create a room, share the code with friends, and start jamming together. No downloads, no registration required.
+Perfect for music lessons, jamming with friends, or connecting with nearby musicians. Create a room and share the 5-letter code to start playing together instantly. No downloads, accounts, or setup required.
 
 **[Try it out](https://p2piano.com)**
 
@@ -13,32 +13,56 @@ p2piano enables musical collaboration through your web browser. Create a room, s
 
 ## Features
 
-- **Multiple Instruments** - Piano, electric bass, acoustic and electric guitar
-- **Real-Time Sync** - Advanced audio synchronization keeps everyone in time
-- **MIDI Support** - Connect your MIDI keyboard for the full experience
-- **Works Everywhere** - Any modern browser on desktop, tablet, or mobile
-- **Instant Sharing** - Just share a 5-letter room code to invite others
-- **Visual Feedback** - See notes as they're played by you and collaborators
-- **No Registration** - Start playing immediately, no account needed
+- **⚡ Real-Time Synchronization** - Minimal delay when playing together. Excellent performance locally, reliable quality across distances
+- **🎵 High-Quality Piano Sounds** - Rich, expressive samples with multiple velocity layers for natural, dynamic playing
+- **👥 Perfect for Music Education** - Ideal for remote lessons, ensemble practice, and collaborative learning
+- **💝 Completely Free** - No subscriptions, ads, or premium tiers. Built for the music community and supported by donations
+- **🌐 Universal Compatibility** - Works instantly in any browser on desktop, tablet, and mobile. MIDI keyboards connect seamlessly
+- **🎙️ Active Development** - Regular updates bring new instruments and features. Built with modern technology, constantly improving
 
-## Quick Start Guide
+## How It Works
 
-### For Users
+1. **Create a Room** - Click "Start Now" and get a simple 5-letter room code
+2. **Share the Code** - Send the code to whoever you want to play with
+3. **Start Playing** - Everyone can play piano together using keyboard, mouse, or touch
 
-1. **Visit the [website](https://p2piano.com)**
-2. **Click "Create New Room"** or **enter a 5-letter room code**
-3. **Choose your instrument** from the dropdown menu
-4. **Set your display name** so others can identify you
-5. **Start playing** - Use your keyboard, touch, mouse, or MIDI controller
+## Performance & Compatibility
 
-### Important Tips for Best Performance
-- **Avoid wireless headphones and keyboards** - These add considerable latency that affects timing
-- **Unmute your iOS device** to enable sound
-- **Piano keys map to your computer keyboard** (A-K for white keys, W-O for black keys)
+- **🚀 Optimized for low latency** - Excellent performance nearby, good quality across distances
+- **🎯 Best within 500 miles** - Works at any distance with increased delay
+- **🔒 Private by design** - Only people with your room code can join. No recording or data collection
+- **⚡ Instant access** - No downloads, accounts, or setup required
+- **🆓 Always free** - No premium features, subscriptions, or ads
 
-### For Developers
+### Performance Tips
+- **Avoid wireless headphones** - These add latency that affects timing
+- **Use wired connections** when possible for best performance
+- **Unmute iOS devices** to enable sound
+- **Computer keyboard mapping** - A-K for white keys, W-O for black keys
 
-**Prerequisites:** Node.js 20+, podman-compose or docker-compose
+## FAQ
+
+**Do I need to download anything?**  
+No downloads needed, runs instantly in your browser
+
+**Is it really free?**  
+Completely free, no subscriptions, ads, or hidden costs
+
+**Do I need a MIDI keyboard?**  
+Not required, works great with mouse, touch, or computer keyboard
+
+**How well does it work across distances?**  
+Best within 500 miles, works at any distance with increased delay
+
+**Are my sessions private?**  
+Completely private, only people with your room code can join
+
+**Does it work on mobile?**  
+Works everywhere, phones, tablets, desktops, any modern browser
+
+## Development Setup
+
+**Prerequisites:** Node.js 20+, Docker or Podman
 
 ```bash
 git clone https://github.com/d-buckner/p2piano.git
@@ -76,14 +100,13 @@ p2piano/
 └── docs/               # Documentation & assets
 ```
 
-### Key Technologies
+### Technology Stack
 
-- **Frontend**: SolidJS, TypeScript, Vanilla Extract CSS, Vite
-- **Backend**: NestJS, Fastify, MongoDB, Redis, Socket.IO
-- **Audio**: Web Audio API, Tone.js for synthesis
-- **Networking**: WebRTC for P2P, WebSocket fallback with Redis pub/sub
-- **Testing**: Vitest, comprehensive unit & integration tests
-- **DevOps**: Docker, GitHub Actions, automated testing & coverage
+- **Frontend**: SolidJS, TypeScript, Web Audio API, WebRTC
+- **Backend**: NestJS, MongoDB, Redis, Socket.IO
+- **Audio**: Custom synthesizers and high-quality piano samples
+- **Networking**: Peer-to-peer with WebSocket fallback
+- **Testing**: Comprehensive test coverage with automated CI/CD
 
 ## Development Commands
 
@@ -138,37 +161,12 @@ PORT=3001                     # Defaults to 3001
 
 ![prod-system](./docs/design/prod-system.svg)
 
-### Core Components
+p2piano uses a hybrid peer-to-peer architecture optimized for low-latency musical collaboration:
 
-**Client Architecture:**
-- **Audio Synchronization Engine**: Measures latency and coordinates timing between participants
-- **Instrument System**: Synthesizers and samplers for multiple instruments. Progressive sample loading.
-- **Network Controller**: Manages WebRTC peer connections with WebSocket fallback
-- **State Management**: Centralized application state with reactive updates
-
-**Server Architecture:**
-- **WebSocket Gateway**: Real-time communication hub with Redis pub/sub for multi-server support
-- **Room Management**: Creates and manages collaborative sessions with unique room codes
-- **Session Handling**: Distributed session management using Redis for cross-deployment persistence
-- **Database Layer**: MongoDB for persistent storage, Redis for sessions and real-time coordination
-
-**Communication Flow:**
-1. **Initial Connection**: Clients connect via WebSocket to join/create rooms
-2. **Peer Discovery**: Server facilitates WebRTC peer connection establishment
-3. **Direct Communication**: Musical data flows peer-to-peer for minimal latency
-4. **Fallback Handling**: Server-mediated communication when P2P fails
-
-## Technical Implementation
-
-### Audio Synchronization
-
-p2piano implements an audio synchronization system that measures network latency and schedules audio events using the Web Audio API for sample-level timings.
-
-### Networking Strategy
-
-- **WebRTC**: Peer-to-peer connections for low-latency communication
-- **WebSocket**: Room changes, server-mediated connections for signaling and fallback
-- **Transport selection**: Automatic selection based on connection availability
+- **Real-time sync engine** measures network latency and schedules audio events for precise timing
+- **Peer-to-peer networking** via WebRTC keeps musical data direct between participants
+- **WebSocket fallback** through Redis pub/sub ensures connectivity when P2P isn't available
+- **Progressive audio loading** delivers high-quality samples without blocking the experience
 
 ## Contributing
 

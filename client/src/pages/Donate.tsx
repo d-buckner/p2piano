@@ -12,7 +12,7 @@ const Donate = () => (
             Support <span class={styles.highlight}>Music Education</span>
           </h1>
           <p class={styles.heroSubtext}>
-            We believe music education should be accessible to everyone, regardless of economic circumstances. Rather than monetizing this tool, we'd prefer to see resources flow directly to organizations doing the hard work of music education.
+            We believe music education should be accessible to everyone, regardless of economic circumstances. Rather than monetizing this tool, we prefer to see resources flow directly to organizations doing the hard work of music education.
           </p>
         </div>
       </section>
@@ -27,7 +27,7 @@ const Donate = () => (
               <span class={styles.donationIcon}>🎓</span>
               <h3 class={styles.donationTitle}>Seattle JazzED</h3>
               <p class={styles.donationText}>
-                A Seattle-based non-profit providing jazz education and performance opportunities for young musicians. Their programs reach underserved communities and break down barriers to music education.
+                A Seattle non-profit providing jazz education and performance opportunities for young musicians. Their programs reach underserved communities and break down barriers to music education.
               </p>
               <a 
                 href="https://www.seattlejazzed.org/donate" 
@@ -44,7 +44,7 @@ const Donate = () => (
               <span class={styles.donationIcon}>🎶</span>
               <h3 class={styles.donationTitle}>Save the Music</h3>
               <p class={styles.donationText}>
-                A national non-profit dedicated to restoring music education programs in public schools and raising awareness about the importance of music as part of every child's complete education.
+                A national non-profit dedicated to restoring music education programs in public schools and raising awareness about the importance of music in every child's complete education.
               </p>
               <a 
                 href="https://donate.savethemusic.org/give" 
