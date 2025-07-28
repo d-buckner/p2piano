@@ -27,11 +27,11 @@ export const midiButton = style({
 });
 
 export const active = style({
-  backgroundColor: vars.colors.primary,
+  backgroundColor: vars.colors.primaryDark,
   color: vars.colors.foreground,
   
   ':hover': {
-    backgroundColor: vars.colors.primaryLight,
+    backgroundColor: vars.colors.primary,
   },
 });
 
