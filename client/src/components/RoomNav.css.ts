@@ -39,3 +39,9 @@ export const navLink = style({
     textDecoration: 'underline',
   },
 });
+
+export const rightControls = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: vars.spacing.sm,
+});

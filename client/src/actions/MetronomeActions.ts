@@ -54,4 +54,12 @@ export class MetronomeActions extends SharedStoreActions<SharedMetronomeState> {
       metronome.currentBeat = beat;
     });
   }
+
+  setBeatsPerMeasure(beats: number) {
+    this.change(metronome => {
+      metronome.beatsPerMeasure = beats;
+      // Reset current beat when changing time signature
+      metronome.currentBeat = 0;
+    });
+  }
 }

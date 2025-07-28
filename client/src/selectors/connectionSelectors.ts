@@ -12,3 +12,9 @@ export const selectPeerConnection = (peerId: string) => (state: RootState) =>
 
 export const selectConnectedPeerIds = (state: RootState) => 
   Object.keys(state.connection.peerConnections);
+
+export const selectMinLatency = (state: RootState) => {
+  const connections = Object.values(state.connection.peerConnections);
+  if (connections.length === 0) return 0;
+  return Math.min(...connections.map(conn => conn.latency));
+};

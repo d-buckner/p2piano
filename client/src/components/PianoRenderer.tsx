@@ -2,7 +2,6 @@ import PianoVisualizer from 'piano-visualizer';
 import { createSignal, createEffect } from 'solid-js';
 import * as NoteActions from '../actions/NoteActions';
 import * as styles from './PianoRenderer.css';
-import RoomSidebar from './RoomSidebar';
 import type { Note } from '../constants';
 
 
@@ -53,8 +52,6 @@ export default function PianoRenderer(props: Props) {
         <div
             class={styles.pianoRendererContainer}
             ref={setContainerRef}
-        >
-            <RoomSidebar />
-        </div>
+        />
     );
 }

@@ -3,6 +3,10 @@ import clsx from 'clsx';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
 import * as styles from './RoomNav.css';
 import Toolbar from './Toolbar';
+import LatencyIndicator from './toolbar/controls/LatencyIndicator';
+import ActiveUsers from './toolbar/controls/ActiveUsers';
+import InviteButton from './toolbar/controls/InviteButton';
+import RoomCode from './toolbar/controls/RoomCode';
 import type { Workspace } from '../app/store';
 
 
@@ -13,17 +17,6 @@ type Props = {
 function RoomNav(props: Props) {
   const navigate = useNavigate();
 
-  async function shareRoom() {
-    try {
-      await navigator.share({
-        title: 'p2piano',
-        text: 'Play piano with me on p2piano!',
-        url: window.location.href,
-      });
-    } catch {
-      await navigator.clipboard.writeText(window.location.href);
-    }
-  }
 
   function navigateHome() {
     navigate('/');
@@ -36,9 +29,11 @@ function RoomNav(props: Props) {
       <div class={styles.navCenter}>
         <Toolbar />
       </div>
-      <a onClick={shareRoom} class={clsx(styles.navLink, styles.navRight)}>
-        {`room: ${props.workspace.roomId}`}
-      </a>
+      <div class={clsx(styles.navRight, styles.rightControls)}>
+        <LatencyIndicator />
+        <InviteButton />
+        <RoomCode />
+      </div>
     </nav>
   );
 }
