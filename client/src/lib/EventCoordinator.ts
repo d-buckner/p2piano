@@ -1,5 +1,5 @@
 import HuMIDI from 'humidi';
-import { setMidiEnabled } from '../actions/MidiActions';
+import { setMidiAccess, setMidiEnabled } from '../actions/MidiActions';
 import * as NoteActions from '../actions/NoteActions';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import AudioSyncCoordinator from '../audio/syncronization/AudioSyncCoordinator';
@@ -10,6 +10,7 @@ import RoomHandlers from '../handlers/RoomHandlers';
 import RealTimeController from '../networking/RealTimeController';
 import WebsocketController from '../networking/transports/WebsocketController';
 import type { MessageHandler } from '../networking/AbstractNetworkController';
+import { selectMidiAccess } from '../selectors/midiSelectors';
 
 
 
@@ -35,11 +36,6 @@ interface EventEmitter {
 }
 
 export async function register() {
-  // Check if MIDI permissions were already granted and update state accordingly
-  if (await HuMIDI.hasPermissions()) {
-    setMidiEnabled(true);
-  }
-  
   subscribe(HuMIDI as EventEmitter, MIDI_HANDLERS);
   const websocketController = WebsocketController.getInstance();
   const realTimeController = RealTimeController.getInstance();

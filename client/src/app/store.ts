@@ -15,6 +15,7 @@ export type Workspace = {
 
 // MIDI state types
 export type MidiState = {
+  hasAccess: boolean;
   enabled: boolean;
 };
 
@@ -43,6 +44,7 @@ const initialConnectionState: Connection = {
 };
 
 const initialMidiState: MidiState = {
+  hasAccess: false,
   enabled: false,
 };
 
