@@ -116,7 +116,7 @@ export const dropdownTitle = style({
   fontSize: vars.fontSizes.xs,
   fontWeight: 600,
   marginBottom: vars.spacing.sm,
-  color: vars.colors.muted,
+  color: vars.colors.foreground,
 });
 
 export const control = style({
@@ -136,15 +136,17 @@ export const controlHeader = style({
 
 export const label = style({
   fontSize: vars.fontSizes.xs,
-  color: vars.colors.muted,
+  color: vars.colors.foreground,
+  fontWeight: 500,
 });
 
 export const value = style({
   fontSize: vars.fontSizes.xs,
   fontFamily: 'monospace',
-  color: vars.colors.muted,
+  color: vars.colors.foreground,
   padding: `${vars.spacing.xs} ${vars.spacing.sm}`,
-  backgroundColor: vars.colors.background,
+  backgroundColor: vars.overlays.subtle,
+  border: `1px solid ${vars.overlays.border}`,
   borderRadius: vars.radii.sm,
 });
 
@@ -152,7 +154,8 @@ export const slider = style({
   width: '100%',
   height: '4px',
   borderRadius: '2px',
-  backgroundColor: vars.colors.background,
+  backgroundColor: vars.overlays.subtle,
+  border: `1px solid ${vars.overlays.border}`,
   appearance: 'none',
   cursor: 'pointer',
   
@@ -163,6 +166,8 @@ export const slider = style({
     borderRadius: '50%',
     backgroundColor: vars.colors.primary,
     cursor: 'pointer',
+    border: `2px solid ${vars.colors.foreground}`,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
   },
   
   '::-moz-range-thumb': {
@@ -171,7 +176,8 @@ export const slider = style({
     borderRadius: '50%',
     backgroundColor: vars.colors.primary,
     cursor: 'pointer',
-    border: 'none',
+    border: `2px solid ${vars.colors.foreground}`,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
   },
 });
 
@@ -181,36 +187,42 @@ export const sliderLabels = style({
   fontSize: vars.fontSizes.xs,
   color: vars.colors.muted,
   marginTop: vars.spacing.xs,
+  fontWeight: 500,
 });
 
 export const timeSignatureGrid = style({
   display: 'grid',
   gridTemplateColumns: 'repeat(4, 1fr)',
   gap: vars.spacing.xs,
+  paddingBottom: vars.spacing.sm,
 });
 
 export const timeSignatureButton = style({
   padding: `${vars.spacing.xs} ${vars.spacing.sm}`,
   fontSize: vars.fontSizes.xs,
   borderRadius: vars.radii.sm,
-  border: 'none',
-  backgroundColor: vars.colors.background,
-  color: vars.colors.muted,
+  border: `1px solid ${vars.overlays.border}`,
+  backgroundColor: vars.overlays.subtle,
+  color: vars.colors.foreground,
   cursor: 'pointer',
   transition: vars.transitions.fast,
   
   ':hover': {
     backgroundColor: vars.overlays.hover,
+    borderColor: vars.overlays.borderHover,
     color: vars.colors.foreground,
   },
 });
 
 export const selected = style({
   backgroundColor: vars.colors.primary,
+  borderColor: vars.colors.primaryLight,
   color: vars.colors.foreground,
+  boxShadow: `0 0 0 1px ${vars.colors.primary}`,
   
   ':hover': {
     backgroundColor: vars.colors.primaryLight,
+    borderColor: vars.colors.primaryLight,
     color: vars.colors.foreground,
   },
 });

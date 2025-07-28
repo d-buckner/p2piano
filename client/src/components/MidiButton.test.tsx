@@ -1,5 +1,4 @@
 import { render, fireEvent, cleanup } from '@solidjs/testing-library';
-import HuMIDI from 'humidi';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { toggleMidiEnabled } from '../actions/MidiActions';
 import MidiButton from './MidiButton';
@@ -24,7 +23,6 @@ vi.mock('../app/hooks', () => ({
 }));
 
 const mockToggleMidiEnabled = vi.mocked(toggleMidiEnabled);
-const mockHuMIDI = vi.mocked(HuMIDI);
 const mockUseAppSelector = vi.mocked(await import('../app/hooks')).useAppSelector;
 
 describe('MidiButton', () => {
