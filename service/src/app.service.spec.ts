@@ -1,28 +1,49 @@
 import { Test } from '@nestjs/testing';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { AppService } from './app.service';
+import Room from './entities/Room';
 import type { TestingModule } from '@nestjs/testing';
 
-// Hoist the mock functions
-const mockRoomCreate = vi.hoisted(() => vi.fn());
-const mockRoomGet = vi.hoisted(() => vi.fn());
 
 // Mock the Room entity
-vi.mock('./entities/Room', () => ({
-  default: class MockRoom {
-    static create = mockRoomCreate;
-    
-    constructor(public roomId?: string) {}
-    
-    get = mockRoomGet;
-  },
-}));
+vi.mock('./entities/Room', () => {
+  const mockRoomInstance = {
+    roomId: '',
+    get: vi.fn(),
+    join: vi.fn(),
+    updateUser: vi.fn(),
+    leave: vi.fn(),
+  };
+  
+  return {
+    default: vi.fn().mockImplementation((roomId) => {
+      mockRoomInstance.roomId = roomId;
+      return mockRoomInstance;
+    }),
+  };
+});
+const MockedRoom = vi.mocked(Room);
 
 describe('AppService', () => {
   let service: AppService;
+  let mockRoomInstance: any;
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    
+    // Get fresh mock instance for each test
+    mockRoomInstance = {
+      roomId: '',
+      get: vi.fn(),
+      join: vi.fn(),
+      updateUser: vi.fn(),
+      leave: vi.fn(),
+    };
+    
+    MockedRoom.mockImplementation((roomId) => {
+      mockRoomInstance.roomId = roomId;
+      return mockRoomInstance;
+    });
     
     const module: TestingModule = await Test.createTestingModule({
       providers: [AppService],
@@ -34,17 +55,17 @@ describe('AppService', () => {
   describe('createRoom', () => {
     it('should create a room successfully', async () => {
       const mockRoomResponse = { roomId: 'test-room-123' };
-      mockRoomCreate.mockResolvedValue(mockRoomResponse);
+      MockedRoom.create = vi.fn().mockResolvedValue(mockRoomResponse);
 
       const result = await service.createRoom();
 
       expect(result).toEqual(mockRoomResponse);
-      expect(mockRoomCreate).toHaveBeenCalledTimes(1);
+      expect(MockedRoom.create).toHaveBeenCalledTimes(1);
     });
 
     it('should return the room response from Room.create', async () => {
       const expectedResponse = { roomId: 'unique-room-id' };
-      mockRoomCreate.mockResolvedValue(expectedResponse);
+      MockedRoom.create = vi.fn().mockResolvedValue(expectedResponse);
 
       const result = await service.createRoom();
 
@@ -53,18 +74,18 @@ describe('AppService', () => {
 
     it('should propagate errors from Room.create', async () => {
       const mockError = new Error('Database connection failed');
-      mockRoomCreate.mockRejectedValue(mockError);
+      MockedRoom.create = vi.fn().mockRejectedValue(mockError);
 
       await expect(service.createRoom()).rejects.toThrow('Database connection failed');
     });
 
     it('should call Room.create without arguments', async () => {
       const mockRoomResponse = { roomId: 'test-room' };
-      mockRoomCreate.mockResolvedValue(mockRoomResponse);
+      MockedRoom.create = vi.fn().mockResolvedValue(mockRoomResponse);
 
       await service.createRoom();
 
-      expect(mockRoomCreate).toHaveBeenCalledWith();
+      expect(MockedRoom.create).toHaveBeenCalledWith();
     });
   });
 
@@ -72,18 +93,19 @@ describe('AppService', () => {
     it('should get a room successfully', async () => {
       const roomId = 'test-room-789';
       const mockRoomResponse = { roomId };
-      mockRoomGet.mockResolvedValue(mockRoomResponse);
+      mockRoomInstance.get.mockResolvedValue(mockRoomResponse);
 
       const result = await service.getRoom(roomId);
 
       expect(result).toEqual(mockRoomResponse);
-      expect(mockRoomGet).toHaveBeenCalledTimes(1);
+      expect(MockedRoom).toHaveBeenCalledWith(roomId);
+      expect(mockRoomInstance.get).toHaveBeenCalledTimes(1);
     });
 
     it('should return the room response from room.get', async () => {
       const roomId = 'specific-room';
       const expectedResponse = { roomId };
-      mockRoomGet.mockResolvedValue(expectedResponse);
+      mockRoomInstance.get.mockResolvedValue(expectedResponse);
 
       const result = await service.getRoom(roomId);
 
@@ -93,7 +115,7 @@ describe('AppService', () => {
     it('should propagate errors from room.get', async () => {
       const roomId = 'error-room';
       const mockError = new Error('Room not found');
-      mockRoomGet.mockRejectedValue(mockError);
+      mockRoomInstance.get.mockRejectedValue(mockError);
 
       await expect(service.getRoom(roomId)).rejects.toThrow('Room not found');
     });
@@ -101,11 +123,11 @@ describe('AppService', () => {
     it('should call room.get without arguments', async () => {
       const roomId = 'test-room';
       const mockRoomResponse = { roomId };
-      mockRoomGet.mockResolvedValue(mockRoomResponse);
+      mockRoomInstance.get.mockResolvedValue(mockRoomResponse);
 
       await service.getRoom(roomId);
 
-      expect(mockRoomGet).toHaveBeenCalledWith();
+      expect(mockRoomInstance.get).toHaveBeenCalledWith();
     });
   });
 
@@ -116,22 +138,22 @@ describe('AppService', () => {
       const response1 = { roomId: roomId1 };
       const response2 = { roomId: roomId2 };
       
-      mockRoomGet.mockResolvedValueOnce(response1).mockResolvedValueOnce(response2);
+      mockRoomInstance.get.mockResolvedValueOnce(response1).mockResolvedValueOnce(response2);
 
       const result1 = await service.getRoom(roomId1);
       const result2 = await service.getRoom(roomId2);
 
       expect(result1).toEqual(response1);
       expect(result2).toEqual(response2);
-      expect(mockRoomGet).toHaveBeenCalledTimes(2);
+      expect(mockRoomInstance.get).toHaveBeenCalledTimes(2);
     });
 
     it('should handle mixed success and error scenarios', async () => {
       const successResponse = { roomId: 'success-room' };
-      mockRoomCreate.mockResolvedValue(successResponse);
+      MockedRoom.create = vi.fn().mockResolvedValue(successResponse);
       
       const errorRoom = 'error-room';
-      mockRoomGet.mockRejectedValue(new Error('Not found'));
+      mockRoomInstance.get.mockRejectedValue(new Error('Not found'));
 
       const createResult = await service.createRoom();
       expect(createResult).toEqual(successResponse);

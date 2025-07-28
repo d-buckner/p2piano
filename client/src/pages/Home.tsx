@@ -1,11 +1,11 @@
 import HomeContent from '../components/HomeContent';
-import PageLayout from '../components/PageLayout';
+import HomeLayout from '../components/HomeLayout';
 
 
 const Home = () => (
-  <PageLayout>
+  <HomeLayout>
     <HomeContent />
-  </PageLayout>
+  </HomeLayout>
 );
 
 export default Home;

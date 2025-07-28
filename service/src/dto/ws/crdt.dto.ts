@@ -8,5 +8,5 @@ export class CrdtMessageDto {
   targetUserIds!: string[];
 
   // Allow additional properties for CRDT message data
-  [key: string]: any;
+  [key: string]: unknown;
 }
