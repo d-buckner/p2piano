@@ -6,7 +6,6 @@ import './styles/global.css';
 import { root as rootClass } from './index.css';
 import { themeClass } from './styles/theme.css';
 
-
 // Apply theme class to body element
 document.body.classList.add(themeClass, rootClass);
 

@@ -1,13 +1,16 @@
 import { render, fireEvent, cleanup } from '@solidjs/testing-library';
-import HuMIDI from 'humidi';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { setMidiEnabled } from '../actions/MidiActions';
+import { toggleMidiEnabled } from '../actions/MidiActions';
 import MidiButton from './MidiButton';
 
 // Mock dependencies at module level
-vi.mock('../actions/MidiActions', () => ({
-  setMidiEnabled: vi.fn(),
-}));
+vi.mock('../actions/MidiActions', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    toggleMidiEnabled: vi.fn(),
+  };
+});
 
 vi.mock('humidi', () => ({
   default: {
@@ -19,8 +22,7 @@ vi.mock('../app/hooks', () => ({
   useAppSelector: vi.fn(),
 }));
 
-const mockSetMidiEnabled = vi.mocked(setMidiEnabled);
-const mockHuMIDI = vi.mocked(HuMIDI);
+const mockToggleMidiEnabled = vi.mocked(toggleMidiEnabled);
 const mockUseAppSelector = vi.mocked(await import('../app/hooks')).useAppSelector;
 
 describe('MidiButton', () => {
@@ -64,26 +66,19 @@ describe('MidiButton', () => {
     expect(svg).toBeInTheDocument();
   });
 
-  it('should request MIDI access when user clicks disabled button', async () => {
+  it('should call toggleMidiEnabled when button is clicked', () => {
     mockUseAppSelector.mockReturnValue(() => ({ enabled: false }));
-    mockHuMIDI.requestAccess.mockResolvedValue(undefined);
     
     const { getByRole } = render(() => <MidiButton />);
     const button = getByRole('button');
     
     fireEvent.click(button);
     
-    // Verify browser MIDI access is requested
-    expect(mockHuMIDI.requestAccess).toHaveBeenCalled();
-    
-    // Wait for async operation
-    await new Promise(resolve => setTimeout(resolve, 0));
-    
-    // Verify app state is updated on success
-    expect(mockSetMidiEnabled).toHaveBeenCalledWith(true);
+    // Verify toggle action is called
+    expect(mockToggleMidiEnabled).toHaveBeenCalled();
   });
 
-  it('should not request access when MIDI is already enabled', () => {
+  it('should call toggleMidiEnabled regardless of current state', () => {
     mockUseAppSelector.mockReturnValue(() => ({ enabled: true }));
     
     const { getByRole } = render(() => <MidiButton />);
@@ -91,30 +86,22 @@ describe('MidiButton', () => {
     
     fireEvent.click(button);
     
-    // Should not make unnecessary requests
-    expect(mockHuMIDI.requestAccess).not.toHaveBeenCalled();
-    expect(mockSetMidiEnabled).not.toHaveBeenCalled();
+    // Toggle should always be called
+    expect(mockToggleMidiEnabled).toHaveBeenCalled();
   });
 
-  it('should handle MIDI access denial gracefully', async () => {
+  it('should render consistently regardless of click handling', () => {
     mockUseAppSelector.mockReturnValue(() => ({ enabled: false }));
-    const error = new Error('MIDI access denied');
-    mockHuMIDI.requestAccess.mockRejectedValue(error);
     
     const { getByRole } = render(() => <MidiButton />);
     const button = getByRole('button');
     
-    fireEvent.click(button);
-    
-    expect(mockHuMIDI.requestAccess).toHaveBeenCalled();
-    
-    // Wait for async operation
-    await new Promise(resolve => setTimeout(resolve, 0));
-    
-    // Should not enable MIDI on failure - this is the observable behavior
-    expect(mockSetMidiEnabled).not.toHaveBeenCalled();
-    
-    // Button should remain in disabled state
+    // Test that the component renders properly
+    expect(button).toBeInTheDocument();
     expect(button.className).not.toContain('active');
+    
+    // Click should not affect rendering immediately (state updates are external)
+    fireEvent.click(button);
+    expect(mockToggleMidiEnabled).toHaveBeenCalled();
   });
 });

@@ -13,19 +13,23 @@ export const fieldset = style({
 export const input = style({
   padding: vars.spacing.sm,
   borderRadius: vars.radii.md,
-  border: `1px solid ${vars.colors.muted}`,
+  border: `1px solid ${vars.overlays.border}`,
   fontSize: '1rem',
+  backgroundColor: vars.colors.background,
+  color: vars.colors.foreground,
   
   ':focus': {
     outline: 'none',
-    borderColor: vars.colors.background,
+    borderColor: vars.colors.primary,
+    boxShadow: `0 0 0 2px ${vars.colors.primary}20`,
   },
 });
 
 export const inputError = style({
-  borderColor: '#e53e3e',
+  borderColor: vars.colors.danger,
   
   ':focus': {
-    borderColor: '#e53e3e',
+    borderColor: vars.colors.danger,
+    boxShadow: `0 0 0 2px ${vars.colors.danger}20`,
   },
 });

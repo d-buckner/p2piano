@@ -26,12 +26,12 @@ export const midiButton = style({
 });
 
 export const active = style({
-  backgroundColor: vars.colors.foreground,
-  color: vars.colors.background,
-  borderColor: vars.colors.foreground,
+  backgroundColor: vars.colors.success,
+  color: vars.colors.foreground,
+  borderColor: vars.colors.success,
   
   ':hover': {
-    backgroundColor: vars.colors.foreground,
-    borderColor: vars.colors.foreground,
+    backgroundColor: vars.colors.successLight,
+    borderColor: vars.colors.successLight,
   },
 });

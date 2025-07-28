@@ -5,7 +5,7 @@ import { vars } from '../styles/theme.css';
 export const roomNav = style({
   width: '100%',
   height: vars.sizes.headerHeight,
-  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1)',
   padding: `0 ${vars.spacing.md}`,
   backgroundColor: vars.colors.secondary,
   display: 'grid',
@@ -37,5 +37,34 @@ export const navLink = style({
   
   ':hover': {
     textDecoration: 'underline',
+  },
+});
+
+export const rightControls = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: vars.spacing.sm,
+});
+
+// Responsive visibility for right controls
+export const showFromMobile = style({
+  display: 'flex', // Show on all screen sizes
+});
+
+export const showFromMedium = style({
+  display: 'none',
+  '@media': {
+    '(min-width: 510px)': {
+      display: 'flex',
+    },
+  },
+});
+
+export const showFromDesktop = style({
+  display: 'none',
+  '@media': {
+    '(min-width: 768px)': {
+      display: 'flex',
+    },
   },
 });

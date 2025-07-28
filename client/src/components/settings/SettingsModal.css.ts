@@ -1,5 +1,5 @@
 import { style } from '@vanilla-extract/css';
-import { vars } from '../../styles/theme.css';
+import { vars, oceanTheme } from '../../styles/theme.css';
 
 
 export const modalOverlay = style({
@@ -8,7 +8,7 @@ export const modalOverlay = style({
   left: 0,
   width: '100%',
   height: '100%',
-  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  backgroundColor: 'rgba(17, 24, 39, 0.8)', // Ocean depths overlay
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
@@ -16,12 +16,14 @@ export const modalOverlay = style({
 });
 
 export const modalContent = style({
-  backgroundColor: 'white',
+  backgroundColor: oceanTheme.secondary, // Ocean floor
   borderRadius: vars.radii.lg,
   minWidth: '400px',
   maxWidth: '500px',
   position: 'relative',
-  color: vars.colors.background,
+  color: vars.colors.foreground, // Light ocean foam text
+  border: `1px solid ${vars.overlays.border}`,
+  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
 });
 
 export const modalHeader = style({
@@ -38,11 +40,17 @@ export const modalCloseButton = style({
   right: vars.spacing.md,
   backgroundColor: 'transparent',
   border: 'none',
-  color: vars.colors.background,
+  color: vars.colors.muted,
   fontSize: '1.5rem',
   cursor: 'pointer',
   padding: vars.spacing.xs,
   borderRadius: vars.radii.sm,
+  transition: vars.transitions.fast,
+  
+  ':hover': {
+    color: vars.colors.foreground,
+    backgroundColor: vars.overlays.hover,
+  },
 });
 
 export const modalBody = style({
@@ -78,9 +86,17 @@ export const hstack = style({
 export const input = style({
   padding: vars.spacing.sm,
   borderRadius: vars.radii.md,
-  border: `1px solid ${vars.colors.muted}`,
+  border: `1px solid ${vars.overlays.border}`,
   fontSize: '1rem',
   flex: 1,
+  backgroundColor: vars.colors.background,
+  color: vars.colors.foreground,
+  
+  ':focus': {
+    outline: 'none',
+    borderColor: vars.colors.primary,
+    boxShadow: `0 0 0 2px ${vars.colors.primary}20`,
+  },
 });
 
 export const label = style({
@@ -101,18 +117,20 @@ export const button = style({
 export const primaryButton = style([
   button,
   {
-    backgroundColor: '#151f21',
+    backgroundColor: vars.colors.primaryDark,
     color: 'white',
     marginTop: vars.spacing.md,
     alignSelf: 'flex-end',
     width: '100%',
+    fontWeight: 600,
 
     ':hover': {
-      backgroundColor: '#1a252a',
+      backgroundColor: vars.colors.primary,
     },
 
     ':disabled': {
-      backgroundColor: vars.colors.secondary,
+      backgroundColor: vars.colors.background,
+      color: vars.colors.muted,
       cursor: 'not-allowed',
     },
   },
@@ -121,11 +139,12 @@ export const primaryButton = style([
 export const copyButton = style([
   button,
   {
-    backgroundColor: vars.colors.secondary,
+    backgroundColor: vars.overlays.subtle,
     color: vars.colors.foreground,
+    border: `1px solid ${vars.overlays.border}`,
 
     ':hover': {
-      backgroundColor: vars.colors.muted,
+      backgroundColor: vars.overlays.hover,
     },
   },
 ]);

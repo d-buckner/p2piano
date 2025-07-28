@@ -35,7 +35,6 @@ const Donate = () => (
                 rel="noopener noreferrer"
                 class={styles.donationButton}
               >
-                <span>🎵</span>
                 Donate
               </a>
             </div>
@@ -52,25 +51,23 @@ const Donate = () => (
                 rel="noopener noreferrer"
                 class={styles.donationButton}
               >
-                <span>🎵</span>
                 Donate
               </a>
             </div>
 
             <div class={styles.donationCard}>
               <span class={styles.donationIcon}>💻</span>
-              <h3 class={styles.donationTitle}>Contribute</h3>
+              <h3 class={styles.donationTitle}>Report & Suggest</h3>
               <p class={styles.donationText}>
-                Help improve p2piano by contributing code, reporting bugs, or suggesting features. Every contribution helps make music collaboration more accessible.
+                Help improve p2piano by reporting bugs or suggesting new features. Your feedback helps make music collaboration better for everyone.
               </p>
               <a 
-                href="https://github.com/d-buckner/p2piano" 
+                href="https://github.com/d-buckner/p2piano/issues" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                class={`${styles.donationButton} ${styles.githubButton}`}
+                class={styles.donationButton}
               >
-                <span>⭐</span>
-                Contribute
+                Give Feedback
               </a>
             </div>
           </div>

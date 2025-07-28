@@ -1,17 +1,4 @@
-import Metronome from './Metronome';
-import MidiButton from './MidiButton';
-import * as styles from './Toolbar.css';
-import Volume from './Volume';
+import Toolbar from './toolbar/Toolbar';
 
-
-function Toolbar() {
-  return (
-    <div class={styles.toolbar}>
-      <MidiButton />
-      <Metronome />
-      <Volume />
-    </div>
-  );
-}
 
 export default Toolbar;

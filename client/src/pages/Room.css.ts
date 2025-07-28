@@ -12,15 +12,15 @@ export const loadingContainer = style({
   justifyContent: 'center',
   alignItems: 'center',
   height: '100%',
-  backgroundColor: 'black',
-  color: 'white',
+  backgroundColor: vars.colors.background, // Ocean depths
+  color: vars.colors.foreground, // Light ocean foam
 });
 
 export const spinner = style({
   width: '40px',
   height: '40px',
-  border: '4px solid rgba(255, 255, 255, 0.1)',
-  borderTop: '4px solid white',
+  border: `4px solid ${vars.colors.muted}40`, // Ocean mist with transparency
+  borderTop: `4px solid ${vars.colors.primary}`, // Ocean blue accent
   borderRadius: '50%',
   animation: `${spin} 1s linear infinite`,
 });
@@ -31,8 +31,8 @@ export const errorContainer = style({
   alignItems: 'center',
   flexDirection: 'column',
   height: '100%',
-  backgroundColor: 'black',
-  color: 'white',
+  backgroundColor: vars.colors.background, // Ocean depths
+  color: vars.colors.foreground, // Light ocean foam
 });
 
 export const errorHeading = style({
@@ -44,10 +44,12 @@ export const errorHeading = style({
 });
 
 export const errorLink = style({
-  color: 'white',
+  color: vars.colors.primary, // Ocean blue link
   textDecoration: 'underline',
+  transition: vars.transitions.fast,
   
   ':hover': {
+    color: vars.colors.primaryLight, // Lighter ocean blue on hover
     textDecoration: 'none',
   },
 });

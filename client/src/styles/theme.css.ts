@@ -1,17 +1,34 @@
 import { createTheme } from '@vanilla-extract/css';
 
+// Ocean Professional Theme Colors (raw values)
+export const oceanTheme = {
+  background: '#0a1419',        // Deep ocean depths
+  secondary: '#142028',         // Ocean floor
+  foreground: '#f0f9ff',        // Foam white
+  primary: '#0ea5e9',           // Bright ocean accent
+  primaryLight: '#38bdf8',      // Light ocean accent
+  primaryDark: '#0284c7',       // Deep ocean blue
+  muted: '#cbd5e0',             // Improved contrast muted text
+  success: '#10b981',           // Success green
+  successLight: '#34d399',      // Light success
+  successDark: '#059669',       // Dark success
+  danger: '#dc2626',            // Danger red
+};
 
 export const [themeClass, vars] = createTheme({
   colors: {
-    background: '#000',
-    secondary: '#424242',
-    foreground: '#FFF',
-    primary: '#FFF',
-    muted: '#666',
-    success: '#3087cf',
-    successLight: '#5ba3db',
-    successDark: '#047857',
-    danger: '#dc2626',
+    // Ocean Professional Theme - Room interface (dark)
+    background: oceanTheme.background,
+    secondary: oceanTheme.secondary,
+    foreground: oceanTheme.foreground,
+    primary: oceanTheme.primary,
+    primaryLight: oceanTheme.primaryLight,
+    primaryDark: oceanTheme.primaryDark,
+    muted: oceanTheme.muted,
+    success: oceanTheme.success,
+    successLight: oceanTheme.successLight,
+    successDark: oceanTheme.successDark,
+    danger: oceanTheme.danger,
   },
   fonts: {
     body: 'Ysabeau, sans-serif',
@@ -41,11 +58,11 @@ export const [themeClass, vars] = createTheme({
     navbarHeight: '40px',
   },
   overlays: {
-    subtle: 'rgba(255, 255, 255, 0.05)',
-    border: 'rgba(255, 255, 255, 0.1)',
-    hover: 'rgba(255, 255, 255, 0.1)',
-    active: 'rgba(255, 255, 255, 0.2)',
-    borderHover: 'rgba(255, 255, 255, 0.15)',
+    subtle: 'rgba(2, 132, 199, 0.1)',      // Ocean blue tint
+    border: 'rgba(156, 163, 175, 0.2)',    // Ocean mist border
+    hover: 'rgba(2, 132, 199, 0.15)',      // Ocean blue hover
+    active: 'rgba(2, 132, 199, 0.25)',     // Ocean blue active
+    borderHover: 'rgba(156, 163, 175, 0.3)', // Brighter mist on hover
     insetShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.3)',
   },
   transitions: {
