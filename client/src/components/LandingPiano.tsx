@@ -1,5 +1,5 @@
 import { createSignal, onMount, onCleanup, For } from 'solid-js';
-import * as styles from './CollaborativePiano.css';
+import * as styles from './LandingPiano.css';
 
 
 const USERS = [
@@ -30,7 +30,7 @@ const COLLABORATIVE_PATTERN = [
   { key: 'G', delay: 4800, user: 'emma' },
 ];
 
-export default function CollaborativePiano() {
+export default function LandingPiano() {
   const [activeKeys, setActiveKeys] = createSignal<Map<string, string>>(new Map());
   const [activeUsers, setActiveUsers] = createSignal<Set<string>>(new Set());
   

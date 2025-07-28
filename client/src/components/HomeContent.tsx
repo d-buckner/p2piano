@@ -3,8 +3,8 @@ import { createSignal, For } from 'solid-js';
 import { setRoom } from '../actions/RoomActions';
 import AudioManager from '../audio/AudioManager';
 import { createNewRoom } from '../clients/RoomClient';
-import CollaborativePiano from './CollaborativePiano';
 import * as styles from './HomeContent.css';
+import LandingPiano from './LandingPiano';
 
 
 interface FeatureData {
@@ -18,6 +18,14 @@ interface StepData {
   number: string;
   title: string;
   description: string;
+}
+
+interface InputEvent extends Event {
+  target: HTMLInputElement;
+}
+
+interface KeyPressEvent extends KeyboardEvent {
+  key: string;
 }
 
 const FEATURES: FeatureData[] = [
@@ -97,16 +105,16 @@ export default function HomeContent() {
   };
 
   const joinRoom = () => {
-    const code = roomCode().trim().toUpperCase();
+    const code = roomCode().trim().toLowerCase();
     if (code.length === 5) {
       AudioManager.activate();
       navigateToRoom(code);
     }
   };
 
-  const handleRoomCodeInput = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    const value = target.value.toUpperCase().slice(0, 5);
+  const handleRoomCodeInput = (e: InputEvent) => {
+    const target = e.target;
+    const value = target.value.toLowerCase().slice(0, 5);
     setRoomCode(value);
     target.value = value;
   };
@@ -149,10 +157,10 @@ export default function HomeContent() {
                 <div class={styles.joinInputGroup}>
                   <input
                     class={styles.roomCodeInput}
-                    placeholder="ABCDE"
+                    placeholder="abcde"
                     maxLength="5"
                     onInput={handleRoomCodeInput}
-                    onKeyPress={(e) => e.key === 'Enter' && joinRoom()}
+                    onKeyPress={(e: KeyPressEvent) => e.key === 'Enter' && joinRoom()}
                   />
                   <button
                     class={styles.joinButton}
@@ -168,7 +176,7 @@ export default function HomeContent() {
           </div>
           <div class={styles.heroVisual}>
             <div class={styles.demoContext}>
-              <CollaborativePiano />
+              <LandingPiano />
               <p class={styles.demoDescription}>
                 ↑ This is what it looks like when multiple people play together
               </p>

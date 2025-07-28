@@ -495,7 +495,7 @@ export const roomCodeInput = style({
   fontFamily: vars.fonts.body,
   fontSize: '1.1rem',
   textAlign: 'center',
-  textTransform: 'uppercase',
+  textTransform: 'lowercase',
   width: '120px',
   ':focus': {
     outline: 'none',
