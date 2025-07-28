@@ -5,9 +5,13 @@ import { toggleMidiEnabled } from '../actions/MidiActions';
 import MidiButton from './MidiButton';
 
 // Mock dependencies at module level
-vi.mock('../actions/MidiActions', () => ({
-  toggleMidiEnabled: vi.fn(),
-}));
+vi.mock('../actions/MidiActions', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    toggleMidiEnabled: vi.fn(),
+  };
+});
 
 vi.mock('humidi', () => ({
   default: {
