@@ -1,13 +1,14 @@
-import { createSignal, Show, createMemo } from 'solid-js';
 import HuMIDI from 'humidi';
-import { ChevronDownIcon } from '../icons';
-import UsbIcon from '../../UsbIcon';
-import { useAppSelector } from '../../../app/hooks';
+import { createSignal, Show, createMemo, For } from 'solid-js';
 import { toggleMidiEnabled } from '../../../actions/MidiActions';
+import { useAppSelector } from '../../../app/hooks';
 import { selectMidi } from '../../../selectors/midiSelectors';
-import Tooltip from '../../ui/Tooltip';
 import Dropdown from '../../ui/Dropdown';
+import Tooltip from '../../ui/Tooltip';
+import UsbIcon from '../../UsbIcon';
+import { ChevronDownIcon } from '../icons';
 import * as styles from './MidiControl.css';
+
 
 function MidiControl() {
   const midi = useAppSelector(selectMidi);
@@ -92,7 +93,7 @@ function MidiControl() {
           <div class={styles.dropdownContent}>
             <h3 class={styles.dropdownTitle}>MIDI Devices</h3>
             <div class={styles.deviceList}>
-              {midiDevices().map(device => (
+              <For each={midiDevices()}>{device => (
                 <button
                   class={`${styles.deviceItem} ${selectedDevice()?.id === device.id ? styles.selected : ''}`}
                   onClick={() => handleDeviceSelect(device)}
@@ -102,7 +103,7 @@ function MidiControl() {
                     <span class={styles.checkmark}>✓</span>
                   </Show>
                 </button>
-              ))}
+              )}</For>
             </div>
             <div class={styles.divider} />
             <button

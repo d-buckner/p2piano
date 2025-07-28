@@ -12,7 +12,7 @@ export const container = style({
 
 // Hero Section
 export const hero = style({
-  background: 'linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%)',
+  background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.2) 0%, rgba(14, 165, 233, 0.3) 100%)',
   color: '#0c4a6e',
   minHeight: `calc(60vh - ${vars.sizes.navbarHeight})`,
   display: 'flex',
@@ -80,7 +80,7 @@ export const highlight = style({
 // Content Section
 export const content = style({
   padding: '6rem 2rem',
-  background: 'white',
+  background: '#e0f2fe',
   '@media': {
     '(max-width: 550px)': {
       padding: '3rem 1rem',
@@ -165,8 +165,9 @@ export const donationText = style({
 export const donationButton = style({
   display: 'inline-flex',
   alignItems: 'center',
+  justifyContent: 'center',
   gap: '0.5rem',
-  background: 'linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%)',
+  background: '#0c4a6e',
   color: 'white',
   padding: '0.875rem 1.75rem',
   borderRadius: '12px',
@@ -174,13 +175,13 @@ export const donationButton = style({
   fontWeight: 600,
   fontSize: '1rem',
   transition: 'all 0.3s ease',
-  boxShadow: '0 4px 15px rgba(2, 132, 199, 0.25)',
+  boxShadow: '0 4px 15px rgba(12, 74, 110, 0.25)',
   border: 'none',
   cursor: 'pointer',
   ':hover': {
     transform: 'translateY(-2px)',
-    boxShadow: '0 8px 25px rgba(2, 132, 199, 0.35)',
-    background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+    boxShadow: '0 8px 25px rgba(12, 74, 110, 0.35)',
+    background: '#0284c7',
   },
   '@media': {
     '(max-width: 550px)': {

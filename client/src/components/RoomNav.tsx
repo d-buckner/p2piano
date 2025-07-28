@@ -3,18 +3,11 @@ import clsx from 'clsx';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
 import * as styles from './RoomNav.css';
 import Toolbar from './Toolbar';
-import LatencyIndicator from './toolbar/controls/LatencyIndicator';
-import ActiveUsers from './toolbar/controls/ActiveUsers';
 import InviteButton from './toolbar/controls/InviteButton';
 import RoomCode from './toolbar/controls/RoomCode';
-import type { Workspace } from '../app/store';
 
 
-type Props = {
-  workspace: Workspace;
-};
-
-function RoomNav(props: Props) {
+function RoomNav() {
   const navigate = useNavigate();
 
 
@@ -30,9 +23,16 @@ function RoomNav(props: Props) {
         <Toolbar />
       </div>
       <div class={clsx(styles.navRight, styles.rightControls)}>
-        <LatencyIndicator />
-        <InviteButton />
-        <RoomCode />
+        {/* Mobile+: Always show Invite Button */}
+        <div class={styles.showFromMobile}>
+          <InviteButton />
+        </div>
+        
+        {/* Medium+: Add Room Code */}
+        <div class={styles.showFromMedium}>
+          <RoomCode />
+        </div>
+        
       </div>
     </nav>
   );

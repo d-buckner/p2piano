@@ -1,6 +1,7 @@
 import { style, keyframes } from '@vanilla-extract/css';
 import { vars } from '../../../styles/theme.css';
 
+
 const pulseAnimation = keyframes({
   '0%, 100%': { opacity: 1 },
   '50%': { opacity: 0.5 },

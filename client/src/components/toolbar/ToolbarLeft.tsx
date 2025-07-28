@@ -1,8 +1,9 @@
-import * as styles from './ToolbarLeft.css';
+import InstrumentSelector from './controls/InstrumentSelector';
 import MetronomeControl from './controls/MetronomeControl';
 import MidiControl from './controls/MidiControl';
 import RecordingControl from './controls/RecordingControl';
-import InstrumentSelector from './controls/InstrumentSelector';
+import * as styles from './ToolbarLeft.css';
+
 
 function ToolbarLeft() {
   return (

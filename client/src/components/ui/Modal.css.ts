@@ -1,6 +1,7 @@
 import { style, keyframes } from '@vanilla-extract/css';
 import { vars } from '../../styles/theme.css';
 
+
 const fadeIn = keyframes({
   from: { opacity: 0 },
   to: { opacity: 1 },

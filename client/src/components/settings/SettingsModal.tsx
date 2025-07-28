@@ -1,6 +1,6 @@
 import { useNavigate } from '@solidjs/router';
 import { createSignal } from 'solid-js';
-import { setMidiEnabled, toggleMidiEnabled } from '../../actions/MidiActions';
+import { toggleMidiEnabled } from '../../actions/MidiActions';
 import AudioManager from '../../audio/AudioManager';
 import ClientPreferences from '../../lib/ClientPreferences';
 import DisplayName from './DisplayName';

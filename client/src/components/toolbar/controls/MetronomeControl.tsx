@@ -1,13 +1,14 @@
-import { createSignal, Show, createEffect, onCleanup } from 'solid-js';
-import { PlayIcon, PauseIcon, ChevronDownIcon } from '../icons';
+import { createSignal, createEffect, onCleanup, For } from 'solid-js';
 import { useAppSelector } from '../../../app/hooks';
 import { MIN_BPM, MAX_BPM } from '../../../constants/metronome';
 import { metronomeActions } from '../../../crdt';
 import { selectMetronome } from '../../../selectors/metronomeSelectors';
 import { selectMyUser } from '../../../selectors/workspaceSelectors';
-import Tooltip from '../../ui/Tooltip';
 import Dropdown from '../../ui/Dropdown';
+import Tooltip from '../../ui/Tooltip';
+import { ChevronDownIcon } from '../icons';
 import * as styles from './MetronomeControl.css';
+
 
 function MetronomeControl() {
   const metronome = useAppSelector(selectMetronome);
@@ -102,7 +103,7 @@ function MetronomeControl() {
                 min={MIN_BPM}
                 max={MAX_BPM}
                 style={{
-                  background: `linear-gradient(to right, #0284c7 0%, #0284c7 ${((metronome().bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, #111827 ${((metronome().bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, #111827 100%)`
+                  background: `linear-gradient(to right, var(--colors-primary) 0%, var(--colors-primary) ${((metronome().bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, var(--colors-background) ${((metronome().bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, var(--colors-background) 100%)`
                 }}
               />
               <div class={styles.sliderLabels}>
@@ -114,14 +115,14 @@ function MetronomeControl() {
             <div class={styles.control}>
               <label class={styles.label}>Time Signature</label>
               <div class={styles.timeSignatureGrid}>
-                {timeSignatures.map(sig => (
+                <For each={timeSignatures}>{sig => (
                   <button
                     class={`${styles.timeSignatureButton} ${metronome().beatsPerMeasure === sig.value ? styles.selected : ''}`}
                     onClick={() => handleTimeSignatureChange(sig.value)}
                   >
                     {sig.label}
                   </button>
-                ))}
+                )}</For>
               </div>
             </div>
           </div>

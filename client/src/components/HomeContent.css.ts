@@ -1,41 +1,17 @@
 import { style, keyframes } from '@vanilla-extract/css';
+import { vars } from '../styles/theme.css';
 
-// Ocean Breeze Light Theme
-const oceanTheme = {
-  colors: {
-    background: '#f0f9ff',
-    secondary: '#e0f2fe',
-    foreground: '#0c4a6e',
-    primary: '#0284c7',
-    muted: '#475569',
-    success: '#059669',
-    successLight: '#10b981',
-    successDark: '#047857',
-    danger: '#dc2626',
-  },
-  fonts: {
-    body: 'Ysabeau, sans-serif',
-    heading: 'Ysabeau Office, sans-serif',
-  },
-  overlays: {
-    subtle: 'rgba(2, 132, 199, 0.08)',
-    border: 'rgba(2, 132, 199, 0.2)',
-    hover: 'rgba(2, 132, 199, 0.12)',
-    active: 'rgba(2, 132, 199, 0.2)',
-    borderHover: 'rgba(2, 132, 199, 0.3)',
-    insetShadow: '0 2px 10px rgba(2, 132, 199, 0.1)',
-  },
-};
+// Use original ocean theme colors for home page
 
 export const container = style({
   minHeight: '100vh',
-  background: oceanTheme.colors.background,
-  color: oceanTheme.colors.foreground,
+  background: '#f0f9ff',
+  color: '#0c4a6e',
 });
 
 export const hero = style({
   minHeight: 'calc(100vh - 40px)',
-  background: 'linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%)',
+  background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.2) 0%, rgba(14, 165, 233, 0.3) 100%)',
   display: 'flex',
   alignItems: 'center',
   padding: '2rem',
@@ -49,7 +25,7 @@ export const hero = style({
     left: 0,
     right: 0,
     bottom: 0,
-    background: `radial-gradient(circle at 30% 50%, ${oceanTheme.overlays.subtle} 0%, transparent 50%)`,
+    background: 'radial-gradient(circle at 30% 50%, rgba(2, 132, 199, 0.1) 0%, transparent 50%)',
     pointerEvents: 'none',
   },
   '@media': {
@@ -96,13 +72,13 @@ export const heroText = style({
 });
 
 export const mainHeading = style({
-  fontFamily: oceanTheme.fonts.heading,
+  fontFamily: vars.fonts.heading,
   fontSize: 'clamp(1.75rem, 5vw, 3rem)',
   fontWeight: 700,
   lineHeight: 1.2,
   margin: 0,
   marginBottom: '0.5rem',
-  color: oceanTheme.colors.foreground,
+  color: '#0c4a6e',
   '@media': {
     '(max-width: 550px)': {
       fontSize: 'clamp(1.5rem, 6vw, 2.25rem)',
@@ -115,9 +91,9 @@ export const mainHeading = style({
 export const subHeading = style({
   fontSize: 'clamp(1rem, 2.5vw, 1.2rem)',
   lineHeight: 1.6,
-  color: oceanTheme.colors.foreground,
+  color: '#0c4a6e',
   margin: 0,
-  fontFamily: oceanTheme.fonts.body,
+  fontFamily: vars.fonts.body,
   '@media': {
     '(max-width: 550px)': {
       fontSize: 'clamp(0.95rem, 3vw, 1.1rem)',
@@ -135,7 +111,7 @@ export const actionSection = style({
 });
 
 export const ctaButton = style({
-  background: `linear-gradient(135deg, ${oceanTheme.colors.primary} 0%, #0ea5e9 100%)`,
+  background: 'linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%)',
   color: 'white',
   border: 'none',
   padding: '1rem 2rem',
@@ -150,7 +126,7 @@ export const ctaButton = style({
   minWidth: '200px',
   minHeight: '48px',
   justifyContent: 'center',
-  fontFamily: oceanTheme.fonts.body,
+  fontFamily: vars.fonts.body,
   ':hover': {
     transform: 'translateY(-2px)',
     boxShadow: '0 10px 30px rgba(2, 132, 199, 0.25)',
@@ -178,18 +154,18 @@ export const orDivider = style({
   alignItems: 'center',
   gap: '1rem',
   width: '100%',
-  color: oceanTheme.colors.muted,
+  color: '#475569',
   ':before': {
     content: '""',
     flex: 1,
     height: '1px',
-    background: oceanTheme.overlays.border,
+    background: 'rgba(2, 132, 199, 0.2)',
   },
   ':after': {
     content: '""',
     flex: 1,
     height: '1px',
-    background: oceanTheme.overlays.border,
+    background: 'rgba(2, 132, 199, 0.2)',
   },
 });
 
@@ -201,9 +177,9 @@ export const joinSection = style({
 });
 
 export const joinLabel = style({
-  color: oceanTheme.colors.muted,
+  color: '#475569',
   fontSize: '0.9rem',
-  fontFamily: oceanTheme.fonts.body,
+  fontFamily: vars.fonts.body,
 });
 
 export const joinInputGroup = style({
@@ -215,10 +191,10 @@ export const joinInputGroup = style({
 export const roomCodeInput = style({
   padding: '0.75rem 1rem',
   borderRadius: '8px',
-  border: `2px solid ${oceanTheme.overlays.border}`,
-  background: 'white',
-  color: oceanTheme.colors.foreground,
-  fontFamily: oceanTheme.fonts.body,
+  border: '2px solid rgba(2, 132, 199, 0.2)',
+  background: '#e0f2fe',
+  color: '#0c4a6e',
+  fontFamily: vars.fonts.body,
   fontSize: '1.1rem',
   textAlign: 'center',
   textTransform: 'lowercase',
@@ -226,8 +202,8 @@ export const roomCodeInput = style({
   minHeight: '44px',
   ':focus': {
     outline: 'none',
-    borderColor: oceanTheme.colors.primary,
-    background: 'white',
+    borderColor: '#0284c7',
+    background: '#e0f2fe',
     boxShadow: '0 0 0 2px rgba(2, 132, 199, 0.1)',
   },
   '@media': {
@@ -241,19 +217,19 @@ export const roomCodeInput = style({
 });
 
 export const joinButton = style({
-  background: oceanTheme.colors.primary,
+  background: '#0284c7',
   color: 'white',
-  border: `1px solid ${oceanTheme.colors.primary}`,
+  border: '1px solid #0284c7',
   padding: '0.75rem 1.5rem',
   borderRadius: '8px',
   cursor: 'pointer',
-  fontFamily: oceanTheme.fonts.body,
+  fontFamily: vars.fonts.body,
   fontWeight: 500,
   transition: 'all 0.2s ease',
   minHeight: '44px',
   ':hover': {
-    background: oceanTheme.colors.success,
-    borderColor: oceanTheme.colors.success,
+    background: '#10b981',
+    borderColor: '#10b981',
   },
   ':active': {
     transform: 'scale(0.98)',
@@ -286,7 +262,7 @@ export const demoContext = style({
 
 export const features = style({
   padding: '4rem 2rem',
-  background: oceanTheme.colors.secondary,
+  background: '#f0f9ff', // Different from hero gradient
   '@media': {
     '(max-width: 550px)': {
       padding: '3rem 1rem',
@@ -300,11 +276,11 @@ export const featuresContainer = style({
 });
 
 export const sectionHeading = style({
-  fontFamily: oceanTheme.fonts.heading,
+  fontFamily: vars.fonts.heading,
   fontSize: 'clamp(2rem, 4vw, 2.5rem)',
   textAlign: 'center',
   marginBottom: '3rem',
-  color: oceanTheme.colors.foreground,
+  color: '#0c4a6e',
   fontWeight: 600,
 });
 
@@ -321,7 +297,7 @@ export const featuresGrid = style({
 });
 
 export const featureCard = style({
-  background: 'white',
+  background: '#e0f2fe',
   padding: '2rem',
   borderRadius: '16px',
   boxShadow: '0 4px 20px rgba(2, 132, 199, 0.08)',
@@ -351,23 +327,23 @@ export const featureIcon = style({
 });
 
 export const featureTitle = style({
-  fontFamily: oceanTheme.fonts.heading,
+  fontFamily: vars.fonts.heading,
   fontSize: '1.25rem',
   marginBottom: '1rem',
-  color: oceanTheme.colors.foreground,
+  color: '#0c4a6e',
   fontWeight: 600,
 });
 
 export const featureText = style({
-  color: oceanTheme.colors.foreground,
+  color: '#0c4a6e',
   lineHeight: 1.6,
   margin: 0,
-  fontFamily: oceanTheme.fonts.body,
+  fontFamily: vars.fonts.body,
 });
 
 export const faq = style({
   padding: '4rem 2rem',
-  background: oceanTheme.colors.secondary,
+  background: '#e0f2fe', // Alternates from howItWorks (background)
   '@media': {
     '(max-width: 550px)': {
       padding: '3rem 1rem',
@@ -396,30 +372,30 @@ export const faqGrid = style({
 });
 
 export const faqItem = style({
-  background: oceanTheme.colors.background,
+  background: '#f0f9ff',
   padding: '1.5rem',
   borderRadius: '12px',
   border: '1px solid rgba(2, 132, 199, 0.1)',
 });
 
 export const faqQuestion = style({
-  fontFamily: oceanTheme.fonts.heading,
+  fontFamily: vars.fonts.heading,
   fontSize: '1.1rem',
-  color: oceanTheme.colors.foreground,
+  color: '#0c4a6e',
   marginBottom: '0.75rem',
   fontWeight: 600,
 });
 
 export const faqAnswer = style({
-  color: oceanTheme.colors.foreground,
+  color: '#0c4a6e',
   lineHeight: 1.5,
   margin: 0,
-  fontFamily: oceanTheme.fonts.body,
+  fontFamily: vars.fonts.body,
 });
 
 export const howItWorks = style({
   padding: '4rem 2rem',
-  background: 'white',
+  background: '#e0f2fe',
 });
 
 export const howContainer = style({
@@ -450,32 +426,32 @@ export const stepNumber = style({
   width: '60px',
   height: '60px',
   borderRadius: '50%',
-  background: `linear-gradient(135deg, ${oceanTheme.colors.primary} 0%, ${oceanTheme.colors.success} 100%)`,
+  background: 'linear-gradient(135deg, #0284c7 0%, #10b981 100%)',
   color: 'white',
   fontSize: '1.5rem',
   fontWeight: 700,
   marginBottom: '1.5rem',
-  fontFamily: oceanTheme.fonts.heading,
+  fontFamily: vars.fonts.heading,
 });
 
 export const stepTitle = style({
-  fontFamily: oceanTheme.fonts.heading,
+  fontFamily: vars.fonts.heading,
   fontSize: '1.25rem',
-  color: oceanTheme.colors.foreground,
+  color: '#0c4a6e',
   marginBottom: '1rem',
   fontWeight: 600,
 });
 
 export const stepText = style({
-  color: oceanTheme.colors.foreground,
+  color: '#0c4a6e',
   lineHeight: 1.6,
   margin: 0,
-  fontFamily: oceanTheme.fonts.body,
+  fontFamily: vars.fonts.body,
 });
 
 export const expectations = style({
   padding: '4rem 2rem',
-  background: 'white',
+  background: '#f0f9ff', // Different from howItWorks
 });
 
 export const expectationsContainer = style({
@@ -493,7 +469,7 @@ export const expectationItem = style({
   alignItems: 'flex-start',
   gap: '1rem',
   padding: '1.5rem',
-  background: oceanTheme.colors.background,
+  background: '#e0f2fe',
   borderRadius: '12px',
   border: '1px solid rgba(2, 132, 199, 0.1)',
 });

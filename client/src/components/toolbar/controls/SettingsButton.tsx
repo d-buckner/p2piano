@@ -1,6 +1,7 @@
-import { SettingsIcon } from '../icons';
 import Tooltip from '../../ui/Tooltip';
+import { SettingsIcon } from '../icons';
 import * as styles from './SettingsButton.css';
+
 
 function SettingsButton() {
   const handleSettingsClick = () => {

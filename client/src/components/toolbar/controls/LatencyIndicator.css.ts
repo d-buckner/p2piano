@@ -1,6 +1,7 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from '../../../styles/theme.css';
 
+
 export const latencyIndicator = style({
   display: 'flex',
   alignItems: 'center',
@@ -18,11 +19,11 @@ export const latencyValue = style({
 });
 
 export const good = style({
-  color: '#10b981', // Green
+  color: vars.colors.success, // Dynamic theme success color
 });
 
 export const fair = style({
-  color: '#f59e0b', // Yellow
+  color: vars.colors.primaryLight, // Dynamic theme warning-like color
 });
 
 export const poor = style({

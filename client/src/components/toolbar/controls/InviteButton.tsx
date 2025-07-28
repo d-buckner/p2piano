@@ -1,13 +1,11 @@
 import { createSignal } from 'solid-js';
-import { ShareIcon, XIcon, CopyIcon, CheckIcon } from '../icons';
-import { useAppSelector } from '../../../app/hooks';
-import { selectWorkspace } from '../../../selectors/workspaceSelectors';
-import Tooltip from '../../ui/Tooltip';
 import Modal from '../../ui/Modal';
+import Tooltip from '../../ui/Tooltip';
+import { ShareIcon, CopyIcon, CheckIcon } from '../icons';
 import * as styles from './InviteButton.css';
 
+
 function InviteButton() {
-  const workspace = useAppSelector(selectWorkspace);
   const [showInviteModal, setShowInviteModal] = createSignal(false);
   const [copied, setCopied] = createSignal(false);
   

@@ -1,11 +1,12 @@
-import { createSignal } from 'solid-js';
-import { ChevronDownIcon } from '../icons';
-import { useAppSelector } from '../../../app/hooks';
+import { createSignal, For } from 'solid-js';
 import { updateInstrument } from '../../../actions/WorkspaceActions';
-import { selectMyUser } from '../../../selectors/workspaceSelectors';
+import { useAppSelector } from '../../../app/hooks';
 import { InstrumentType } from '../../../audio/instruments/Instrument';
+import { selectMyUser } from '../../../selectors/workspaceSelectors';
 import Dropdown from '../../ui/Dropdown';
+import { ChevronDownIcon } from '../icons';
 import * as styles from './InstrumentSelector.css';
+
 
 function InstrumentSelector() {
   const myUser = useAppSelector(selectMyUser);
@@ -43,7 +44,7 @@ function InstrumentSelector() {
         }
       >
         <div class={styles.dropdownContent}>
-          {instruments.map(inst => (
+          <For each={instruments}>{inst => (
             <button
               class={`${styles.instrumentItem} ${currentInstrument().value === inst.value ? styles.selected : ''}`}
               onClick={() => handleInstrumentSelect(inst.value)}
@@ -51,7 +52,7 @@ function InstrumentSelector() {
               <span class={styles.icon}>{inst.icon}</span>
               <span>{inst.label}</span>
             </button>
-          ))}
+          )}</For>
         </div>
       </Dropdown>
     </div>

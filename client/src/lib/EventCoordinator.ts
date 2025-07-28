@@ -1,5 +1,4 @@
 import HuMIDI from 'humidi';
-import { setMidiAccess, setMidiEnabled } from '../actions/MidiActions';
 import * as NoteActions from '../actions/NoteActions';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import AudioSyncCoordinator from '../audio/syncronization/AudioSyncCoordinator';
@@ -10,7 +9,6 @@ import RoomHandlers from '../handlers/RoomHandlers';
 import RealTimeController from '../networking/RealTimeController';
 import WebsocketController from '../networking/transports/WebsocketController';
 import type { MessageHandler } from '../networking/AbstractNetworkController';
-import { selectMidiAccess } from '../selectors/midiSelectors';
 
 
 

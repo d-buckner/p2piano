@@ -1,8 +1,9 @@
-import { WifiIcon } from '../icons';
 import { useAppSelector } from '../../../app/hooks';
 import { selectMinLatency } from '../../../selectors/connectionSelectors';
 import Tooltip from '../../ui/Tooltip';
+import { WifiIcon } from '../icons';
 import * as styles from './LatencyIndicator.css';
+
 
 function LatencyIndicator() {
   const latency = useAppSelector(selectMinLatency);

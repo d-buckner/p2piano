@@ -1,6 +1,7 @@
 import PianoVisualizer from 'piano-visualizer';
 import { createSignal, createEffect } from 'solid-js';
 import * as NoteActions from '../actions/NoteActions';
+import { oceanTheme } from '../styles/theme.css';
 import * as styles from './PianoRenderer.css';
 import type { Note } from '../constants';
 
@@ -18,8 +19,12 @@ export default function PianoRenderer(props: Props) {
     createEffect(() => {
         const container = containerRef();
         if (container && !renderer) {
+            // Use raw hex value from ocean theme
+            const backgroundColor = oceanTheme.background;
+            
             renderer = new PianoVisualizer({
                 container,
+                backgroundColor,
                 onKeyDown: NoteActions.keyDown,
                 onKeyUp: NoteActions.keyUp,
             });

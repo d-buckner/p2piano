@@ -1,11 +1,12 @@
-import { createSignal, Show } from 'solid-js';
-import { UsersIcon } from '../icons';
+import { createSignal, Show, For } from 'solid-js';
 import { useAppSelector } from '../../../app/hooks';
-import { selectUsersArray, selectMyUser } from '../../../selectors/workspaceSelectors';
-import { selectPeerConnections } from '../../../selectors/connectionSelectors';
 import { InstrumentType } from '../../../audio/instruments/Instrument';
+import { selectPeerConnections } from '../../../selectors/connectionSelectors';
+import { selectUsersArray, selectMyUser } from '../../../selectors/workspaceSelectors';
 import Dropdown from '../../ui/Dropdown';
+import { UsersIcon } from '../icons';
 import * as styles from './ActiveUsers.css';
+
 
 function ActiveUsers() {
   const users = useAppSelector(selectUsersArray);
@@ -60,17 +61,17 @@ function ActiveUsers() {
           <button class={styles.usersButton}>
             <UsersIcon size={14} class={styles.icon} />
             <div class={styles.userAvatars}>
-              {displayUsers().slice(0, 4).map(user => (
+              <For each={displayUsers().slice(0, 4)}>{user => (
                 <div
                   class={styles.avatar}
-                  style={{ 'background-color': user.color || '#0284c7' }}
+                  style={{ 'background-color': user.color || 'var(--colors-primary)' }}
                   title={user.displayName || 'User'}
                 >
                   {(user.displayName || 'U')[0].toUpperCase()}
                 </div>
-              ))}
+              )}</For>
               <Show when={displayUsers().length > 4}>
-                <div class={styles.avatar} style={{ 'background-color': '#9ca3af' }}>
+                <div class={styles.avatar} style={{ 'background-color': 'var(--colors-muted)' }}>
                   +{displayUsers().length - 4}
                 </div>
               </Show>
@@ -81,12 +82,12 @@ function ActiveUsers() {
         <div class={styles.dropdownContent}>
           <h3 class={styles.dropdownTitle}>Active Users ({displayUsers().length})</h3>
           <div class={styles.usersList}>
-            {displayUsers().map(user => (
+            <For each={displayUsers()}>{user => (
               <div class={`${styles.userItem} ${isCurrentUser(user.userId) ? styles.currentUser : ''}`}>
                 <div class={styles.userInfo}>
                   <div
                     class={styles.userAvatar}
-                    style={{ 'background-color': user.color || '#0284c7' }}
+                    style={{ 'background-color': user.color || 'var(--colors-primary)' }}
                   >
                     {(user.displayName || 'U')[0].toUpperCase()}
                   </div>
@@ -111,7 +112,7 @@ function ActiveUsers() {
                   </div>
                 </div>
               </div>
-            ))}
+            )}</For>
           </div>
         </div>
       </Dropdown>

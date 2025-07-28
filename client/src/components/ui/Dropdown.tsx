@@ -1,6 +1,7 @@
 import { createSignal, onCleanup, Show, type JSX } from 'solid-js';
 import * as styles from './Dropdown.css';
 
+
 type DropdownProps = {
   trigger: JSX.Element;
   children: JSX.Element;

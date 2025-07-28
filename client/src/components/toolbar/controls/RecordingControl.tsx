@@ -1,8 +1,9 @@
-import { createSignal, createEffect, Show } from 'solid-js';
-import { CircleIcon, SquareIcon } from '../icons';
-import Tooltip from '../../ui/Tooltip';
+import { createSignal, createEffect, For } from 'solid-js';
 import Dropdown from '../../ui/Dropdown';
+import Tooltip from '../../ui/Tooltip';
+import { CircleIcon, SquareIcon } from '../icons';
 import * as styles from './RecordingControl.css';
+
 
 function RecordingControl() {
   const [isRecording, setIsRecording] = createSignal(false);
@@ -50,7 +51,7 @@ function RecordingControl() {
         open={showRecordingsDropdown()}
         onOpenChange={setShowRecordingsDropdown}
         trigger={
-          <Tooltip text={isRecording() ? "Stop Recording" : "Start Recording"} shortcut="R">
+          <Tooltip text={isRecording() ? 'Stop Recording' : 'Start Recording'} shortcut="R">
             <button
               class={`${styles.recordButton} ${isRecording() ? styles.recording : ''}`}
               onClick={handleRecordClick}
@@ -64,12 +65,12 @@ function RecordingControl() {
         <div class={styles.dropdownContent}>
           <h3 class={styles.dropdownTitle}>Recordings</h3>
           <div class={styles.recordingsList}>
-            {recordings.map(rec => (
+            <For each={recordings}>{rec => (
               <button class={styles.recordingItem}>
                 <span>{rec.name}</span>
                 <span class={styles.recordingDate}>{rec.date}</span>
               </button>
-            ))}
+            )}</For>
           </div>
         </div>
       </Dropdown>

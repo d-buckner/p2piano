@@ -1,6 +1,7 @@
 import { style } from '@vanilla-extract/css';
 import { vars } from '../../../styles/theme.css';
 
+
 export const inviteButton = style({
   display: 'flex',
   alignItems: 'center',
@@ -9,7 +10,7 @@ export const inviteButton = style({
   height: '24px',
   borderRadius: vars.radii.md,
   border: 'none',
-  backgroundColor: vars.colors.primary,
+  backgroundColor: vars.colors.secondary,
   color: vars.colors.foreground,
   fontSize: vars.fontSizes.xs,
   cursor: 'pointer',

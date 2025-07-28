@@ -8,8 +8,8 @@ export const navbar = style({
   alignItems: 'center',
   height: vars.sizes.navbarHeight,
   padding: '0 1.5rem',
-  background: '#1f2937',
-  borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+  background: vars.colors.secondary, // Ocean secondary depth
+  borderBottom: `1px solid ${vars.overlays.border}`,
 });
 
 export const navbarFloating = style({

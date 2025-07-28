@@ -1,19 +1,34 @@
 import { createTheme } from '@vanilla-extract/css';
 
+// Ocean Professional Theme Colors (raw values)
+export const oceanTheme = {
+  background: '#0a1419',        // Deep ocean depths
+  secondary: '#142028',         // Ocean floor
+  foreground: '#f0f9ff',        // Foam white
+  primary: '#0ea5e9',           // Bright ocean accent
+  primaryLight: '#38bdf8',      // Light ocean accent
+  primaryDark: '#0284c7',       // Deep ocean blue
+  muted: '#cbd5e0',             // Improved contrast muted text
+  success: '#10b981',           // Success green
+  successLight: '#34d399',      // Light success
+  successDark: '#059669',       // Dark success
+  danger: '#dc2626',            // Danger red
+};
 
 export const [themeClass, vars] = createTheme({
   colors: {
-    background: '#111827',        // Dark ocean depth
-    secondary: '#1f2937',         // Lighter ocean depth
-    foreground: '#f3f4f6',        // Light foam/spray
-    primary: '#0284c7',           // Ocean blue primary
-    primaryLight: '#0ea5e9',      // Lighter ocean blue  
-    primaryDark: '#0369a1',       // Darker ocean blue
-    muted: '#9ca3af',            // Ocean mist
-    success: '#10b981',          // Ocean green (for active states)
-    successLight: '#34d399',     // Light ocean green
-    successDark: '#059669',      // Dark ocean green
-    danger: '#dc2626',           // Keep red for warnings/recording
+    // Ocean Professional Theme - Room interface (dark)
+    background: oceanTheme.background,
+    secondary: oceanTheme.secondary,
+    foreground: oceanTheme.foreground,
+    primary: oceanTheme.primary,
+    primaryLight: oceanTheme.primaryLight,
+    primaryDark: oceanTheme.primaryDark,
+    muted: oceanTheme.muted,
+    success: oceanTheme.success,
+    successLight: oceanTheme.successLight,
+    successDark: oceanTheme.successDark,
+    danger: oceanTheme.danger,
   },
   fonts: {
     body: 'Ysabeau, sans-serif',
