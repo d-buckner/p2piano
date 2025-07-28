@@ -52,6 +52,13 @@ export const hero = style({
     background: `radial-gradient(circle at 30% 50%, ${oceanTheme.overlays.subtle} 0%, transparent 50%)`,
     pointerEvents: 'none',
   },
+  '@media': {
+    '(max-width: 550px)': {
+      padding: '1rem',
+      paddingTop: '80px',
+      minHeight: 'calc(100vh - 60px)',
+    },
+  },
 });
 
 export const heroContent = style({
@@ -64,6 +71,11 @@ export const heroContent = style({
   position: 'relative',
   zIndex: 1,
   '@media': {
+    '(max-width: 550px)': {
+      gridTemplateColumns: '1fr',
+      gap: '1.5rem',
+      textAlign: 'center',
+    },
     '(max-width: 768px)': {
       gridTemplateColumns: '1fr',
       gap: '2rem',
@@ -76,24 +88,42 @@ export const heroText = style({
   display: 'flex',
   flexDirection: 'column',
   gap: '2rem',
+  '@media': {
+    '(max-width: 550px)': {
+      gap: '1.5rem',
+    },
+  },
 });
 
 export const mainHeading = style({
   fontFamily: oceanTheme.fonts.heading,
-  fontSize: 'clamp(2rem, 4vw, 3rem)',
+  fontSize: 'clamp(1.75rem, 5vw, 3rem)',
   fontWeight: 700,
   lineHeight: 1.2,
   margin: 0,
   marginBottom: '0.5rem',
   color: oceanTheme.colors.foreground,
+  '@media': {
+    '(max-width: 550px)': {
+      fontSize: 'clamp(1.5rem, 6vw, 2.25rem)',
+      lineHeight: 1.3,
+      marginBottom: '0.75rem',
+    },
+  },
 });
 
 export const subHeading = style({
-  fontSize: 'clamp(1rem, 2vw, 1.2rem)',
+  fontSize: 'clamp(1rem, 2.5vw, 1.2rem)',
   lineHeight: 1.6,
-  color: oceanTheme.colors.muted,
+  color: oceanTheme.colors.foreground,
   margin: 0,
   fontFamily: oceanTheme.fonts.body,
+  '@media': {
+    '(max-width: 550px)': {
+      fontSize: 'clamp(0.95rem, 3vw, 1.1rem)',
+      lineHeight: 1.7,
+    },
+  },
 });
 
 export const actionSection = style({
@@ -118,17 +148,28 @@ export const ctaButton = style({
   gap: '0.5rem',
   transition: 'all 0.3s ease',
   minWidth: '200px',
+  minHeight: '48px',
   justifyContent: 'center',
   fontFamily: oceanTheme.fonts.body,
   ':hover': {
     transform: 'translateY(-2px)',
     boxShadow: '0 10px 30px rgba(2, 132, 199, 0.25)',
-    background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+  },
+  ':active': {
+    transform: 'translateY(0)',
+    boxShadow: '0 5px 15px rgba(2, 132, 199, 0.35)',
   },
   ':disabled': {
     opacity: 0.7,
     cursor: 'not-allowed',
     transform: 'none',
+  },
+  '@media': {
+    '(max-width: 550px)': {
+      padding: '1.25rem 2rem',
+      fontSize: '1.1rem',
+      minHeight: '52px',
+    },
   },
 });
 
@@ -182,11 +223,20 @@ export const roomCodeInput = style({
   textAlign: 'center',
   textTransform: 'lowercase',
   width: '120px',
+  minHeight: '44px',
   ':focus': {
     outline: 'none',
     borderColor: oceanTheme.colors.primary,
     background: 'white',
     boxShadow: '0 0 0 2px rgba(2, 132, 199, 0.1)',
+  },
+  '@media': {
+    '(max-width: 550px)': {
+      width: '140px',
+      padding: '1rem',
+      fontSize: '1.2rem',
+      minHeight: '48px',
+    },
   },
 });
 
@@ -200,13 +250,24 @@ export const joinButton = style({
   fontFamily: oceanTheme.fonts.body,
   fontWeight: 500,
   transition: 'all 0.2s ease',
+  minHeight: '44px',
   ':hover': {
     background: oceanTheme.colors.success,
     borderColor: oceanTheme.colors.success,
   },
+  ':active': {
+    transform: 'scale(0.98)',
+  },
   ':disabled': {
     opacity: 0.5,
     cursor: 'not-allowed',
+  },
+  '@media': {
+    '(max-width: 550px)': {
+      padding: '1rem 1.75rem',
+      minHeight: '48px',
+      fontSize: '1rem',
+    },
   },
 });
 
@@ -226,6 +287,11 @@ export const demoContext = style({
 export const features = style({
   padding: '4rem 2rem',
   background: oceanTheme.colors.secondary,
+  '@media': {
+    '(max-width: 550px)': {
+      padding: '3rem 1rem',
+    },
+  },
 });
 
 export const featuresContainer = style({
@@ -246,6 +312,12 @@ export const featuresGrid = style({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
   gap: '2rem',
+  '@media': {
+    '(max-width: 550px)': {
+      gridTemplateColumns: '1fr',
+      gap: '1.5rem',
+    },
+  },
 });
 
 export const featureCard = style({
@@ -258,6 +330,12 @@ export const featureCard = style({
   ':hover': {
     transform: 'translateY(-5px)',
     boxShadow: '0 10px 40px rgba(2, 132, 199, 0.15)',
+  },
+  '@media': {
+    '(max-width: 550px)': {
+      padding: '1.5rem',
+      borderRadius: '12px',
+    },
   },
 });
 
@@ -289,7 +367,12 @@ export const featureText = style({
 
 export const faq = style({
   padding: '4rem 2rem',
-  background: 'white',
+  background: oceanTheme.colors.secondary,
+  '@media': {
+    '(max-width: 550px)': {
+      padding: '3rem 1rem',
+    },
+  },
 });
 
 export const faqContainer = style({
@@ -302,6 +385,10 @@ export const faqGrid = style({
   gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
   gap: '1.5rem',
   '@media': {
+    '(max-width: 550px)': {
+      gridTemplateColumns: '1fr',
+      gap: '1rem',
+    },
     '(max-width: 768px)': {
       gridTemplateColumns: '1fr',
     },
@@ -332,7 +419,7 @@ export const faqAnswer = style({
 
 export const howItWorks = style({
   padding: '4rem 2rem',
-  background: oceanTheme.colors.secondary,
+  background: 'white',
 });
 
 export const howContainer = style({

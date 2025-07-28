@@ -33,37 +33,37 @@ const FEATURES: FeatureData[] = [
   {
     icon: '⚡',
     title: 'Real-Time Synchronization',
-    description: 'Play together with minimal delay. Works excellent locally and surprisingly well across distances. Optimized for the best possible timing.',
+    description: 'Play together with minimal delay. Excellent performance locally and reliable quality across distances. Optimized for the best possible timing.',
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   },
   {
     icon: '🎵',
     title: 'High-Quality Piano Sounds',
-    description: 'Carefully sampled piano with rich, expressive sound. Multiple velocity layers give you natural playing dynamics.',
+    description: 'Rich, expressive piano samples with multiple velocity layers for natural, dynamic playing.',
     gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
   },
   {
     icon: '👥',
     title: 'Perfect for Music Education',
-    description: 'Ideal for piano lessons, ensemble practice, and collaborative learning. Teachers and students love the instant connection.',
+    description: 'Ideal for remote lessons, ensemble practice, and collaborative learning. Teachers and students connect instantly.',
     gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
   },
   {
     icon: '💝',
     title: 'Completely Free',
-    description: 'No subscriptions, no ads, no premium tiers. Built for the music community with love and supported by donations.',
+    description: 'No subscriptions, ads, or premium tiers. Built for the music community and supported by donations.',
     gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
   },
   {
     icon: '🌐',
     title: 'Universal Compatibility',
-    description: 'Works instantly in any modern browser. Supports desktop, tablet, and mobile. MIDI keyboards work seamlessly when available.',
+    description: 'Works instantly in any browser. Desktop, tablet, and mobile ready. MIDI keyboards connect seamlessly.',
     gradient: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
   },
   {
     icon: '🎙️',
     title: 'Active Development',
-    description: 'Regular updates with new instruments and features. Built with modern web technology and continuously improving.',
+    description: 'Regular updates bring new instruments and features. Built with modern technology and constantly improving.',
     gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
   },
 ];
@@ -130,7 +130,7 @@ function HomeContent() {
               The Best Way to Play Piano Together Online
             </h1>
             <p class={styles.subHeading}>
-              Make music together online. Perfect for music lessons, jamming with friends, or connecting with other musicians. Create a room, get a simple 5-letter code, and invite anyone to play.
+              Perfect for music lessons, jamming with friends, or connecting with nearby musicians. Just create a room and share the 5-letter code to start playing together instantly.
             </p>
             
             <div class={styles.actionSection}>
@@ -144,7 +144,7 @@ function HomeContent() {
                 ) : (
                   <>
                     <span>🎹</span>
-                    Create New Room
+                    Start Now
                   </>
                 )}
               </button>
@@ -160,6 +160,10 @@ function HomeContent() {
                     class={styles.roomCodeInput}
                     placeholder="abcde"
                     maxLength="5"
+                    inputMode="text"
+                    autoComplete="off"
+                    autoCapitalize="none"
+                    spellCheck="false"
                     onInput={handleRoomCodeInput}
                     onKeyPress={(e: KeyPressEvent) => e.key === 'Enter' && joinRoom()}
                   />
@@ -183,10 +187,28 @@ function HomeContent() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section class={styles.howItWorks}>
+        <div class={styles.howContainer}>
+          <h2 class={styles.sectionHeading}>How It Works</h2>
+          <div class={styles.steps}>
+            <For each={STEPS}>
+              {(step) => (
+                <div class={styles.step}>
+                  <div class={styles.stepNumber}>{step.number}</div>
+                  <h3 class={styles.stepTitle}>{step.title}</h3>
+                  <p class={styles.stepText}>{step.description}</p>
+                </div>
+              )}
+            </For>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section class={styles.features}>
         <div class={styles.featuresContainer}>
-          <h2 class={styles.sectionHeading}>What to Expect</h2>
+          <h2 class={styles.sectionHeading}>Features</h2>
           <div class={styles.featuresGrid}>
             <For each={FEATURES}>
               {(feature) => (
@@ -212,50 +234,32 @@ function HomeContent() {
       {/* FAQ Section */}
       <section class={styles.faq}>
         <div class={styles.faqContainer}>
-          <h2 class={styles.sectionHeading}>Quick Questions</h2>
+          <h2 class={styles.sectionHeading}>FAQ</h2>
           <div class={styles.faqGrid}>
             <div class={styles.faqItem}>
-              <div class={styles.faqQuestion}>❓ Do I need to download anything?</div>
+              <div class={styles.faqQuestion}>Do I need to download anything?</div>
               <div class={styles.faqAnswer}><strong>No downloads needed</strong>, runs instantly in your browser</div>
             </div>
             <div class={styles.faqItem}>
-              <div class={styles.faqQuestion}>❓ Is it really free?</div>
+              <div class={styles.faqQuestion}>Is it really free?</div>
               <div class={styles.faqAnswer}><strong>Completely free</strong>, no subscriptions, ads, or hidden costs</div>
             </div>
             <div class={styles.faqItem}>
-              <div class={styles.faqQuestion}>❓ Do I need a MIDI keyboard?</div>
+              <div class={styles.faqQuestion}>Do I need a MIDI keyboard?</div>
               <div class={styles.faqAnswer}><strong>Not required</strong>, works great with mouse, touch, or computer keyboard</div>
             </div>
             <div class={styles.faqItem}>
-              <div class={styles.faqQuestion}>❓ How well does it work across distances?</div>
-              <div class={styles.faqAnswer}><strong>Surprisingly well</strong>, excellent locally, good quality worldwide</div>
+              <div class={styles.faqQuestion}>How well does it work across distances?</div>
+              <div class={styles.faqAnswer}><strong>Best within 500 miles</strong>, works at any distance with more delay</div>
             </div>
             <div class={styles.faqItem}>
-              <div class={styles.faqQuestion}>❓ Are my sessions private?</div>
+              <div class={styles.faqQuestion}>Are my sessions private?</div>
               <div class={styles.faqAnswer}><strong>Completely private</strong>, only people with your room code can join</div>
             </div>
             <div class={styles.faqItem}>
-              <div class={styles.faqQuestion}>❓ Does it work on mobile?</div>
+              <div class={styles.faqQuestion}>Does it work on mobile?</div>
               <div class={styles.faqAnswer}><strong>Works everywhere</strong>, phones, tablets, desktops, any modern browser</div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section class={styles.howItWorks}>
-        <div class={styles.howContainer}>
-          <h2 class={styles.sectionHeading}>How It Works</h2>
-          <div class={styles.steps}>
-            <For each={STEPS}>
-              {(step) => (
-                <div class={styles.step}>
-                  <div class={styles.stepNumber}>{step.number}</div>
-                  <h3 class={styles.stepTitle}>{step.title}</h3>
-                  <p class={styles.stepText}>{step.description}</p>
-                </div>
-              )}
-            </For>
           </div>
         </div>
       </section>
@@ -263,7 +267,7 @@ function HomeContent() {
       {/* Performance & Privacy Section */}
       <section class={styles.expectations}>
         <div class={styles.expectationsContainer}>
-          <h2 class={styles.sectionHeading}>Performance & Privacy</h2>
+          <h2 class={styles.sectionHeading}>Good to Know</h2>
           <div class={styles.expectationsList}>
             <div class={styles.expectationItem}>
               <span class={styles.expectationIcon}>🚀</span>
@@ -298,7 +302,7 @@ function HomeContent() {
             <div class={styles.expectationItem}>
               <span class={styles.expectationIcon}>🌍</span>
               <div>
-                <strong>Works worldwide</strong>, distance affects timing, but collaboration works everywhere
+                <strong>Distance affects timing</strong>, best performance within 500 miles, playable at any distance
               </div>
             </div>
           </div>

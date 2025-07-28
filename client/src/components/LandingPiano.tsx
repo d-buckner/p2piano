@@ -67,6 +67,12 @@ export default function LandingPiano() {
       }, 10); // Small delay to ensure activeKeys state has updated
     }, 400);
   };
+
+  const handleKeyInteraction = (key: string) => {
+    // Randomly select a user for interactive key presses
+    const randomUser = USERS[Math.floor(Math.random() * USERS.length)];
+    pressKey(key, randomUser.id);
+  };
   
   const playCollaboration = () => {
     COLLABORATIVE_PATTERN.forEach(({ key, delay, user }) => {
@@ -110,6 +116,11 @@ export default function LandingPiano() {
                   style={{
                     'background-color': keyColor()
                   }}
+                  onClick={() => handleKeyInteraction(key)}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    handleKeyInteraction(key);
+                  }}
                 />
               );
             }}
@@ -131,6 +142,11 @@ export default function LandingPiano() {
                   style={{
                     left: key.left,
                     'background-color': keyColor()
+                  }}
+                  onClick={() => handleKeyInteraction(key.note)}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    handleKeyInteraction(key.note);
                   }}
                 />
               );

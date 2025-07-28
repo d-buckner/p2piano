@@ -16,6 +16,12 @@ export const container = style({
   height: '100%',
   minHeight: '300px',
   justifyContent: 'center',
+  '@media': {
+    '(max-width: 550px)': {
+      minHeight: '250px',
+      gap: vars.spacing.md,
+    },
+  },
 });
 
 export const pianoContainer = style({
@@ -24,6 +30,13 @@ export const pianoContainer = style({
   padding: '2rem',
   boxShadow: '0 25px 50px rgba(0, 0, 0, 0.3)',
   position: 'relative',
+  '@media': {
+    '(max-width: 550px)': {
+      padding: '1.5rem',
+      borderRadius: '16px',
+      transform: 'scale(0.9)',
+    },
+  },
 });
 
 export const whiteKeysContainer = style({
@@ -41,6 +54,15 @@ export const whiteKey = style({
   marginRight: '1px',
   position: 'relative',
   transition: 'all 0.2s ease',
+  cursor: 'pointer',
+  ':hover': {
+    background: '#e5e7eb',
+    transform: 'translateY(1px)',
+  },
+  ':active': {
+    background: '#d1d5db',
+    transform: 'translateY(2px)',
+  },
 });
 
 export const blackKeysContainer = style({
@@ -49,7 +71,14 @@ export const blackKeysContainer = style({
   left: '2rem', // Match the padding of pianoContainer
   right: '2rem',
   height: '75px',
-  pointerEvents: 'none',
+  pointerEvents: 'all',
+  '@media': {
+    '(max-width: 550px)': {
+      top: '1.5rem',
+      left: '1.5rem',
+      right: '1.5rem',
+    },
+  },
 });
 
 export const blackKey = style({
@@ -62,6 +91,16 @@ export const blackKey = style({
   zIndex: 2,
   transition: 'all 0.2s ease',
   border: '1px solid #000',
+  cursor: 'pointer',
+  pointerEvents: 'all',
+  ':hover': {
+    background: '#374151',
+    transform: 'translateY(1px)',
+  },
+  ':active': {
+    background: '#4b5563',
+    transform: 'translateY(2px)',
+  },
 });
 
 export const keyActive = style({

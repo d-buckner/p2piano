@@ -5,7 +5,7 @@ import { vars } from '../styles/theme.css';
 export const page = style({
   display: 'grid',
   gridTemplateAreas: '"header" "main" "footer"',
-  gridTemplateRows: '40px minmax(0, 1fr) auto',
+  gridTemplateRows: `${vars.sizes.navbarHeight} minmax(0, 1fr) auto`,
   minHeight: '100vh',
   backgroundColor: vars.colors.background,
   color: vars.colors.foreground,

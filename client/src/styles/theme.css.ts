@@ -38,6 +38,7 @@ export const [themeClass, vars] = createTheme({
   },
   sizes: {
     headerHeight: '2.25rem',
+    navbarHeight: '40px',
   },
   overlays: {
     subtle: 'rgba(255, 255, 255, 0.05)',

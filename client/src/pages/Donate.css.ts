@@ -14,12 +14,18 @@ export const container = style({
 export const hero = style({
   background: 'linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%)',
   color: '#0c4a6e',
-  minHeight: '60vh',
+  minHeight: `calc(60vh - ${vars.sizes.navbarHeight})`,
   display: 'flex',
   alignItems: 'center',
   position: 'relative',
   overflow: 'hidden',
-  paddingTop: '60px',
+  padding: '4rem 0',
+  '@media': {
+    '(max-width: 550px)': {
+      minHeight: `calc(50vh - ${vars.sizes.navbarHeight})`,
+      padding: '3rem 0',
+    },
+  },
 });
 
 export const heroContent = style({
@@ -29,6 +35,11 @@ export const heroContent = style({
   textAlign: 'center',
   position: 'relative',
   zIndex: 1,
+  '@media': {
+    '(max-width: 550px)': {
+      padding: '0 1rem',
+    },
+  },
 });
 
 export const heroHeading = style({
@@ -50,6 +61,12 @@ export const heroSubtext = style({
   color: '#475569',
   lineHeight: 1.7,
   marginBottom: '2rem',
+  '@media': {
+    '(max-width: 550px)': {
+      fontSize: '1.1rem',
+      lineHeight: 1.6,
+    },
+  },
 });
 
 export const highlight = style({
@@ -64,6 +81,11 @@ export const highlight = style({
 export const content = style({
   padding: '6rem 2rem',
   background: 'white',
+  '@media': {
+    '(max-width: 550px)': {
+      padding: '3rem 1rem',
+    },
+  },
 });
 
 export const contentContainer = style({
@@ -90,6 +112,12 @@ export const donationGrid = style({
   gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
   gap: '2rem',
   marginBottom: '4rem',
+  '@media': {
+    '(max-width: 550px)': {
+      gridTemplateColumns: '1fr',
+      gap: '1.5rem',
+    },
+  },
 });
 
 export const donationCard = style({
@@ -105,6 +133,11 @@ export const donationCard = style({
   ':hover': {
     transform: 'translateY(-5px)',
     boxShadow: '0 10px 40px rgba(2, 132, 199, 0.15)',
+  },
+  '@media': {
+    '(max-width: 550px)': {
+      padding: '2rem',
+    },
   },
 });
 
@@ -148,6 +181,14 @@ export const donationButton = style({
     transform: 'translateY(-2px)',
     boxShadow: '0 8px 25px rgba(2, 132, 199, 0.35)',
     background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
+  },
+  '@media': {
+    '(max-width: 550px)': {
+      padding: '1rem 1.5rem',
+      fontSize: '0.95rem',
+      width: '100%',
+      justifyContent: 'center',
+    },
   },
 });
 

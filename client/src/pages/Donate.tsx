@@ -36,7 +36,7 @@ const Donate = () => (
                 class={styles.donationButton}
               >
                 <span>🎵</span>
-                Donate to Seattle JazzED
+                Donate
               </a>
             </div>
 
@@ -53,13 +53,13 @@ const Donate = () => (
                 class={styles.donationButton}
               >
                 <span>🎵</span>
-                Donate to Save the Music
+                Donate
               </a>
             </div>
 
             <div class={styles.donationCard}>
               <span class={styles.donationIcon}>💻</span>
-              <h3 class={styles.donationTitle}>Contribute Code</h3>
+              <h3 class={styles.donationTitle}>Contribute</h3>
               <p class={styles.donationText}>
                 Help improve p2piano by contributing code, reporting bugs, or suggesting features. Every contribution helps make music collaboration more accessible.
               </p>
@@ -70,7 +70,7 @@ const Donate = () => (
                 class={`${styles.donationButton} ${styles.githubButton}`}
               >
                 <span>⭐</span>
-                Contribute on GitHub
+                Contribute
               </a>
             </div>
           </div>
