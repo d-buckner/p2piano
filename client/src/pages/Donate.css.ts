@@ -5,18 +5,21 @@ import { vars } from '../styles/theme.css';
 export const container = style({
   fontFamily: vars.fonts.body,
   lineHeight: 1.6,
-  color: '#333',
+  color: '#0c4a6e',
+  background: '#f0f9ff',
+  minHeight: '100vh',
 });
 
 // Hero Section
 export const hero = style({
-  background: 'linear-gradient(135deg, #1f2937 0%, #374151 100%)',
-  color: 'white',
+  background: 'linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%)',
+  color: '#0c4a6e',
   minHeight: '60vh',
   display: 'flex',
   alignItems: 'center',
   position: 'relative',
   overflow: 'hidden',
+  paddingTop: '60px',
 });
 
 export const heroContent = style({
@@ -44,20 +47,23 @@ export const heroHeading = style({
 
 export const heroSubtext = style({
   fontSize: '1.25rem',
-  opacity: 0.9,
+  color: '#475569',
   lineHeight: 1.7,
   marginBottom: '2rem',
 });
 
 export const highlight = style({
-  color: '#fbbf24',
-  fontWeight: 600,
+  color: '#0c4a6e',
+  fontWeight: 700,
+  textDecoration: 'underline',
+  textDecorationColor: 'rgba(12, 74, 110, 0.3)',
+  textUnderlineOffset: '4px',
 });
 
 // Content Section
 export const content = style({
   padding: '6rem 2rem',
-  background: '#f8fafc',
+  background: 'white',
 });
 
 export const contentContainer = style({
@@ -70,7 +76,8 @@ export const sectionHeading = style({
   textAlign: 'center',
   fontSize: '2.5rem',
   marginBottom: '3rem',
-  color: '#1f2937',
+  color: '#0c4a6e',
+  fontWeight: 600,
   '@media': {
     '(max-width: 768px)': {
       fontSize: '2rem',
@@ -86,18 +93,18 @@ export const donationGrid = style({
 });
 
 export const donationCard = style({
-  background: 'white',
+  background: '#f0f9ff',
   padding: '2.5rem',
   borderRadius: '16px',
-  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+  boxShadow: '0 4px 20px rgba(2, 132, 199, 0.08)',
   transition: 'all 0.3s ease',
-  border: '1px solid #e5e7eb',
+  border: '1px solid rgba(2, 132, 199, 0.1)',
   textAlign: 'center',
   display: 'flex',
   flexDirection: 'column',
   ':hover': {
     transform: 'translateY(-5px)',
-    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.12)',
+    boxShadow: '0 10px 40px rgba(2, 132, 199, 0.15)',
   },
 });
 
@@ -112,11 +119,11 @@ export const donationTitle = style({
   fontSize: '1.5rem',
   fontWeight: 600,
   marginBottom: '1rem',
-  color: '#1f2937',
+  color: '#0c4a6e',
 });
 
 export const donationText = style({
-  color: '#6b7280',
+  color: '#475569',
   lineHeight: 1.6,
   marginBottom: '2rem',
   flex: 1,
@@ -126,7 +133,7 @@ export const donationButton = style({
   display: 'inline-flex',
   alignItems: 'center',
   gap: '0.5rem',
-  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  background: 'linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%)',
   color: 'white',
   padding: '0.875rem 1.75rem',
   borderRadius: '12px',
@@ -134,27 +141,28 @@ export const donationButton = style({
   fontWeight: 600,
   fontSize: '1rem',
   transition: 'all 0.3s ease',
-  boxShadow: '0 4px 15px rgba(102, 126, 234, 0.3)',
+  boxShadow: '0 4px 15px rgba(2, 132, 199, 0.25)',
   border: 'none',
   cursor: 'pointer',
   ':hover': {
     transform: 'translateY(-2px)',
-    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.4)',
+    boxShadow: '0 8px 25px rgba(2, 132, 199, 0.35)',
+    background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%)',
   },
 });
 
 export const githubButton = style({
-  background: 'linear-gradient(135deg, #374151 0%, #1f2937 100%)',
-  boxShadow: '0 4px 15px rgba(31, 41, 55, 0.3)',
+  background: 'linear-gradient(135deg, #475569 0%, #334155 100%)',
+  boxShadow: '0 4px 15px rgba(71, 85, 105, 0.25)',
   ':hover': {
-    boxShadow: '0 8px 25px rgba(31, 41, 55, 0.4)',
+    boxShadow: '0 8px 25px rgba(71, 85, 105, 0.35)',
   },
 });
 
 // Philosophy Section
 export const philosophy = style({
   padding: '6rem 2rem',
-  background: 'white',
+  background: '#e0f2fe',
 });
 
 export const philosophyContainer = style({

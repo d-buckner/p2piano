@@ -161,10 +161,6 @@ export default function LandingPiano() {
         </For>
         </div>
       </div>
-      
-      <div class={styles.description}>
-        Watch multiple users play together in real-time
-      </div>
     </div>
   );
 };

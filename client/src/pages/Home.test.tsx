@@ -3,8 +3,27 @@ import { describe, expect, it, vi } from 'vitest';
 import Home from './Home';
 
 
-vi.mock('../components/HomeContent', () => ({
-  default: () => <div data-testid="home-content">Mocked HomeContent</div>
+vi.mock('@solidjs/router', () => ({
+  useNavigate: () => vi.fn(),
+  A: (props: { href: string; children: unknown }) => <a href={props.href}>{props.children}</a>
+}));
+
+vi.mock('../actions/RoomActions', () => ({
+  setRoom: vi.fn()
+}));
+
+vi.mock('../audio/AudioManager', () => ({
+  default: {
+    activate: vi.fn()
+  }
+}));
+
+vi.mock('../clients/RoomClient', () => ({
+  createNewRoom: vi.fn().mockResolvedValue({ roomId: 'test-room' })
+}));
+
+vi.mock('../components/LandingPiano', () => ({
+  default: () => <div data-testid="landing-piano">Mocked LandingPiano</div>
 }));
 
 vi.mock('../components/HomeLayout', () => ({
@@ -21,8 +40,8 @@ describe('Home', () => {
     expect(getByTestId('home-layout')).toBeInTheDocument();
   });
 
-  it('should render HomeContent component', () => {
+  it('should render landing piano component', () => {
     const { getByTestId } = render(() => <Home />);
-    expect(getByTestId('home-content')).toBeInTheDocument();
+    expect(getByTestId('landing-piano')).toBeInTheDocument();
   });
 });

@@ -22,7 +22,9 @@ vi.mock('./LandingPiano.css', () => ({
 describe('LandingPiano', () => {
   it('should render without crashing', () => {
     render(() => <LandingPiano />);
-    expect(screen.getByText('Watch multiple users play together in real-time')).toBeInTheDocument();
+    // Should render the piano component structure
+    const container = document.querySelector('.container');
+    expect(container).toBeInTheDocument();
   });
 
   it('should render piano keys', () => {
@@ -48,8 +50,14 @@ describe('LandingPiano', () => {
     expect(screen.getByText('S')).toBeInTheDocument();
   });
 
-  it('should have description text', () => {
+  it('should have piano and user avatar containers', () => {
     render(() => <LandingPiano />);
-    expect(screen.getByText('Watch multiple users play together in real-time')).toBeInTheDocument();
+    // Should have piano container
+    const pianoContainer = document.querySelector('.pianoContainer');
+    expect(pianoContainer).toBeInTheDocument();
+    
+    // Should have user avatars container
+    const userAvatars = document.querySelector('.userAvatars');
+    expect(userAvatars).toBeInTheDocument();
   });
 });
