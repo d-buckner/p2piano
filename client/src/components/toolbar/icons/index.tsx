@@ -19,6 +19,14 @@ export function PauseIcon(props: IconProps) {
   );
 }
 
+export function StopIcon(props: IconProps) {
+  return (
+    <svg width={props.size || 16} height={props.size || 16} viewBox="0 0 24 24" fill="currentColor" class={props.class}>
+      <rect x="6" y="6" width="12" height="12"/>
+    </svg>
+  );
+}
+
 export function MetronomeIcon(props: IconProps) {
   return (
     <svg width={props.size || 16} height={props.size || 16} viewBox="0 0 24 24" fill="currentColor" class={props.class}>

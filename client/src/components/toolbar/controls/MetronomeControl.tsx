@@ -6,7 +6,7 @@ import { selectMetronome } from '../../../selectors/metronomeSelectors';
 import { selectMyUser } from '../../../selectors/workspaceSelectors';
 import Dropdown from '../../ui/Dropdown';
 import Tooltip from '../../ui/Tooltip';
-import { ChevronDownIcon } from '../icons';
+import { ChevronDownIcon, PlayIcon, StopIcon } from '../icons';
 import * as styles from './MetronomeControl.css';
 
 
@@ -69,7 +69,7 @@ function MetronomeControl() {
             onClick={toggleMetronome}
           >
             <div class={`${styles.iconWrapper} ${isPulsing() && metronome().active ? styles.pulse : ''}`}>
-              {metronome().active ? '⏸' : '▶'}
+              {metronome().active ? <StopIcon size={16} /> : <PlayIcon size={16} />}
             </div>
           </button>
         </Tooltip>

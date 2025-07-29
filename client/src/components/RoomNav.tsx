@@ -18,7 +18,9 @@ function RoomNav() {
 
   return (
     <nav class={styles.roomNav}>
-      <a onClick={navigateHome} class={clsx(styles.navLink, styles.navLeft)}>p2piano</a>
+      <div class={styles.navLeft}>
+        <a onClick={navigateHome} class={styles.navLink}>p2piano</a>
+      </div>
       <div class={styles.navCenter}>
         <Toolbar />
       </div>
@@ -27,14 +29,14 @@ function RoomNav() {
         <div class={styles.showFromMobile}>
           <InviteButton />
         </div>
-        
+
         {/* Medium+: Add Room Code */}
         <div class={styles.showFromMedium}>
           <RoomCode />
         </div>
-        
+
       </div>
-    </nav>
+    </nav >
   );
 }
 

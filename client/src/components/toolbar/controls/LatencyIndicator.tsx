@@ -16,7 +16,7 @@ function LatencyIndicator() {
   }[connectionQuality];
 
   return (
-    <Tooltip text="Connection Quality">
+    <Tooltip text="Connection Latency">
       <div class={styles.latencyIndicator}>
         <WifiIcon size={12} class={qualityClass} />
         <span class={styles.latencyValue}>{Math.floor(latency())}ms</span>

@@ -1,4 +1,4 @@
-import { setStore } from '../app/store';
+import { setStore, store } from '../app/store';
 import { Transport } from '../constants';
 
 
@@ -22,7 +22,12 @@ export function updatePeerTransport(userId: string, transport: Transport) {
 }
 
 export function updatePeerLatency(userId: string, latency: number) {
-  setStore('connection', 'peerConnections', userId, 'latency', latency);
+  // Only update latency if peer connection already exists
+  // This prevents re-creating connections for disconnected peers
+  const currentConnections = store.connection?.peerConnections;
+  if (currentConnections?.[userId]) {
+    setStore('connection', 'peerConnections', userId, 'latency', latency);
+  }
 }
 
 export function setMaxLatency(maxLatency: number) {

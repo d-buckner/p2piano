@@ -17,6 +17,8 @@ function Tooltip(props: TooltipProps) {
         class={styles.tooltipTrigger}
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
+        onTouchStart={(e) => e.preventDefault()}
+        onClick={() => setShow(false)}
       >
         {props.children}
       </div>

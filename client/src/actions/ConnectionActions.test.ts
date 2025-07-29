@@ -16,7 +16,14 @@ type SetConnections = (connections: PeerConnections) => PeerConnections;
 // Mock the store
 vi.mock('../app/store', () => ({
   setStore: vi.fn(),
-  store: {},
+  store: {
+    connection: {
+      peerConnections: {
+        'user-123': { transport: 'websocket', latency: 25 },
+        'user-456': { transport: 'webrtc', latency: 50 },
+      }
+    }
+  },
 }));
 
 describe('ConnectionActions', () => {
@@ -172,15 +179,21 @@ describe('ConnectionActions', () => {
     });
 
     it('should handle fractional latency values', () => {
-      updatePeerLatency('user-789', 123.45);
+      updatePeerLatency('user-123', 123.45);
 
       expect(setStore).toHaveBeenCalledWith(
         'connection',
         'peerConnections',
-        'user-789',
+        'user-123',
         'latency',
         123.45
       );
+    });
+
+    it('should not update latency for non-existent peer', () => {
+      updatePeerLatency('non-existent-user', 50);
+
+      expect(setStore).not.toHaveBeenCalled();
     });
 
   });

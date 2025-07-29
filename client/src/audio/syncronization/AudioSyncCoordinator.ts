@@ -183,8 +183,14 @@ class AudioSyncCoordinator {
 
   private onPong(response: SamplingMessage) {
     const { peerId, pingTime } = response;
-    const latency = truncate((performance.now() - pingTime) / 2);
     const peerLatencyWindow = this.peerLatencyWindows[peerId];
+    
+    // Guard against stale pong responses from disconnected peers
+    if (!peerLatencyWindow) {
+      return;
+    }
+    
+    const latency = truncate((performance.now() - pingTime) / 2);
     peerLatencyWindow.add(latency);
 
     // @ts-expect-error LATENCY_DEBUG not on window, but it's nice to be able to enable in console

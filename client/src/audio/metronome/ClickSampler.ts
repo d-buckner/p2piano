@@ -20,7 +20,6 @@ class ClickSampler {
       },
       baseUrl: '/assets/samples/metronome/',
     }).toDestination();
-    this.sampler.debug = true;
   }
 
   static high(delay: number) {
