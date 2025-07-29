@@ -112,21 +112,6 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       sourcemap: 'hidden',
-      modulePreload: {
-        polyfill: false,
-        resolveDependencies: (url, deps, context) => {
-          // Preload critical chunks for better performance
-          if (context.hostType === 'html') {
-            return deps.filter(dep => 
-              dep.includes('Home-') || 
-              dep.includes('HomeLayout-') || 
-              dep.includes('RoomActions-') ||
-              dep.includes('Footer-')
-            );
-          }
-          return [];
-        }
-      },
       rollupOptions: {
         input: {
           main: './index.html',
@@ -142,25 +127,7 @@ export default defineConfig(({ mode }) => {
             return 'assets/[name]-[hash].js';
           },
           chunkFileNames: 'assets/[name]-[hash].js',
-          assetFileNames: 'assets/[name]-[hash].[ext]',
-          manualChunks: (id) => {
-            // Separate heavy vendor libraries that are actually used
-            if (id.includes('node_modules/tone')) {
-              return 'vendor-tone';
-            }
-            if (id.includes('node_modules/@automerge')) {
-              return 'vendor-crdt';
-            }
-            if (id.includes('node_modules/solid-js')) {
-              return 'vendor-solid';
-            }
-            // Group critical home components
-            if (id.includes('/pages/Home.') || 
-                id.includes('/components/HomeLayout.') || 
-                id.includes('/components/Footer.')) {
-              return 'home-critical';
-            }
-          }
+          assetFileNames: 'assets/[name]-[hash].[ext]'
         },
         // DANGER: this is simple string replacement in build, use with extreme caution
         plugins: replace({
