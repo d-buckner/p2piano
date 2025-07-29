@@ -16,7 +16,6 @@ http://:8345 {
 
 	root * /www
 	encode {
-		brotli 6
 		gzip 9
 		zstd
 	}
