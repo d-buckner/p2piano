@@ -38,7 +38,7 @@ function AboutContent() {
             Hi, I'm <a href="https://d-buckner.org" target="_blank" rel="noopener noreferrer">Daniel Buckner</a>. I'm a software engineer who spent over a decade as a music educator and professional musician, working in Title 1 schools and with music nonprofits. I've watched students light up when they connect with music and discover what they can create together.
           </p>
           <p class={styles.missionText}>
-            Those moments inspired me to found p2piano. Music works best when it's collaborative. Whether you're learning, teaching, or just playing for fun, people connect more deeply with music when they can share the experience with others.
+            Those moments inspired me to create p2piano. Music works best when it's collaborative. Whether you're learning, teaching, or just playing for fun, people connect more deeply with music when they can share the experience with others.
           </p>
           <p class={styles.missionText}>
             Everyone deserves to experience music. When high-quality music tools are freely available, people can focus on what matters: discovering the joy of making music together.
