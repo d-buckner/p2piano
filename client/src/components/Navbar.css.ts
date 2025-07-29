@@ -78,3 +78,9 @@ export const brandFloating = style({
     transform: 'translateY(-1px)',
   },
 });
+
+export const navLinks = style({
+  display: 'flex',
+  gap: '1.5rem',
+  alignItems: 'center',
+});

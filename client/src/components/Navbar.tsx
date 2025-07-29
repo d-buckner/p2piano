@@ -17,12 +17,20 @@ export default function Navbar(props: NavbarProps = {}) {
       >
         p2piano
       </A>
-      <A 
-        href='/donate' 
-        class={isFloating ? styles.linkFloating : styles.link}
-      >
-        donate
-      </A>
+      <div class={styles.navLinks}>
+        <A 
+          href='/about' 
+          class={isFloating ? styles.linkFloating : styles.link}
+        >
+          about
+        </A>
+        <A 
+          href='/donate' 
+          class={isFloating ? styles.linkFloating : styles.link}
+        >
+          donate
+        </A>
+      </div>
     </nav>
   );
 }

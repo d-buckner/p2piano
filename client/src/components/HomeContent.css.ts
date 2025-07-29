@@ -5,8 +5,8 @@ import { vars } from '../styles/theme.css';
 
 export const container = style({
   minHeight: '100vh',
-  background: '#f0f9ff',
-  color: '#0c4a6e',
+  background: vars.colors.foreground,
+  color: vars.colors.primaryDark,
 });
 
 export const hero = style({
@@ -262,7 +262,7 @@ export const demoContext = style({
 
 export const features = style({
   padding: '4rem 2rem',
-  background: '#f0f9ff', // Different from hero gradient
+  background: vars.colors.foreground, // Different from hero gradient
   '@media': {
     '(max-width: 550px)': {
       padding: '3rem 1rem',
@@ -282,6 +282,59 @@ export const sectionHeading = style({
   marginBottom: '3rem',
   color: '#0c4a6e',
   fontWeight: 600,
+});
+
+// Mission Section
+export const mission = style({
+  padding: '4rem 2rem',
+  background: vars.colors.foreground,
+  '@media': {
+    '(max-width: 768px)': {
+      padding: '3rem 1rem',
+    },
+  },
+});
+
+export const missionHero = style({
+  padding: '4rem 2rem',
+  background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.2) 0%, rgba(14, 165, 233, 0.3) 100%)',
+  position: 'relative',
+  overflow: 'hidden',
+  ':before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'radial-gradient(circle at 30% 50%, rgba(2, 132, 199, 0.1) 0%, transparent 50%)',
+    pointerEvents: 'none',
+  },
+  '@media': {
+    '(max-width: 768px)': {
+      padding: '3rem 1rem',
+    },
+  },
+});
+
+export const missionContainer = style({
+  maxWidth: '800px',
+  margin: '0 auto',
+  position: 'relative',
+  zIndex: 1,
+});
+
+export const missionText = style({
+  fontSize: '1.2rem',
+  lineHeight: 1.7,
+  color: '#374151',
+  marginBottom: '1.5rem',
+  '@media': {
+    '(max-width: 768px)': {
+      fontSize: '1.1rem',
+      lineHeight: 1.6,
+    },
+  },
 });
 
 export const featuresGrid = style({
@@ -451,7 +504,7 @@ export const stepText = style({
 
 export const expectations = style({
   padding: '4rem 2rem',
-  background: '#f0f9ff', // Different from howItWorks
+  background: vars.colors.foreground, // Different from howItWorks
 });
 
 export const expectationsContainer = style({
@@ -472,6 +525,7 @@ export const expectationItem = style({
   background: '#e0f2fe',
   borderRadius: '12px',
   border: '1px solid rgba(2, 132, 199, 0.1)',
+  color: vars.colors.background,
 });
 
 export const expectationIcon = style({

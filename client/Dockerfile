@@ -9,6 +9,8 @@ RUN npm install
 
 ADD public ./public
 ADD index.html .
+ADD about.html .
+ADD donate.html .
 ADD vite.config.ts .
 ADD eslint.config.js .
 ADD src ./src

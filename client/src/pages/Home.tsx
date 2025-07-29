@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router';
-import { createSignal, For } from 'solid-js';
+import { createSignal, For, onMount } from 'solid-js';
 import { setRoom } from '../actions/RoomActions';
 import AudioManager from '../audio/AudioManager';
 import { createNewRoom } from '../clients/RoomClient';
@@ -33,7 +33,7 @@ const FEATURES: FeatureData[] = [
   {
     icon: '⚡',
     title: 'Real-Time Synchronization',
-    description: 'Minimal delay when playing together. Excellent performance locally, reliable quality across distances. Optimized for the best possible timing.',
+    description: 'Optimized for low latency with strong performance nearby and reliable quality across distances. Best performance within 500 miles, works anywhere.',
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   },
   {
@@ -45,7 +45,7 @@ const FEATURES: FeatureData[] = [
   {
     icon: '👥',
     title: 'Perfect for Music Education',
-    description: 'Ideal for remote lessons, ensemble practice, and collaborative learning. Teachers and students connect instantly.',
+    description: 'Ideal for remote lessons, ensemble practice, and collaborative learning. Teachers and students connect instantly. Private by design - only people with your room code can join.',
     gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
   },
   {
@@ -63,7 +63,7 @@ const FEATURES: FeatureData[] = [
   {
     icon: '🎙️',
     title: 'Active Development',
-    description: 'Regular updates bring new instruments and features. Built with modern technology and constantly improving.',
+    description: 'Regular updates bring new features and improvements. Built with modern technology and constantly improving.',
     gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
   },
 ];
@@ -72,12 +72,12 @@ const STEPS: StepData[] = [
   {
     number: '1',
     title: 'Create a Room',
-    description: 'Click "Start Now" and get a simple 5-letter room code.',
+    description: 'Click "Start Now" and get a unique room link.',
   },
   {
     number: '2',
-    title: 'Share the Code',
-    description: 'Send the code to whoever you want to play with. They just type it in and join.',
+    title: 'Share the Link',
+    description: 'Send the link to whoever you want to play with. They click it and join instantly.',
   },
   {
     number: '3',
@@ -90,6 +90,14 @@ function HomeContent() {
   const [isRoomCreating, setRoomCreating] = createSignal(false);
   const [roomCode, setRoomCode] = createSignal('');
   const navigate = useNavigate();
+
+  onMount(() => {
+    document.title = 'p2piano - Online Piano Collaboration';
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Professional online piano collaboration platform for teachers, students, and musicians. Play piano together remotely with real-time synchronization and studio-quality sound. Perfect for remote piano lessons and musical collaboration.');
+    }
+  });
 
   const navigateToRoom = (roomId: string) => navigate(`/${roomId}`);
 
@@ -130,9 +138,9 @@ function HomeContent() {
               The Best Way to Play Piano Together Online
             </h1>
             <p class={styles.subHeading}>
-              Perfect for music lessons, jamming with friends, or connecting with nearby musicians. Create a room and share the 5-letter code to start playing together instantly.
+              Perfect for music lessons, jamming with friends, or connecting with nearby musicians. Create a room and share the link to start playing together instantly.
             </p>
-            
+
             <div class={styles.actionSection}>
               <button
                 class={styles.ctaButton}
@@ -213,9 +221,9 @@ function HomeContent() {
             <For each={FEATURES}>
               {(feature) => (
                 <div class={styles.featureCard}>
-                  <div 
+                  <div
                     class={styles.featureIcon}
-                    style={{ 
+                    style={{
                       background: feature.gradient,
                       color: 'white',
                     }}
@@ -234,8 +242,12 @@ function HomeContent() {
       {/* FAQ Section */}
       <section class={styles.faq}>
         <div class={styles.faqContainer}>
-          <h2 class={styles.sectionHeading}>FAQ</h2>
+          <h2 class={styles.sectionHeading}>Frequently Asked Questions</h2>
           <div class={styles.faqGrid}>
+            <div class={styles.faqItem}>
+              <div class={styles.faqQuestion}>Is p2piano good for online piano lessons?</div>
+              <div class={styles.faqAnswer}><strong>Perfect for piano teachers</strong>, designed specifically for remote piano instruction with real-time collaboration</div>
+            </div>
             <div class={styles.faqItem}>
               <div class={styles.faqQuestion}>Do I need to download anything?</div>
               <div class={styles.faqAnswer}><strong>No downloads needed</strong>, runs instantly in your browser</div>
@@ -245,12 +257,12 @@ function HomeContent() {
               <div class={styles.faqAnswer}><strong>Completely free</strong>, no subscriptions, ads, or hidden costs</div>
             </div>
             <div class={styles.faqItem}>
-              <div class={styles.faqQuestion}>Do I need a MIDI keyboard?</div>
-              <div class={styles.faqAnswer}><strong>Not required</strong>, works great with mouse, touch, or computer keyboard</div>
+              <div class={styles.faqQuestion}>Can I use my MIDI keyboard?</div>
+              <div class={styles.faqAnswer}><strong>Full MIDI support</strong>, works with any MIDI keyboard or use mouse, touch, computer keyboard</div>
             </div>
             <div class={styles.faqItem}>
               <div class={styles.faqQuestion}>How well does it work across distances?</div>
-              <div class={styles.faqAnswer}><strong>Best within 500 miles</strong>, works at any distance with more delay</div>
+              <div class={styles.faqAnswer}><strong>Best within 500 miles</strong>, our audio synchronization engine optimizes for minimal delay</div>
             </div>
             <div class={styles.faqItem}>
               <div class={styles.faqQuestion}>Are my sessions private?</div>
@@ -260,50 +272,9 @@ function HomeContent() {
               <div class={styles.faqQuestion}>Does it work on mobile?</div>
               <div class={styles.faqAnswer}><strong>Works everywhere</strong>, phones, tablets, desktops, any modern browser</div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Performance & Privacy Section */}
-      <section class={styles.expectations}>
-        <div class={styles.expectationsContainer}>
-          <h2 class={styles.sectionHeading}>Good to Know</h2>
-          <div class={styles.expectationsList}>
-            <div class={styles.expectationItem}>
-              <span class={styles.expectationIcon}>🚀</span>
-              <div>
-                <strong>Optimized for low latency</strong>, excellent performance nearby, good quality across distances
-              </div>
-            </div>
-            <div class={styles.expectationItem}>
-              <span class={styles.expectationIcon}>🔒</span>
-              <div>
-                <strong>Private by design</strong>, only people with your room code can join. No recording or data collection
-              </div>
-            </div>
-            <div class={styles.expectationItem}>
-              <span class={styles.expectationIcon}>⚡</span>
-              <div>
-                <strong>Instant access</strong>, no downloads, accounts, or setup required. Works in any modern browser
-              </div>
-            </div>
-            <div class={styles.expectationItem}>
-              <span class={styles.expectationIcon}>🆓</span>
-              <div>
-                <strong>Always free</strong>, no premium features, subscriptions, or ads. Supported by the community
-              </div>
-            </div>
-            <div class={styles.expectationItem}>
-              <span class={styles.expectationIcon}>🔧</span>
-              <div>
-                <strong>Actively maintained</strong>, regular updates and improvements based on user feedback
-              </div>
-            </div>
-            <div class={styles.expectationItem}>
-              <span class={styles.expectationIcon}>🌍</span>
-              <div>
-                <strong>Distance affects timing</strong>, best performance within 500 miles, works at any distance
-              </div>
+            <div class={styles.faqItem}>
+              <div class={styles.faqQuestion}>What makes this different from other online piano apps?</div>
+              <div class={styles.faqAnswer}><strong>Built specifically for piano</strong>, with studio-grade audio and minimal latency</div>
             </div>
           </div>
         </div>

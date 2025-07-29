@@ -1,10 +1,20 @@
+import { onMount } from 'solid-js';
 import PageLayout from '../components/PageLayout';
 import * as styles from './Donate.css';
 
 
-const Donate = () => (
-  <PageLayout>
-    <div class={styles.container}>
+const Donate = () => {
+  onMount(() => {
+    document.title = 'Support Music Education | p2piano Donate';
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if (metaDescription) {
+      metaDescription.setAttribute('content', 'Support music education by donating to recommended nonprofits: Seattle JazzED and Save the Music. Help make music accessible to all students.');
+    }
+  });
+
+  return (
+    <PageLayout>
+      <div class={styles.container}>
       {/* Hero Section */}
       <section class={styles.hero}>
         <div class={styles.heroContent}>
@@ -74,8 +84,9 @@ const Donate = () => (
         </div>
       </section>
 
-    </div>
-  </PageLayout>
-);
+      </div>
+    </PageLayout>
+  );
+};
 
 export default Donate;

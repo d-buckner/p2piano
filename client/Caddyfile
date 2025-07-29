@@ -75,8 +75,12 @@ http://:8345 {
 		rewrite * /
 	}
 
+	handle /about {
+		rewrite * /about.html
+	}
+
 	handle /donate {
-		rewrite * /
+		rewrite * /donate.html
 	}
 
 	# Default file server (moved to end to avoid conflicts)

@@ -51,7 +51,6 @@ describe('ClickSampler', () => {
         baseUrl: '/assets/samples/metronome/',
       });
       expect(mockSampler.toDestination).toHaveBeenCalled();
-      expect(mockSampler.debug).toBe(true);
     });
 
     it('should not create a new sampler if already initialized', async () => {

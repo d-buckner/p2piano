@@ -6,7 +6,7 @@ export const container = style({
   fontFamily: vars.fonts.body,
   lineHeight: 1.6,
   color: '#0c4a6e',
-  background: '#f0f9ff',
+  background: vars.colors.foreground,
   minHeight: '100vh',
 });
 
@@ -121,7 +121,7 @@ export const donationGrid = style({
 });
 
 export const donationCard = style({
-  background: '#f0f9ff',
+  background: vars.colors.foreground,
   padding: '2.5rem',
   borderRadius: '16px',
   boxShadow: '0 4px 20px rgba(2, 132, 199, 0.08)',

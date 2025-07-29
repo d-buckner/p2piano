@@ -115,6 +115,8 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         input: {
           main: './index.html',
+          about: './about.html',
+          donate: './donate.html',
           serviceWorker: './src/workers/serviceWorker.ts',
         },
         output: {
