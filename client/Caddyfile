@@ -15,7 +15,11 @@ http://:8345 {
 	}
 
 	root * /www
-	encode zstd gzip
+	encode {
+		brotli 6
+		gzip 9
+		zstd
+	}
 
 	@audio_samples {
 		path /assets/samples/**/*.ogg
@@ -23,6 +27,14 @@ http://:8345 {
 
 	@js_assets {
 		path /assets/*.js
+	}
+
+	@css_assets {
+		path /assets/*.css
+	}
+
+	@font_assets {
+		path /assets/fonts/*.woff2
 	}
 
 	@html {
@@ -46,10 +58,30 @@ http://:8345 {
 
 	handle @js_assets {
 		header {
-			# Cache JS assets for 1 week (balances performance with deployment frequency)
-			Cache-Control "public, max-age=604800"
+			# Cache JS assets for 1 year (they have content hashes)
+			Cache-Control "public, max-age=31536000, immutable"
 			# Set proper MIME type
 			Content-Type "application/javascript"
+		}
+		file_server
+	}
+
+	handle @css_assets {
+		header {
+			# Cache CSS assets for 1 year (they have content hashes)
+			Cache-Control "public, max-age=31536000, immutable"
+			# Set proper MIME type
+			Content-Type "text/css"
+		}
+		file_server
+	}
+
+	handle @font_assets {
+		header {
+			# Cache fonts for 1 year (they rarely change)
+			Cache-Control "public, max-age=31536000, immutable"
+			# Set proper MIME type
+			Content-Type "font/woff2"
 		}
 		file_server
 	}
