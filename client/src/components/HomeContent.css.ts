@@ -149,26 +149,6 @@ export const ctaButton = style({
   },
 });
 
-export const orDivider = style({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '1rem',
-  width: '100%',
-  color: '#475569',
-  ':before': {
-    content: '""',
-    flex: 1,
-    height: '1px',
-    background: 'rgba(2, 132, 199, 0.2)',
-  },
-  ':after': {
-    content: '""',
-    flex: 1,
-    height: '1px',
-    background: 'rgba(2, 132, 199, 0.2)',
-  },
-});
-
 export const joinSection = style({
   display: 'flex',
   flexDirection: 'column',
@@ -212,37 +192,6 @@ export const roomCodeInput = style({
       padding: '1rem',
       fontSize: '1.2rem',
       minHeight: '48px',
-    },
-  },
-});
-
-export const joinButton = style({
-  background: '#0284c7',
-  color: 'white',
-  border: '1px solid #0284c7',
-  padding: '0.75rem 1.5rem',
-  borderRadius: '8px',
-  cursor: 'pointer',
-  fontFamily: vars.fonts.body,
-  fontWeight: 500,
-  transition: 'all 0.2s ease',
-  minHeight: '44px',
-  ':hover': {
-    background: '#10b981',
-    borderColor: '#10b981',
-  },
-  ':active': {
-    transform: 'scale(0.98)',
-  },
-  ':disabled': {
-    opacity: 0.5,
-    cursor: 'not-allowed',
-  },
-  '@media': {
-    '(max-width: 550px)': {
-      padding: '1rem 1.75rem',
-      minHeight: '48px',
-      fontSize: '1rem',
     },
   },
 });

@@ -15,87 +15,54 @@ interface FeatureData {
   gradient: string;
 }
 
-interface StepData {
-  number: string;
-  title: string;
-  description: string;
-}
-
-interface InputEvent extends Event {
-  target: HTMLInputElement;
-}
-
-interface KeyPressEvent extends KeyboardEvent {
-  key: string;
-}
-
 const FEATURES: FeatureData[] = [
   {
     icon: '⚡',
-    title: 'Real-Time Synchronization',
-    description: 'Optimized for low latency with strong performance nearby and reliable quality across distances. Best performance within 500 miles, works anywhere.',
+    title: 'Play Together Like You\'re in the Same Room',
+    description: 'Feel connected whether you\'re across town or across the country. The closer you are, the more it feels like sitting side-by-side at the same piano.',
     gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   },
   {
     icon: '🎵',
-    title: 'High-Quality Piano Sounds',
-    description: 'Rich, expressive piano samples with multiple velocity layers for natural, dynamic playing.',
+    title: 'Beautiful, Responsive Piano Sound',
+    description: 'Every note responds to your touch, from the gentlest pianissimo to powerful forte. It sounds and feels like a real piano.',
     gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
   },
   {
     icon: '👥',
     title: 'Perfect for Music Education',
-    description: 'Ideal for remote lessons, ensemble practice, and collaborative learning. Teachers and students connect instantly. Private by design - only people with your room code can join.',
+    description: 'Built for real teaching moments. Students hear you play, you hear them respond. Share the same musical space even when you\'re apart. Only people you invite can join your lesson.',
     gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
   },
   {
     icon: '💝',
     title: 'Completely Free',
-    description: 'No subscriptions, ads, or premium tiers. Built for the music community and supported by donations.',
+    description: 'No ads. Ever. Built for the music community.',
     gradient: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
   },
   {
     icon: '🌐',
-    title: 'Universal Compatibility',
-    description: 'Works instantly in any browser. Desktop, tablet, and mobile ready. MIDI keyboards connect seamlessly.',
+    title: 'USB MIDI & Universal Support',
+    description: 'Plug in any MIDI keyboard for professional playing with full velocity sensitivity. Also works great on any device with mouse, touchscreen, or computer keys. No downloads needed.',
     gradient: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
   },
   {
     icon: '🎙️',
-    title: 'Active Development',
-    description: 'Regular updates bring new features and improvements. Built with modern technology and constantly improving.',
+    title: 'Always Getting Better',
+    description: 'We listen to teachers and musicians, adding features you actually need. Your feedback shapes what we build next.',
     gradient: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-  },
-];
-
-const STEPS: StepData[] = [
-  {
-    number: '1',
-    title: 'Create a Room',
-    description: 'Click "Start Now" and get a unique room link.',
-  },
-  {
-    number: '2',
-    title: 'Share the Link',
-    description: 'Send the link to whoever you want to play with. They click it and join instantly.',
-  },
-  {
-    number: '3',
-    title: 'Start Playing',
-    description: 'Everyone can play piano together. Use your keyboard, mouse, or touch screen.',
   },
 ];
 
 function HomeContent() {
   const [isRoomCreating, setRoomCreating] = createSignal(false);
-  const [roomCode, setRoomCode] = createSignal('');
   const navigate = useNavigate();
 
   onMount(() => {
     document.title = 'p2piano - Online Piano Collaboration';
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Professional online piano collaboration platform for teachers, students, and musicians. Play piano together remotely with real-time synchronization and studio-quality sound. Perfect for remote piano lessons and musical collaboration.');
+      metaDescription.setAttribute('content', 'Play piano together online with friends, students, or teachers. Beautiful piano sound that responds to your touch. Works with MIDI keyboards or any device. Perfect for piano lessons and jamming.');
     }
   });
 
@@ -113,21 +80,6 @@ function HomeContent() {
     }
   };
 
-  const joinRoom = () => {
-    const code = roomCode().trim().toLowerCase();
-    if (code.length === 5) {
-      AudioManager.activate();
-      navigateToRoom(code);
-    }
-  };
-
-  const handleRoomCodeInput = (e: InputEvent) => {
-    const target = e.target;
-    const value = target.value.toLowerCase().slice(0, 5);
-    setRoomCode(value);
-    target.value = value;
-  };
-
   return (
     <div class={styles.container}>
       {/* Hero Section */}
@@ -135,10 +87,10 @@ function HomeContent() {
         <div class={styles.heroContent}>
           <div class={styles.heroText}>
             <h1 class={styles.mainHeading}>
-              The Best Way to Play Piano Together Online
+              Play Piano Together Online
             </h1>
             <p class={styles.subHeading}>
-              Perfect for music lessons, jamming with friends, or connecting with nearby musicians. Create a room and share the link to start playing together instantly.
+              Perfect for piano lessons, jamming with friends, or practicing together. Join thousands making music together. No ads, no signups, just music.
             </p>
 
             <div class={styles.actionSection}>
@@ -152,38 +104,10 @@ function HomeContent() {
                 ) : (
                   <>
                     <span>🎹</span>
-                    Start Now
+                    Start Playing
                   </>
                 )}
               </button>
-
-              <div class={styles.orDivider}>
-                <span>or</span>
-              </div>
-
-              <div class={styles.joinSection}>
-                <label class={styles.joinLabel}>Have a room code?</label>
-                <div class={styles.joinInputGroup}>
-                  <input
-                    class={styles.roomCodeInput}
-                    placeholder="abcde"
-                    maxLength="5"
-                    inputMode="text"
-                    autoComplete="off"
-                    autoCapitalize="none"
-                    spellCheck="false"
-                    onInput={handleRoomCodeInput}
-                    onKeyPress={(e: KeyPressEvent) => e.key === 'Enter' && joinRoom()}
-                  />
-                  <button
-                    class={styles.joinButton}
-                    onClick={joinRoom}
-                    disabled={roomCode().length !== 5}
-                  >
-                    Join
-                  </button>
-                </div>
-              </div>
             </div>
 
           </div>
@@ -191,24 +115,6 @@ function HomeContent() {
             <div class={styles.demoContext}>
               <LandingPiano />
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section class={styles.howItWorks}>
-        <div class={styles.howContainer}>
-          <h2 class={styles.sectionHeading}>How It Works</h2>
-          <div class={styles.steps}>
-            <For each={STEPS}>
-              {(step) => (
-                <div class={styles.step}>
-                  <div class={styles.stepNumber}>{step.number}</div>
-                  <h3 class={styles.stepTitle}>{step.title}</h3>
-                  <p class={styles.stepText}>{step.description}</p>
-                </div>
-              )}
-            </For>
           </div>
         </div>
       </section>
@@ -245,10 +151,6 @@ function HomeContent() {
           <h2 class={styles.sectionHeading}>Frequently Asked Questions</h2>
           <div class={styles.faqGrid}>
             <div class={styles.faqItem}>
-              <div class={styles.faqQuestion}>Is p2piano good for online piano lessons?</div>
-              <div class={styles.faqAnswer}><strong>Perfect for piano teachers</strong>, designed specifically for remote piano instruction with real-time collaboration</div>
-            </div>
-            <div class={styles.faqItem}>
               <div class={styles.faqQuestion}>Do I need to download anything?</div>
               <div class={styles.faqAnswer}><strong>No downloads needed</strong>, runs instantly in your browser</div>
             </div>
@@ -257,24 +159,20 @@ function HomeContent() {
               <div class={styles.faqAnswer}><strong>Completely free</strong>, no subscriptions, ads, or hidden costs</div>
             </div>
             <div class={styles.faqItem}>
-              <div class={styles.faqQuestion}>Can I use my MIDI keyboard?</div>
-              <div class={styles.faqAnswer}><strong>Full MIDI support</strong>, works with any MIDI keyboard or use mouse, touch, computer keyboard</div>
-            </div>
-            <div class={styles.faqItem}>
               <div class={styles.faqQuestion}>How well does it work across distances?</div>
-              <div class={styles.faqAnswer}><strong>Best within 500 miles</strong>, our audio synchronization engine optimizes for minimal delay</div>
+              <div class={styles.faqAnswer}><strong>Best within 500 miles</strong>. Works great at any distance, but nearby connections feel most like playing together in person</div>
             </div>
             <div class={styles.faqItem}>
               <div class={styles.faqQuestion}>Are my sessions private?</div>
-              <div class={styles.faqAnswer}><strong>Completely private</strong>, only people with your room code can join</div>
+              <div class={styles.faqAnswer}><strong>Completely private</strong>, only people with your link can join</div>
             </div>
             <div class={styles.faqItem}>
               <div class={styles.faqQuestion}>Does it work on mobile?</div>
               <div class={styles.faqAnswer}><strong>Works everywhere</strong>, phones, tablets, desktops, any modern browser</div>
             </div>
             <div class={styles.faqItem}>
-              <div class={styles.faqQuestion}>What makes this different from other online piano apps?</div>
-              <div class={styles.faqAnswer}><strong>Built specifically for piano</strong>, with studio-grade audio and minimal latency</div>
+              <div class={styles.faqQuestion}>Why choose p2piano?</div>
+              <div class={styles.faqAnswer}><strong>Built specifically for piano</strong>, with peer-to-peer networking and audio synchronization that keeps everyone in time</div>
             </div>
           </div>
         </div>

@@ -19,7 +19,7 @@ function AboutContent() {
         <div class={styles.missionContainer}>
           <h1 class={styles.sectionHeading}>Our Mission</h1>
           <p class={styles.missionText}>
-            We believe exceptional music tools shouldn't be locked behind paywalls. p2piano exists to democratize online piano collaboration by creating professional-grade software that every musician, teacher, and student can access freely.
+            We believe exceptional music tools shouldn't be locked behind paywalls. p2piano exists to create professional-grade piano collaboration software that every musician, teacher, and student can access freely, removing barriers that prevent people from making music together.
           </p>
           <p class={styles.missionText}>
             Whether you're teaching from your home studio, learning remotely, or collaborating with musicians worldwide, our commitment is simple: build the best possible platform and make it available to all.
