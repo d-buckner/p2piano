@@ -17,9 +17,11 @@ import * as styles from './Room.css';
 const Room = () => {
   const workspace = useAppSelector(selectWorkspace);
   const notes = useAppSelector(selectNotes);
+  const [hasDisplayName, setHasDisplayName] = createSignal<boolean>(ClientPreferences.hasUserDefinedDisplayName());
   const [audioActivated, setAudioActivated] = createSignal(AudioManager.active);
 
-  const activateAudio = async () => {
+  const start = async () => {
+    setHasDisplayName(true);
     await AudioManager.activate();
     setAudioActivated(true);
   };
@@ -62,8 +64,8 @@ const Room = () => {
         </Match>
       </Switch>
 
-      <Show when={(!ClientPreferences.hasUserDefinedDisplayName() || !audioActivated()) && workspace().isValid}>
-        <WelcomeModal onJoin={activateAudio} workspace={workspace()} />
+      <Show when={(!hasDisplayName() || !audioActivated()) && workspace().isValid}>
+        <WelcomeModal onJoin={start} workspace={workspace()} />
       </Show>
     </>
   );
