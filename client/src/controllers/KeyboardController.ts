@@ -39,6 +39,8 @@ const KEY_MAP: Record<string, number> = {
   '"': 77,
 };
 
+const BLOCKING_ACTIVE_TAGS = new Set(['TEXTBOX', 'SELECT', 'INPUT']);
+
 export default class KeyboardController {
   private static instance?: KeyboardController;
   private onKeyDown?: KeyHandler;
@@ -82,7 +84,7 @@ export default class KeyboardController {
     const midi = KEY_MAP[e.key];
     const hasModifier = e.metaKey || e.shiftKey || e.altKey;
     const { activeElement } = document;
-    const hasActiveBlockingElement = activeElement?.tagName === 'SELECT';
+    const hasActiveBlockingElement = BLOCKING_ACTIVE_TAGS.has(activeElement?.tagName ?? '');
     if (hasActiveBlockingElement
       || hasModifier
       || !this.onKeyDown

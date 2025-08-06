@@ -15,7 +15,7 @@ function InstrumentSelector() {
   const instruments = [
     { value: InstrumentType.PIANO, label: 'Piano', icon: '🎹' },
     { value: InstrumentType.SYNTH, label: 'Synth', icon: '🎛️' },
-    { value: InstrumentType.ELECTRIC_BASS, label: 'Electric Bass', icon: '🎸' }
+    { value: InstrumentType.ELECTRIC_BASS, label: 'Bass', icon: '🎸' }
   ];
 
   const currentInstrument = () => {

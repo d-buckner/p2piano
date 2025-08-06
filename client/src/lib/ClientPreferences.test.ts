@@ -30,12 +30,12 @@ describe('ClientPreferences', () => {
       expect(localStorage.getItem).toHaveBeenCalledWith('displayName');
     });
 
-    it('should return undefined when no display name exists', () => {
+    it('should return generated display name when no saved display name exists', () => {
       vi.mocked(localStorage.getItem).mockReturnValue(null);
       
       const result = ClientPreferences.getDisplayName();
       
-      expect(result).toBeUndefined();
+      expect(result).toMatch(/^Player\d+$/);
     });
   });
 
@@ -51,7 +51,7 @@ describe('ClientPreferences', () => {
     it('should return true when display name exists', () => {
       vi.mocked(localStorage.getItem).mockReturnValue('ExistingUser');
       
-      const result = ClientPreferences.hasDisplayName();
+      const result = ClientPreferences.hasUserDefinedDisplayName();
       
       expect(result).toBe(true);
     });
@@ -59,7 +59,7 @@ describe('ClientPreferences', () => {
     it('should return false when display name does not exist', () => {
       vi.mocked(localStorage.getItem).mockReturnValue(null);
       
-      const result = ClientPreferences.hasDisplayName();
+      const result = ClientPreferences.hasUserDefinedDisplayName();
       
       expect(result).toBe(false);
     });
@@ -67,7 +67,7 @@ describe('ClientPreferences', () => {
     it('should return false for empty string display name', () => {
       vi.mocked(localStorage.getItem).mockReturnValue('');
       
-      const result = ClientPreferences.hasDisplayName();
+      const result = ClientPreferences.hasUserDefinedDisplayName();
       
       expect(result).toBe(false);
     });
