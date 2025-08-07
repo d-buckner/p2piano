@@ -22,7 +22,7 @@ class ClickSampler {
     }).toDestination();
   }
 
-  static high(delay: number) {
+  static high(delay?: number) {
     if (!this.sampler || !this.sampler.loaded) {
       Logger.WARN('ClickSampler not initialized or samples not loaded');
       return;
@@ -34,7 +34,7 @@ class ClickSampler {
     );
   }
 
-  static low(delay: number) {
+  static low(delay?: number) {
     if (!this.sampler || !this.sampler.loaded) {
       Logger.WARN('ClickSampler not initialized or samples not loaded');
       return;

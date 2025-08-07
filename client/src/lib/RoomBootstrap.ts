@@ -3,17 +3,23 @@ import * as NoteActions from '../actions/NoteActions';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import AudioSyncCoordinator from '../audio/syncronization/AudioSyncCoordinator';
 import KeyboardController from '../controllers/KeyboardController';
-import { sharedStoreRoot } from '../crdt';
-import MetronomeHandlers from '../handlers/MetronomeHandlers';
 import RoomHandlers from '../handlers/RoomHandlers';
 import RealTimeController from '../networking/RealTimeController';
 import WebsocketController from '../networking/transports/WebsocketController';
 import type { MessageHandler } from '../networking/AbstractNetworkController';
 
+/**
+ * RoomBootstrap handles room initialization in 3 progressive phases:
+ * 1. bootstrap() - Essential UI and local piano (must complete first)
+ * 2. enableCollaboration() - Real-time features (background)
+ * 3. loadEnhancements() - MIDI and advanced features (background)
+ */
 
-
-// Create handlers object that will be populated based on CRDT availability
+// Handler configurations
 let RTC_HANDLERS: Record<string, MessageHandler>;
+
+// Keep disposal callbacks for dynamically loaded modules
+let disposalCallbacks: (() => void)[] = [];
 const WEBSOCKET_HANDLERS = {
   ROOM_JOIN: RoomHandlers.roomJoinHandler,
   USER_CONNECT: RoomHandlers.userConnectHandler,
@@ -33,19 +39,36 @@ interface EventEmitter {
   on(event: string | symbol, listener: (...args: any[]) => void): any;
 }
 
-export async function register() {
-  subscribe(HuMIDI as EventEmitter, MIDI_HANDLERS);
-  const websocketController = WebsocketController.getInstance();
-  const realTimeController = RealTimeController.getInstance();
-  
-  subscribe(websocketController, WEBSOCKET_HANDLERS);
-  window.addEventListener('blur', RoomHandlers.blurHandler);
-
+/**
+ * Phase 1: Essential startup - get users playing immediately
+ * This is the only phase that blocks the UI
+ */
+export function bootstrap() {
+  // Essential keyboard input for local piano playing
   const keyboardController = KeyboardController.getInstance();
   keyboardController.registerKeyDownHandler(NoteActions.keyDown);
   keyboardController.registerKeyUpHandler(NoteActions.keyUp);
 
-  // Configure RTC handlers first
+  // Start WebSocket connection (don't wait for it)
+  const websocketController = WebsocketController.getInstance();
+  websocketController.connect();
+}
+
+/**
+ * Phase 2: Enable real-time collaboration features
+ * Runs in background after bootstrap() completes
+ */
+export async function enableCollaboration() {
+  const websocketController = WebsocketController.getInstance();
+  const realTimeController = RealTimeController.getInstance();
+
+  // Subscribe to WebSocket handlers
+  subscribe(websocketController, WEBSOCKET_HANDLERS);
+
+  // Dynamically import metronome handlers to avoid early ToneJS loading
+  const { default: MetronomeHandlers } = await import('../handlers/MetronomeHandlers');
+  
+  // Configure and subscribe to RTC handlers
   RTC_HANDLERS = {
     KEY_DOWN: RoomHandlers.keyDownHandler,
     KEY_UP: RoomHandlers.keyUpHandler,
@@ -53,39 +76,55 @@ export async function register() {
     SUSTAIN_UP: RoomHandlers.sustainUpHandler,
     METRONOME_TICK: MetronomeHandlers.tickHandler,
   };
-
-  // Subscribe to RTC handlers
   subscribe(realTimeController, RTC_HANDLERS);
 
-  // Establish websocket connection first
-  websocketController.connect();
-  
   // Wait for ROOM_JOIN before initializing CRDT system
   await new Promise<void>((resolve) => {
     const handleRoomJoin = () => {
       realTimeController.off('ROOM_JOIN', handleRoomJoin);
       resolve();
     };
-    
+
     realTimeController.on('ROOM_JOIN', handleRoomJoin);
   });
 
-  // Now initialize CRDT system after room has been joined and userId is set
+  // Dynamically import and initialize CRDT system (heavy Automerge loading)
+  const { sharedStoreRoot } = await import('../crdt');
+  disposalCallbacks.push(sharedStoreRoot.dispose);
   await sharedStoreRoot.initialize(realTimeController);
   AudioSyncCoordinator.start();
 }
 
-export function destroy() {
+/**
+ * Phase 3: Load advanced features and enhancements
+ * Runs in background - these features are nice-to-have
+ */
+export async function loadEnhancements() {
+  // MIDI device integration
+  subscribe(HuMIDI as EventEmitter, MIDI_HANDLERS);
+
+  // Window blur handler for pausing when window loses focus
+  window.addEventListener('blur', RoomHandlers.blurHandler);
+}
+
+/**
+ * Cleanup all initialized systems
+ */
+export function cleanup() {
   HuMIDI.reset();
   InstrumentRegistry.empty();
   KeyboardController.getInstance().destroy();
   AudioSyncCoordinator.stop();
   window.removeEventListener('blur', RoomHandlers.blurHandler);
-  
-  // Dispose CRDT system
-  sharedStoreRoot.dispose();
+
+  // Call all disposal callbacks for dynamically loaded modules
+  disposalCallbacks.forEach(dispose => dispose());
+  disposalCallbacks = [];
 }
 
+/**
+ * Helper function to subscribe event handlers
+ */
 function subscribe(
   subscribable: EventEmitter,
   handlers: Record<string, MessageHandler>

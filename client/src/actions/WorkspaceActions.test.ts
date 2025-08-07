@@ -1,9 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setStore } from '../app/store';
 import { getRoom } from '../clients/RoomClient';
 import { Transport } from '../constants';
 import ClientPreferences from '../lib/ClientPreferences';
-import * as EventCoordinator from '../lib/EventCoordinator';
+import * as RoomBootstrap from '../lib/RoomBootstrap';
 import WebRtcController from '../networking/transports/WebRtcController';
 import WebsocketController from '../networking/transports/WebsocketController';
 import * as workspaceSelectors from '../selectors/workspaceSelectors';
@@ -24,7 +24,7 @@ vi.mock('../app/store', () => ({
 
 vi.mock('../clients/RoomClient');
 vi.mock('../lib/ClientPreferences');
-vi.mock('../lib/EventCoordinator');
+vi.mock('../lib/RoomBootstrap');
 vi.mock('../networking/transports/WebRtcController');
 vi.mock('../networking/transports/WebsocketController');
 vi.mock('../selectors/workspaceSelectors');
@@ -40,9 +40,13 @@ describe('WorkspaceActions', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
     
-    // Mock EventCoordinator.register to return a resolved promise
-    vi.mocked(EventCoordinator.register).mockResolvedValue(undefined);
+    // Mock RoomBootstrap functions
+    vi.mocked(RoomBootstrap.bootstrap).mockImplementation(() => {});
+    vi.mocked(RoomBootstrap.enableCollaboration).mockResolvedValue(undefined);
+    vi.mocked(RoomBootstrap.loadEnhancements).mockResolvedValue(undefined);
+    vi.mocked(RoomBootstrap.cleanup).mockImplementation(() => {});
     
     // Mock WebsocketController instance
     mockWebsocketController = {
@@ -90,6 +94,9 @@ describe('WorkspaceActions', () => {
       vi.mocked(getRoom).mockResolvedValue(mockRoom);
 
       await joinRoom('room-123');
+      
+      // Run deferred bootstrap call
+      vi.runAllTimers();
 
       // Should set roomId and loading state
       expect(setStore).toHaveBeenCalledWith('workspace', 'roomId', 'room-123');
@@ -112,8 +119,10 @@ describe('WorkspaceActions', () => {
       expect(setStore).toHaveBeenCalledWith('workspace', 'isValid', true);
       expect(setStore).toHaveBeenCalledWith('workspace', 'isLoading', false);
       
-      // Should register event coordinator
-      expect(EventCoordinator.register).toHaveBeenCalled();
+      // Should run all RoomBootstrap phases
+      expect(RoomBootstrap.bootstrap).toHaveBeenCalled();
+      expect(RoomBootstrap.enableCollaboration).toHaveBeenCalled();
+      expect(RoomBootstrap.loadEnhancements).toHaveBeenCalled();
     });
 
     it('should handle room already in store', async () => {
@@ -134,6 +143,9 @@ describe('WorkspaceActions', () => {
       });
 
       await joinRoom('existing-room');
+      
+      // Run deferred bootstrap call
+      vi.runAllTimers();
 
       // Should not call getRoom if room already exists
       expect(getRoom).not.toHaveBeenCalled();
@@ -144,8 +156,10 @@ describe('WorkspaceActions', () => {
       expect(setStore).toHaveBeenCalledWith('workspace', 'isValid', true);
       expect(setStore).toHaveBeenCalledWith('workspace', 'isLoading', false);
       
-      // Should register event coordinator
-      expect(EventCoordinator.register).toHaveBeenCalled();
+      // Should run all RoomBootstrap phases
+      expect(RoomBootstrap.bootstrap).toHaveBeenCalled();
+      expect(RoomBootstrap.enableCollaboration).toHaveBeenCalled();
+      expect(RoomBootstrap.loadEnhancements).toHaveBeenCalled();
     });
 
     it('should handle room with no users', async () => {
@@ -160,10 +174,16 @@ describe('WorkspaceActions', () => {
       vi.mocked(getRoom).mockResolvedValue(emptyRoom);
 
       await joinRoom('empty-room');
+      
+      // Run deferred bootstrap call
+      vi.runAllTimers();
 
       expect(setStore).toHaveBeenCalledWith('workspace', 'room', emptyRoom);
       expect(setStore).toHaveBeenCalledWith('workspace', 'isValid', true);
-      expect(EventCoordinator.register).toHaveBeenCalled();
+      // Should run all RoomBootstrap phases
+      expect(RoomBootstrap.bootstrap).toHaveBeenCalled();
+      expect(RoomBootstrap.enableCollaboration).toHaveBeenCalled();
+      expect(RoomBootstrap.loadEnhancements).toHaveBeenCalled();
     });
 
     it('should handle room with undefined users', async () => {
@@ -178,11 +198,17 @@ describe('WorkspaceActions', () => {
       vi.mocked(getRoom).mockResolvedValue(roomWithUndefinedUsers);
 
       await joinRoom('undefined-users-room');
+      
+      // Run deferred bootstrap call
+      vi.runAllTimers();
 
       expect(setStore).toHaveBeenCalledWith('workspace', 'room', roomWithUndefinedUsers);
       expect(setStore).toHaveBeenCalledWith('workspace', 'isValid', true);
       // Should not try to add peer connections for undefined users
-      expect(EventCoordinator.register).toHaveBeenCalled();
+      // Should run all RoomBootstrap phases
+      expect(RoomBootstrap.bootstrap).toHaveBeenCalled();
+      expect(RoomBootstrap.enableCollaboration).toHaveBeenCalled();
+      expect(RoomBootstrap.loadEnhancements).toHaveBeenCalled();
     });
 
     it('should handle getRoom failure', async () => {
@@ -197,8 +223,10 @@ describe('WorkspaceActions', () => {
       expect(setStore).toHaveBeenCalledWith('workspace', 'isValid', false);
       expect(setStore).toHaveBeenCalledWith('workspace', 'isLoading', false);
       
-      // Should not register event coordinator
-      expect(EventCoordinator.register).not.toHaveBeenCalled();
+      // Should not run RoomBootstrap phases
+      expect(RoomBootstrap.bootstrap).not.toHaveBeenCalled();
+      expect(RoomBootstrap.enableCollaboration).not.toHaveBeenCalled();
+      expect(RoomBootstrap.loadEnhancements).not.toHaveBeenCalled();
     });
 
     it('should handle network timeout gracefully', async () => {
@@ -207,7 +235,10 @@ describe('WorkspaceActions', () => {
       await joinRoom('timeout-room');
 
       expect(setStore).toHaveBeenCalledWith('workspace', 'isValid', false);
-      expect(EventCoordinator.register).not.toHaveBeenCalled();
+      // Should not run RoomBootstrap phases
+      expect(RoomBootstrap.bootstrap).not.toHaveBeenCalled();
+      expect(RoomBootstrap.enableCollaboration).not.toHaveBeenCalled();
+      expect(RoomBootstrap.loadEnhancements).not.toHaveBeenCalled();
     });
 
     it('should add peer connections for multiple users correctly', async () => {
@@ -373,7 +404,7 @@ describe('WorkspaceActions', () => {
       destroyRoom();
 
       // Should destroy all controllers and coordinators
-      expect(EventCoordinator.destroy).toHaveBeenCalled();
+      expect(RoomBootstrap.cleanup).toHaveBeenCalled();
       expect(WebRtcController.destroy).toHaveBeenCalled();
       expect(WebsocketController.destroy).toHaveBeenCalled();
 
@@ -393,7 +424,7 @@ describe('WorkspaceActions', () => {
       destroyRoom();
 
       // Each call should attempt cleanup
-      expect(EventCoordinator.destroy).toHaveBeenCalledTimes(3);
+      expect(RoomBootstrap.cleanup).toHaveBeenCalledTimes(3);
       expect(WebRtcController.destroy).toHaveBeenCalledTimes(3);
       expect(WebsocketController.destroy).toHaveBeenCalledTimes(3);
       expect(setStore).toHaveBeenCalledTimes(3);
@@ -441,6 +472,9 @@ describe('WorkspaceActions', () => {
 
       // Join room
       await joinRoom('lifecycle-room');
+      
+      // Run deferred bootstrap call
+      vi.runAllTimers();
 
       // Update display name
       updateDisplayName('Updated User One');
@@ -454,14 +488,17 @@ describe('WorkspaceActions', () => {
       // Verify the sequence
       expect(setStore).toHaveBeenCalledWith('workspace', 'roomId', 'lifecycle-room');
       expect(setStore).toHaveBeenCalledWith('workspace', 'room', mockRoom);
-      expect(EventCoordinator.register).toHaveBeenCalled();
+      // Should run all RoomBootstrap phases
+      expect(RoomBootstrap.bootstrap).toHaveBeenCalled();
+      expect(RoomBootstrap.enableCollaboration).toHaveBeenCalled();
+      expect(RoomBootstrap.loadEnhancements).toHaveBeenCalled();
       expect(mockWebsocketController.broadcast).toHaveBeenCalledWith('USER_UPDATE', expect.objectContaining({
         displayName: 'Updated User One',
       }));
       expect(mockWebsocketController.broadcast).toHaveBeenCalledWith('USER_UPDATE', expect.objectContaining({
         instrument: 'guitar',
       }));
-      expect(EventCoordinator.destroy).toHaveBeenCalled();
+      expect(RoomBootstrap.cleanup).toHaveBeenCalled();
     });
 
     it('should broadcast user updates correctly during session', () => {
@@ -511,7 +548,11 @@ describe('WorkspaceActions', () => {
       expect(mockWebsocketController.broadcast).toHaveBeenCalled();
 
       destroyRoom();
-      expect(EventCoordinator.destroy).toHaveBeenCalled();
+      expect(RoomBootstrap.cleanup).toHaveBeenCalled();
     });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 });

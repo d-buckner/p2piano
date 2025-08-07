@@ -3,7 +3,8 @@ import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import { getRoom } from '../clients/RoomClient';
 import { Transport } from '../constants';
 import ClientPreferences from '../lib/ClientPreferences';
-import * as EventCoordinator from '../lib/EventCoordinator';
+import { defer } from '../lib/defer';
+import * as RoomBootstrap from '../lib/RoomBootstrap';
 import WebRtcController from '../networking/transports/WebRtcController';
 import WebsocketController from '../networking/transports/WebsocketController';
 import { selectMyUser, selectWorkspace } from '../selectors/workspaceSelectors';
@@ -35,9 +36,12 @@ export async function joinRoom(roomId: string) {
   setStore('workspace', 'isLoading', false);
 
   if (isValid) {
-    EventCoordinator.register().catch(error => {
-      console.error('Failed to register event coordinators:', error);
-    });
+    // Phase 1: Bootstrap essential features (deferred)
+    defer(RoomBootstrap.bootstrap);
+    
+    // Phase 2 & 3: Enable collaboration and enhancements (deferred)
+    await RoomBootstrap.enableCollaboration();
+    await RoomBootstrap.loadEnhancements();
   }
 }
 
@@ -76,7 +80,7 @@ export function updateInstrument(instrument: InstrumentType) {
 }
 
 export function destroyRoom() {
-  EventCoordinator.destroy();
+  RoomBootstrap.cleanup();
   WebRtcController.destroy();
   WebsocketController.destroy();
   // Reset workspace state
