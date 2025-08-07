@@ -1,4 +1,4 @@
-import { useNavigate } from '@solidjs/router';
+import { A } from '@solidjs/router';
 import clsx from 'clsx';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
 import * as styles from './RoomNav.css';
@@ -8,18 +8,10 @@ import RoomCode from './toolbar/controls/RoomCode';
 
 
 function RoomNav() {
-  const navigate = useNavigate();
-
-
-  function navigateHome() {
-    navigate('/');
-    WorkspaceActions.destroyRoom();
-  }
-
   return (
     <nav class={styles.roomNav}>
       <div class={styles.navLeft}>
-        <a onClick={navigateHome} class={styles.navLink}>p2piano</a>
+        <A href='/' onClick={WorkspaceActions.destroyRoom} class={styles.navLink}>p2piano</A>
       </div>
       <div class={styles.navCenter}>
         <Toolbar />

@@ -78,27 +78,17 @@ export async function enableCollaboration() {
   };
   subscribe(realTimeController, RTC_HANDLERS);
 
-  // Wait for ROOM_JOIN before initializing CRDT system
-  await new Promise<void>((resolve) => {
-    const handleRoomJoin = () => {
-      realTimeController.off('ROOM_JOIN', handleRoomJoin);
-      resolve();
-    };
-
-    realTimeController.on('ROOM_JOIN', handleRoomJoin);
-  });
-
   // Dynamically import and initialize CRDT system (heavy Automerge loading)
   const { sharedStoreRoot } = await import('../crdt');
-  disposalCallbacks.push(sharedStoreRoot.dispose);
   await sharedStoreRoot.initialize(realTimeController);
+  disposalCallbacks.push(() => sharedStoreRoot.dispose());
   AudioSyncCoordinator.start();
 }
 
 /**
  * Phase 3: Load advanced features and enhancements
  * Runs in background - these features are nice-to-have
- */
+*/
 export async function loadEnhancements() {
   // MIDI device integration
   subscribe(HuMIDI as EventEmitter, MIDI_HANDLERS);

@@ -175,53 +175,19 @@ describe('RoomBootstrap', () => {
       expect(mockRealTimeController.on).toHaveBeenCalledWith('METRONOME_TICK', MetronomeHandlers.tickHandler);
     });
 
-    it('should wait for ROOM_JOIN before initializing CRDT', async () => {
-      let roomJoinHandler: () => void;
-      mockRealTimeController.on.mockImplementation((event: string, handler: () => void) => {
-        if (event === 'ROOM_JOIN') {
-          roomJoinHandler = handler;
-        }
-      });
+    it('should initialize CRDT immediately without waiting for ROOM_JOIN', async () => {
+      await enableCollaboration();
 
-      // Start enableCollaboration but don't resolve ROOM_JOIN yet
-      const collaborationPromise = enableCollaboration();
-
-      // CRDT should not be initialized yet
-      expect(mockSharedStoreRoot.initialize).not.toHaveBeenCalled();
-
-      // Trigger ROOM_JOIN
-      setTimeout(() => roomJoinHandler(), 0);
-
-      // Wait for collaboration to complete
-      await collaborationPromise;
-
-      // CRDT should now be initialized
+      // CRDT should be initialized immediately
       expect(mockSharedStoreRoot.initialize).toHaveBeenCalledWith(mockRealTimeController);
     });
 
-    it('should start AudioSyncCoordinator after ROOM_JOIN', async () => {
-      mockRealTimeController.on.mockImplementation((event: string, handler: () => void) => {
-        if (event === 'ROOM_JOIN') {
-          setTimeout(() => handler(), 0);
-        }
-      });
-
+    it('should start AudioSyncCoordinator immediately', async () => {
       await enableCollaboration();
 
       expect(AudioSyncCoordinator.start).toHaveBeenCalled();
     });
 
-    it('should remove ROOM_JOIN handler after it fires', async () => {
-      mockRealTimeController.on.mockImplementation((event: string, handler: () => void) => {
-        if (event === 'ROOM_JOIN') {
-          setTimeout(() => handler(), 0);
-        }
-      });
-
-      await enableCollaboration();
-
-      expect(mockRealTimeController.off).toHaveBeenCalledWith('ROOM_JOIN', expect.any(Function));
-    });
   });
 
   describe('loadEnhancements()', () => {

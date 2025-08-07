@@ -57,24 +57,18 @@ describe('SharedStoreRoot', () => {
   });
 
   describe('initialization', () => {
-    it('should initialize with default state', () => {
-      const state = sharedStoreRoot.getDocumentState();
+    it('should create instance without immediate document creation', () => {
+      // SharedStoreRoot should be creatable without throwing
+      expect(() => new SharedStoreRoot()).not.toThrow();
       
-      expect(state.metronome).toEqual({
-        active: false,
-        bpm: 120,
-        beatsPerMeasure: 4,
-        leaderId: '',
-        startTimestamp: 0,
-        currentBeat: 0,
-      });
+      // But document access should fail before initialization
+      expect(() => sharedStoreRoot.getDocumentState()).toThrow('Cannot get document before initializing');
     });
 
-    it('should generate unique actor IDs for different instances', () => {
-      const root1 = new SharedStoreRoot();
-      const root2 = new SharedStoreRoot();
+    it('should throw error when accessing document before initialization', () => {
+      const root = new SharedStoreRoot();
       
-      expect(root1.getActorId()).not.toBe(root2.getActorId());
+      expect(() => root.getDocumentState()).toThrow('Cannot get document before initializing');
     });
   });
 
@@ -83,10 +77,10 @@ describe('SharedStoreRoot', () => {
       await sharedStoreRoot.initialize(mockRTC as unknown as RealTimeController);
     });
 
-    it('should update actor ID based on user ID', () => {
-      const actorId = sharedStoreRoot.getActorId();
-      expect(actorId).toBeDefined();
-      expect(actorId.length).toBeGreaterThan(0);
+    it('should properly initialize with user ID from store', () => {
+      expect(mockSelectUserId).toHaveBeenCalled();
+      // Document should be accessible after initialization
+      expect(() => sharedStoreRoot.getDocumentState()).not.toThrow();
     });
 
     it('should sync initial state to SolidJS store', () => {
@@ -172,7 +166,7 @@ describe('SharedStoreRoot', () => {
         newPeerId,
         'AUTOMERGE_PROTOCOL',
         expect.objectContaining({
-          userId: sharedStoreRoot.getActorId(),
+          userId: expect.any(String),
         })
       );
     });
@@ -283,13 +277,14 @@ describe('SharedStoreRoot', () => {
       }).not.toThrow();
     });
 
-    it('should function without RealTimeController initialization', () => {
+    it('should prevent changes before RealTimeController initialization', () => {
       expect(() => {
         sharedStoreRoot.change('metronome', m => m.bpm = 100);
-      }).not.toThrow();
+      }).toThrow('Cannot get document before initializing');
       
-      const state = sharedStoreRoot.getDocumentState();
-      expect(state.metronome.bpm).toBe(100);
+      expect(() => {
+        sharedStoreRoot.getDocumentState();
+      }).toThrow('Cannot get document before initializing');
     });
   });
 });
