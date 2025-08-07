@@ -4,6 +4,7 @@ import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfil
 import replace from '@rollup/plugin-replace';
 import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
 import { defineConfig } from 'vite';
+import compression from 'vite-plugin-compression';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import solidPlugin from 'vite-plugin-solid';
 import topLevelAwait from 'vite-plugin-top-level-await';
@@ -30,42 +31,62 @@ export default defineConfig(({ mode }) => {
     define.global = 'self';
   }
 
-  return {
-    plugins: [
-      vanillaExtractPlugin(),
-      solidPlugin(),
-      // for Automerge WASM support
-      wasm(),
-      topLevelAwait(),
-      // for simple-peer
-      nodePolyfills({
-        globals: {
-          process: true,
-          global: true,
-        }
-      }),
-      {
-        name: 'serve-service-worker',
-        configureServer(server) {
-          server.middlewares.use((req, res, next) => {
-            if (req.url === '/assets/serviceWorker.js') {
-              const filePath = path.join(__dirname, 'dist', 'assets', 'serviceWorker.js');
-              
-              if (fs.existsSync(filePath)) {
-                res.setHeader('Content-Type', 'application/javascript');
-                res.setHeader('Cache-Control', 'no-cache');
-                res.end(fs.readFileSync(filePath, 'utf-8'));
-              } else {
-                res.statusCode = 404;
-                res.end('Service worker not found. Please run build first.');
-              }
-              return;
+  const plugins = [
+    vanillaExtractPlugin(),
+    solidPlugin(),
+    // for Automerge WASM support
+    wasm(),
+    topLevelAwait(),
+    // for simple-peer
+    nodePolyfills({
+      globals: {
+        process: true,
+        global: true,
+      }
+    }),
+    {
+      name: 'serve-service-worker',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url === '/assets/serviceWorker.js') {
+            const filePath = path.join(__dirname, 'dist', 'assets', 'serviceWorker.js');
+            
+            if (fs.existsSync(filePath)) {
+              res.setHeader('Content-Type', 'application/javascript');
+              res.setHeader('Cache-Control', 'no-cache');
+              res.end(fs.readFileSync(filePath, 'utf-8'));
+            } else {
+              res.statusCode = 404;
+              res.end('Service worker not found. Please run build first.');
             }
-            next();
-          });
-        },
+            return;
+          }
+          next();
+        });
       },
-    ],
+    },
+  ];
+
+  // Add compression plugins for production builds
+  if (isProduction) {
+    plugins.push(
+      compression({
+        algorithm: 'brotliCompress',
+        ext: '.br',
+        filter: /\.(js|mjs|json|css|html|wasm)$/i,
+        threshold: 1024,
+      }),
+      compression({
+        algorithm: 'gzip', 
+        ext: '.gz',
+        filter: /\.(js|mjs|json|css|html|wasm)$/i,
+        threshold: 1024,
+      })
+    );
+  }
+
+  return {
+    plugins,
     optimizeDeps: {
       esbuildOptions: {
         plugins: [

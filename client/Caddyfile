@@ -14,8 +14,46 @@ http://:8345 {
 		}
 	}
 
+	# Security headers for production readiness
+	header {
+		# Prevent clickjacking attacks
+		X-Frame-Options "SAMEORIGIN"
+
+		# Prevent MIME type sniffing
+		X-Content-Type-Options "nosniff"
+
+		# XSS protection
+		X-XSS-Protection "1; mode=block"
+
+		# Referrer policy for privacy
+		Referrer-Policy "strict-origin-when-cross-origin"
+
+		# Remove server information disclosure
+		-Server
+		-X-Powered-By
+
+		# Content Security Policy (tailored for p2piano)
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' ws: wss:; media-src 'self' blob:; worker-src 'self' blob:; child-src 'self' blob:;"
+
+		# Permissions policy to disable unnecessary browser features
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+	}
+
 	root * /www
-	encode {
+
+	# Serve pre-compressed files when available, don't double-compress
+	@precompressed {
+		file {path}.br {path}.gz {path}
+	}
+
+	# For files that aren't pre-compressed, compress on-the-fly
+	# Exclude already-compressed formats (audio, images, fonts)
+	@compressible {
+		not file {path}.br
+		not file {path}.gz
+		not path *.ogg *.mp3 *.wav *.png *.jpg *.jpeg *.gif *.webp *.woff *.woff2
+	}
+	encode @compressible {
 		gzip 9
 		zstd
 	}
@@ -36,6 +74,10 @@ http://:8345 {
 		path /assets/fonts/*.woff2
 	}
 
+	@wasm_assets {
+		path /assets/*.wasm
+	}
+
 	@html {
 		path *.html /
 	}
@@ -49,10 +91,12 @@ http://:8345 {
 			Access-Control-Allow-Headers "Range, Content-Range"
 			# Support range requests for large audio files
 			Accept-Ranges "bytes"
-			# Set proper MIME type
-			Content-Type "audio/mpeg"
+			# Set proper MIME type for OGG files
+			Content-Type "audio/ogg"
 		}
-		file_server
+		file_server {
+			precompressed br gzip
+		}
 	}
 
 	handle @js_assets {
@@ -62,7 +106,9 @@ http://:8345 {
 			# Set proper MIME type
 			Content-Type "application/javascript"
 		}
-		file_server
+		file_server {
+			precompressed br gzip
+		}
 	}
 
 	handle @css_assets {
@@ -72,7 +118,9 @@ http://:8345 {
 			# Set proper MIME type
 			Content-Type "text/css"
 		}
-		file_server
+		file_server {
+			precompressed br gzip
+		}
 	}
 
 	handle @font_assets {
@@ -82,38 +130,67 @@ http://:8345 {
 			# Set proper MIME type
 			Content-Type "font/woff2"
 		}
-		file_server
+		file_server {
+			precompressed br gzip
+		}
+	}
+
+	handle @wasm_assets {
+		header {
+			# Cache WASM assets for 1 year (they have content hashes)
+			Cache-Control "public, max-age=31536000, immutable"
+			# Set proper MIME type
+			Content-Type "application/wasm"
+			# Enable SharedArrayBuffer for WASM performance
+			Cross-Origin-Embedder-Policy "require-corp"
+			Cross-Origin-Opener-Policy "same-origin"
+		}
+		file_server {
+			precompressed br gzip
+		}
 	}
 
 	handle @html {
 		header {
 			# Minimal caching for HTML to ensure fresh asset references
 			Cache-Control "public, max-age=300, must-revalidate"
-			# Set proper MIME type
-			Content-Type "text/html"
+			# Set proper MIME type with charset
+			Content-Type "text/html; charset=utf-8"
 		}
-		file_server
+		file_server {
+			precompressed br gzip
+		}
 	}
 
-	@room {
-		path_regexp ^/[a-z0-9]{5}$
-	}
-
+	# API and WebSocket proxying (must come before try_files)
 	reverse_proxy /api/* {$SERVICE_ENDPOINT}
 	reverse_proxy /socket.io/* {$SERVICE_ENDPOINT}
 
-	handle @room {
-		rewrite * /
+	# SPA routing with try_files - but exclude API paths
+	@spa_routes {
+		not path /api/*
+		not path /socket.io/*
 	}
 
-	handle /about {
-		rewrite * /about.html
+	handle @spa_routes {
+		try_files {path} {path}.html /index.html
+		file_server {
+			precompressed br gzip
+			index index.html
+		}
 	}
 
-	handle /donate {
-		rewrite * /donate.html
+	# Fallback file server for any remaining requests
+	file_server {
+		precompressed br gzip
 	}
 
-	# Default file server (moved to end to avoid conflicts)
-	file_server
+	# Error handling for SPA routing
+	handle_errors {
+		@404 expression {http.error.status_code} == 404
+		handle @404 {
+			rewrite * /index.html
+			file_server
+		}
+	}
 }
