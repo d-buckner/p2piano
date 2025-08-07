@@ -1,27 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MIN_BPM, MAX_BPM } from '../constants/metronome';
-import { initializeGlobalStore } from '../crdt/store/SharedStoreActions';
 import { MetronomeActions } from './MetronomeActions';
 import type { SharedStoreRoot } from '../crdt/store/SharedStoreRoot';
 
+// Mock the SharedStoreRoot
+const mockSharedStoreRoot = {
+  change: vi.fn(),
+} as unknown as SharedStoreRoot;
 
 describe('MetronomeActions', () => {
   let metronomeActions: MetronomeActions;
-  let mockSharedStoreRoot: SharedStoreRoot;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
-    // Create mock SharedStoreRoot
-    mockSharedStoreRoot = {
-      change: vi.fn(),
-    } as unknown as SharedStoreRoot;
-    
-    // Initialize global store so actions will work
-    initializeGlobalStore(mockSharedStoreRoot);
-    
-    // Create metronome actions instance
-    metronomeActions = new MetronomeActions();
+    metronomeActions = new MetronomeActions(mockSharedStoreRoot);
   });
 
   describe('setActive', () => {

@@ -81,8 +81,6 @@ const mockSharedStoreRoot = {
 
 vi.mock('../crdt', () => ({
   sharedStoreRoot: mockSharedStoreRoot,
-  initializeSharedStore: vi.fn(),
-  disposeSharedStore: vi.fn(),
 }));
 
 // Mock controller instances
@@ -127,7 +125,7 @@ describe('RoomBootstrap', () => {
     it('should not initialize CRDT system in bootstrap phase', () => {
       bootstrap();
 
-      // CRDT should not be initialized in bootstrap phase"
+      expect(mockSharedStoreRoot.initialize).not.toHaveBeenCalled();
     });
 
     it('should not start AudioSyncCoordinator in bootstrap phase', () => {
@@ -189,7 +187,7 @@ describe('RoomBootstrap', () => {
       const collaborationPromise = enableCollaboration();
 
       // CRDT should not be initialized yet
-      // CRDT should not be initialized in bootstrap phase"
+      expect(mockSharedStoreRoot.initialize).not.toHaveBeenCalled();
 
       // Trigger ROOM_JOIN
       setTimeout(() => roomJoinHandler(), 0);
@@ -198,8 +196,7 @@ describe('RoomBootstrap', () => {
       await collaborationPromise;
 
       // CRDT should now be initialized
-      const { initializeSharedStore } = await import('../crdt');
-      expect(initializeSharedStore).toHaveBeenCalledWith(mockRealTimeController);
+      expect(mockSharedStoreRoot.initialize).toHaveBeenCalledWith(mockRealTimeController);
     });
 
     it('should start AudioSyncCoordinator after ROOM_JOIN', async () => {
@@ -288,8 +285,7 @@ describe('RoomBootstrap', () => {
       // Now cleanup should dispose the loaded system
       cleanup();
 
-      const { disposeSharedStore } = await import('../crdt');
-      expect(disposeSharedStore).toHaveBeenCalled();
+      expect(mockSharedStoreRoot.dispose).toHaveBeenCalled();
     });
   });
 
@@ -300,7 +296,7 @@ describe('RoomBootstrap', () => {
       
       expect(mockKeyboardController.registerKeyDownHandler).toHaveBeenCalled();
       expect(mockWebsocketController.connect).toHaveBeenCalled();
-      // CRDT should not be initialized in bootstrap phase"
+      expect(mockSharedStoreRoot.initialize).not.toHaveBeenCalled();
 
       // Phase 2: Enable Collaboration
       mockRealTimeController.on.mockImplementation((event: string, handler: () => void) => {
@@ -313,8 +309,7 @@ describe('RoomBootstrap', () => {
       
       expect(mockWebsocketController.on).toHaveBeenCalled();
       expect(mockRealTimeController.on).toHaveBeenCalled();
-      const { initializeSharedStore } = await import('../crdt');
-      expect(initializeSharedStore).toHaveBeenCalled();
+      expect(mockSharedStoreRoot.initialize).toHaveBeenCalled();
       expect(AudioSyncCoordinator.start).toHaveBeenCalled();
 
       // Phase 3: Load Enhancements
@@ -327,8 +322,7 @@ describe('RoomBootstrap', () => {
       cleanup();
       
       expect(mockKeyboardController.destroy).toHaveBeenCalled();
-      const { disposeSharedStore } = await import('../crdt');
-      expect(disposeSharedStore).toHaveBeenCalled();
+      expect(mockSharedStoreRoot.dispose).toHaveBeenCalled();
     });
 
     it('should handle phases independently', async () => {

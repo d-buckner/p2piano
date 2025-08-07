@@ -1,5 +1,6 @@
 import { MIN_BPM, MAX_BPM } from '../constants/metronome';
 import { SharedStoreActions } from '../crdt/store/SharedStoreActions';
+import type { SharedStoreRoot } from '../crdt/store/SharedStoreRoot';
 import type { SharedMetronomeState } from '../crdt/types/StoreTypes';
 
 /**
@@ -9,8 +10,8 @@ import type { SharedMetronomeState } from '../crdt/types/StoreTypes';
  * change() method from SharedStoreActions to make modifications.
  */
 export class MetronomeActions extends SharedStoreActions<SharedMetronomeState> {
-  constructor() {
-    super('metronome');
+  constructor(sharedRoot: SharedStoreRoot) {
+    super('metronome', sharedRoot);
   }
 
   setActive(active: boolean) {
