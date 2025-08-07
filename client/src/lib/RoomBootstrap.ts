@@ -89,9 +89,9 @@ export async function enableCollaboration() {
   });
 
   // Dynamically import and initialize CRDT system (heavy Automerge loading)
-  const { sharedStoreRoot } = await import('../crdt');
-  disposalCallbacks.push(sharedStoreRoot.dispose);
-  await sharedStoreRoot.initialize(realTimeController);
+  const { initializeSharedStore, disposeSharedStore } = await import('../crdt');
+  disposalCallbacks.push(disposeSharedStore);
+  await initializeSharedStore(realTimeController);
   AudioSyncCoordinator.start();
 }
 

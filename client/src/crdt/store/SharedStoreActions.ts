@@ -1,33 +1,35 @@
 import type { SharedStoreRoot } from './SharedStoreRoot';
 import type { SharedStoreKey } from '../types/StoreTypes';
 
+// Global shared store root - set when CRDT system initializes
+let globalSharedRoot: SharedStoreRoot | null = null;
+
+/**
+ * Initialize the global shared store root.
+ * Called by RoomBootstrap when CRDT system comes online.
+ */
+export function initializeGlobalStore(sharedRoot: SharedStoreRoot): void {
+  globalSharedRoot = sharedRoot;
+}
+
 /**
  * Base class for actions that modify shared CRDT state.
  * Extends this class to create actions for your shared store slice.
  * 
- * Features don't need to know about CRDT internals - just use the change() method
- * to make modifications and everything else is handled automatically.
+ * Actions check the global shared root and gracefully degrade if CRDT isn't ready.
  */
 export abstract class SharedStoreActions<T> {
-  constructor(
-    private storeKey: SharedStoreKey,
-    private sharedRoot: SharedStoreRoot
-  ) {}
+  constructor(private storeKey: SharedStoreKey) {}
 
   /**
    * Make changes to the shared state using Automerge.
    * All mutations inside the callback are tracked and synchronized.
    * 
-   * @example
-   * ```ts
-   * setBpm(bpm: number) {
-   *   this.change(state => {
-   *     state.bpm = bpm;
-   *   });
-   * }
-   * ```
+   * If CRDT system isn't ready yet, changes are silently ignored.
    */
   protected change(changeFn: (state: T) => void): void {
-    this.sharedRoot.change(this.storeKey, changeFn);
+    if (!globalSharedRoot) return;
+    
+    globalSharedRoot.change(this.storeKey, changeFn);
   }
 }
