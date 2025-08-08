@@ -56,6 +56,7 @@ function SettingsModal(props: Props) {
         <button 
           class={styles.modalCloseButton}
           onClick={() => navigate('/')}
+          aria-label="Close settings"
         >
           ×
         </button>

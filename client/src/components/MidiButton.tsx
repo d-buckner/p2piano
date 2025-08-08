@@ -8,11 +8,13 @@ import UsbIcon from './UsbIcon';
 
 function MidiButton() {
   const midi = useAppSelector(selectMidi);
+  const midiLabel = () => midi().enabled ? 'Disable MIDI input' : 'Enable MIDI input';
 
   return (
     <button
       class={clsx(styles.midiButton, midi().enabled && styles.active)}
       onClick={toggleMidiEnabled}
+      aria-label={midiLabel()}
     >
       <UsbIcon />
     </button>

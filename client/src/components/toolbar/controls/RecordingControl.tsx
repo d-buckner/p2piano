@@ -66,7 +66,7 @@ function RecordingControl() {
           <h3 class={styles.dropdownTitle}>Recordings</h3>
           <div class={styles.recordingsList}>
             <For each={recordings}>{rec => (
-              <button class={styles.recordingItem}>
+              <button class={styles.recordingItem} aria-label={`Play recording: ${rec.name}`}>
                 <span>{rec.name}</span>
                 <span class={styles.recordingDate}>{rec.date}</span>
               </button>

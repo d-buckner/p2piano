@@ -36,12 +36,15 @@ function Volume() {
     return 'volume-full';
   }
 
+  const muteLabel = () => isMuted() ? 'Unmute' : 'Mute';
+
   return (
     <div class={styles.volumeContainer}>
       <button
         class={styles.muteButton}
         onClick={toggleMute}
-        title={isMuted() ? 'Unmute' : 'Mute'}
+        title={muteLabel()}
+        aria-label={muteLabel()}
       >
         <Icon name={getVolumeIconName()} />
       </button>

@@ -25,7 +25,11 @@ function Modal(props: ModalProps) {
             <Show when={props.title}>
               <div class={styles.header}>
                 <h2 class={styles.title}>{props.title}</h2>
-                <button class={styles.closeButton} onClick={() => props.onClose()}>
+                <button 
+                  class={styles.closeButton} 
+                  onClick={() => props.onClose()}
+                  aria-label="Close modal"
+                >
                   ×
                 </button>
               </div>

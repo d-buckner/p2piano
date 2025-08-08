@@ -58,7 +58,7 @@ function ActiveUsers() {
         open={isDropdownOpen()}
         onOpenChange={setIsDropdownOpen}
         trigger={
-          <button class={styles.usersButton}>
+          <button class={styles.usersButton} aria-label="Show active users">
             <UsersIcon size={14} class={styles.icon} />
             <div class={styles.userAvatars}>
               <For each={displayUsers().slice(0, 4)}>{user => (

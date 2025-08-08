@@ -111,6 +111,7 @@ function Metronome() {
       <button
         class={clsx(styles.metronomeButton, metronome().active && styles.active)}
         onClick={toggleMetronome}
+        aria-label={metronome().active ? 'Stop metronome' : 'Start metronome'}
       >
         {metronome().active ? '◼' : '▶'}
       </button>
@@ -121,6 +122,7 @@ function Metronome() {
           onMouseUp={stopHold}
           onMouseLeave={stopHold}
           disabled={metronome().bpm <= MIN_BPM}
+          aria-label="Decrease BPM"
         >
           −
         </button>
@@ -138,6 +140,7 @@ function Metronome() {
           onMouseUp={stopHold}
           onMouseLeave={stopHold}
           disabled={metronome().bpm >= MAX_BPM}
+          aria-label="Increase BPM"
         >
           +
         </button>

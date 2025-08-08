@@ -72,7 +72,7 @@ describe('InviteButton', () => {
     });
 
     // Close the modal by clicking the close button
-    const closeButton = screen.getByText('×');
+    const closeButton = screen.getByRole('button', { name: /close modal/i });
     fireEvent.click(closeButton);
 
     await waitFor(() => {
@@ -92,8 +92,7 @@ describe('InviteButton', () => {
       expect(screen.getByText('Invite to Room')).toBeInTheDocument();
     });
 
-    const allButtons = screen.getAllByRole('button');
-    const copyButton = allButtons.find(button => button.className.includes('copyButton'))!;
+    const copyButton = screen.getByRole('button', { name: /copy room link/i });
     fireEvent.click(copyButton);
 
     expect(mockWriteText).toHaveBeenCalledWith('http://localhost:3000/room/ABCDE');
@@ -111,8 +110,7 @@ describe('InviteButton', () => {
       expect(screen.getByText('Invite to Room')).toBeInTheDocument();
     });
 
-    const allButtons = screen.getAllByRole('button');
-    const copyButton = allButtons.find(button => button.className.includes('copyButton'))!;
+    const copyButton = screen.getByRole('button', { name: /copy room link/i });
     fireEvent.click(copyButton);
 
     await waitFor(() => {
@@ -132,8 +130,7 @@ describe('InviteButton', () => {
       expect(screen.getByText('Invite to Room')).toBeInTheDocument();
     });
 
-    const allButtons = screen.getAllByRole('button');
-    const copyButton = allButtons.find(button => button.className.includes('copyButton'))!;
+    const copyButton = screen.getByRole('button', { name: /copy room link/i });
     fireEvent.click(copyButton);
 
     await waitFor(() => {

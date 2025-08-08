@@ -1,5 +1,6 @@
+import { useNavigate } from '@solidjs/router';
 import { createSignal, Show } from 'solid-js';
-import { updateDisplayName } from '../actions/WorkspaceActions';
+import { destroyRoom, updateDisplayName } from '../actions/WorkspaceActions';
 import ClientPreferences from '../lib/ClientPreferences';
 import { isIOS } from '../lib/userAgent';
 import * as styles from './WelcomeModal.css';
@@ -12,6 +13,7 @@ interface Props {
 }
 
 const WelcomeModal = (props: Props) => {
+  const navigate = useNavigate();
   const [displayName, setDisplayName] = createSignal<string | undefined>(ClientPreferences.getDisplayName());
   const [isEditing, setIsEditing] = createSignal(false);
   const [tempName, setTempName] = createSignal<string>('');
@@ -22,6 +24,11 @@ const WelcomeModal = (props: Props) => {
     }
 
     props.onJoin();
+  };
+
+  const navigateHome = () => {
+    navigate('/');
+    destroyRoom();
   };
 
   const isValidName = (name: string) => {
@@ -70,6 +77,10 @@ const WelcomeModal = (props: Props) => {
 
   const getContextMessage = () => {
     const count = getUserCount() - 1;
+    if (count < 0) {
+      return '';
+    }
+
     if (count === 0) {
       return "You'll be the first to play!";
     }
@@ -90,9 +101,9 @@ const WelcomeModal = (props: Props) => {
         </p>
 
         <div class={styles.joiningAs}>
-          Joining as 
+          Joining as
           <Show when={!isEditing()}>
-            <button 
+            <button
               class={styles.displayNameButton}
               onClick={startEditing}
             >
@@ -120,7 +131,7 @@ const WelcomeModal = (props: Props) => {
         <div class={styles.buttonGroup}>
           <button
             class={styles.backHomeButton}
-            onClick={() => window.location.href = '/'}
+            onClick={navigateHome}
           >
             Back Home
           </button>

@@ -48,6 +48,7 @@ function InviteButton() {
             <button
               onClick={handleCopyLink}
               class={`${styles.copyButton} ${copied() ? styles.copied : ''}`}
+              aria-label="Copy room link"
             >
               {copied() ? <CheckIcon size={16} /> : <CopyIcon size={16} />}
             </button>
