@@ -10,6 +10,12 @@ import { ChevronDownIcon, PlayIcon, StopIcon } from '../icons';
 import * as styles from './MetronomeControl.css';
 
 
+const timeSignatures = [
+  { value: 4, label: '4/4' },
+  { value: 3, label: '3/4' },
+  { value: 2, label: '2/4' },
+] as const;
+
 function MetronomeControl() {
   const metronome = useAppSelector(selectMetronome);
   const myUser = useAppSelector(selectMyUser);
@@ -18,7 +24,7 @@ function MetronomeControl() {
 
   // Pulse animation effect
   createEffect(() => {
-    let interval: number;
+    let interval: NodeJS.Timeout;
     if (metronome().active) {
       const beatInterval = 60000 / metronome().bpm;
       interval = setInterval(() => {
@@ -31,33 +37,23 @@ function MetronomeControl() {
 
   const toggleMetronome = () => {
     const newActive = !metronome().active;
-    
-    if (newActive) {
-      // Starting metronome - become leader
-      const myUserId = myUser()?.userId;
-      if (!myUserId) return;
-      metronomeActions.start(myUserId);
+
+    if (!newActive) {
+      metronomeActions.stop();
       return;
     }
-    
-    // Stopping metronome
-    metronomeActions.stop();
+
+    // Starting metronome - become leader
+    const myUserId = myUser()?.userId;
+    if (myUserId) {
+      metronomeActions.start(myUserId);
+    };
   };
 
   const handleBpmChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
     const newBpm = Number(target.value);
     metronomeActions.setBpm(newBpm);
-  };
-
-  const timeSignatures = [
-    { value: 4, label: '4/4' },
-    { value: 3, label: '3/4' },
-    { value: 2, label: '2/4' },
-  ];
-
-  const handleTimeSignatureChange = (beats: number) => {
-    metronomeActions.setBeatsPerMeasure(beats);
   };
 
   return (
@@ -73,7 +69,7 @@ function MetronomeControl() {
             </div>
           </button>
         </Tooltip>
-        
+
         <Dropdown
           open={isDropdownOpen()}
           onOpenChange={setIsDropdownOpen}
@@ -89,7 +85,7 @@ function MetronomeControl() {
         >
           <div class={styles.dropdownContent}>
             <h3 class={styles.dropdownTitle}>Metronome</h3>
-            
+
             <div class={styles.control}>
               <div class={styles.controlHeader}>
                 <label class={styles.label}>BPM</label>
@@ -111,14 +107,14 @@ function MetronomeControl() {
                 <span>{MAX_BPM}</span>
               </div>
             </div>
-            
+
             <div class={styles.control}>
               <label class={styles.label}>Time Signature</label>
               <div class={styles.timeSignatureGrid}>
                 <For each={timeSignatures}>{sig => (
                   <button
                     class={`${styles.timeSignatureButton} ${metronome().beatsPerMeasure === sig.value ? styles.selected : ''}`}
-                    onClick={() => handleTimeSignatureChange(sig.value)}
+                    onClick={() => metronomeActions.setBeatsPerMeasure(sig.value)}
                   >
                     {sig.label}
                   </button>

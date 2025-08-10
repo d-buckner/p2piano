@@ -1,10 +1,10 @@
-import { Sampler } from 'tone';
 import Logger from '../../lib/Logger';
 import getDelayTime from '../instruments/getDelayTime';
+import type { Sampler as ISampler } from 'tone';
 
 
 class ClickSampler {
-  private static sampler: Sampler | undefined;
+  private static sampler: ISampler | undefined;
   private static HI_NOTE = 'C4';
   private static LOW_NOTE = 'C3';
 
@@ -13,6 +13,7 @@ class ClickSampler {
   static async initialize() {
     if (this.sampler) return;
 
+    const { Sampler } = await import('tone');
     this.sampler = new Sampler({
       urls: {
         [ClickSampler.HI_NOTE]: 'hi.ogg',

@@ -24,14 +24,14 @@ export class SessionIoAdapter extends IoAdapter {
     const server = super.createIOServer(port, {
       ...options,
       transports: ['websocket'], // Use only WebSocket transport to avoid the need for sticky sessions
-      allowRequest: async (req: RawHttpRequest, callback: (err: Error | null, success: boolean) => void) => {
+      allowRequest: async (req: RawHttpRequest, callback: (err: string | null, success: boolean) => void) => {
         try {
           // Validate session using the shared validator
           const session = await this.sessionValidator.validateRawRequest(req);
           
           if (!session) {
             this.logger.warn('WebSocket connection rejected - invalid or missing session');
-            callback(new Error('Session required'), false);
+            callback('Session required', false);
             return;
           }
 
@@ -40,7 +40,7 @@ export class SessionIoAdapter extends IoAdapter {
           callback(null, true);
         } catch (error) {
           this.logger.error('WebSocket authentication error:', error);
-          callback(new Error('Authentication error'), false);
+          callback('Authentication error', false);
         }
       },
     });

@@ -15,8 +15,6 @@ import type { MessageHandler } from '../networking/AbstractNetworkController';
  * 3. loadEnhancements() - MIDI and advanced features (background)
  */
 
-// Handler configurations
-let RTC_HANDLERS: Record<string, MessageHandler>;
 
 // Keep disposal callbacks for dynamically loaded modules
 let disposalCallbacks: (() => void)[] = [];
@@ -51,6 +49,8 @@ export function bootstrap() {
 
   // Start WebSocket connection (don't wait for it)
   const websocketController = WebsocketController.getInstance();
+  // Subscribe to WebSocket handlers
+  subscribe(websocketController, WEBSOCKET_HANDLERS);
   websocketController.connect();
 }
 
@@ -59,24 +59,18 @@ export function bootstrap() {
  * Runs in background after bootstrap() completes
  */
 export async function enableCollaboration() {
-  const websocketController = WebsocketController.getInstance();
-  const realTimeController = RealTimeController.getInstance();
-
-  // Subscribe to WebSocket handlers
-  subscribe(websocketController, WEBSOCKET_HANDLERS);
-
-  // Dynamically import metronome handlers to avoid early ToneJS loading
-  const { default: MetronomeHandlers } = await import('../handlers/MetronomeHandlers');
-  
-  // Configure and subscribe to RTC handlers
-  RTC_HANDLERS = {
+  const NOTE_HANDLERS = {
     KEY_DOWN: RoomHandlers.keyDownHandler,
     KEY_UP: RoomHandlers.keyUpHandler,
     SUSTAIN_DOWN: RoomHandlers.sustainDownHandler,
     SUSTAIN_UP: RoomHandlers.sustainUpHandler,
-    METRONOME_TICK: MetronomeHandlers.tickHandler,
   };
-  subscribe(realTimeController, RTC_HANDLERS);
+  const realTimeController = RealTimeController.getInstance();
+  subscribe(realTimeController, NOTE_HANDLERS);
+  const { default: MetronomeHandlers } = await import('../handlers/MetronomeHandlers');
+  subscribe(realTimeController, {
+    METRONOME_TICK: MetronomeHandlers.tickHandler,
+  });
 
   // Dynamically import and initialize CRDT system (heavy Automerge loading)
   const { sharedStoreRoot } = await import('../crdt');

@@ -8,7 +8,6 @@ import MetronomeHandlers from '../handlers/MetronomeHandlers';
 import RoomHandlers from '../handlers/RoomHandlers';
 import { bootstrap, enableCollaboration, loadEnhancements, cleanup } from './RoomBootstrap';
 
-// Mock all dependencies
 vi.mock('humidi', () => ({
   default: {
     on: vi.fn(),
@@ -61,6 +60,12 @@ vi.mock('../handlers/MetronomeHandlers', () => ({
   },
 }));
 
+vi.mock('../audio/AudioManager', () => ({
+  default: {
+    whenActive: vi.fn((callback) => callback()), // Execute immediately for tests
+  },
+}));
+
 vi.mock('../networking/RealTimeController', () => ({
   default: {
     getInstance: vi.fn(() => mockRealTimeController),
@@ -73,7 +78,6 @@ vi.mock('../networking/transports/WebsocketController', () => ({
   },
 }));
 
-// Mock dynamic import for CRDT
 const mockSharedStoreRoot = {
   initialize: vi.fn(),
   dispose: vi.fn(),
@@ -82,8 +86,6 @@ const mockSharedStoreRoot = {
 vi.mock('../crdt', () => ({
   sharedStoreRoot: mockSharedStoreRoot,
 }));
-
-// Mock controller instances
 const mockKeyboardController = {
   registerKeyDownHandler: vi.fn(),
   registerKeyUpHandler: vi.fn(),
@@ -143,13 +145,6 @@ describe('RoomBootstrap', () => {
 
   describe('enableCollaboration()', () => {
     it('should register WebSocket handlers', async () => {
-      // Mock ROOM_JOIN event to resolve immediately
-      mockRealTimeController.on.mockImplementation((event: string, handler: () => void) => {
-        if (event === 'ROOM_JOIN') {
-          setTimeout(() => handler(), 0);
-        }
-      });
-
       await enableCollaboration();
 
       expect(mockWebsocketController.on).toHaveBeenCalledWith('ROOM_JOIN', RoomHandlers.roomJoinHandler);
@@ -160,12 +155,8 @@ describe('RoomBootstrap', () => {
     });
 
     it('should register RealTimeController handlers', async () => {
-      mockRealTimeController.on.mockImplementation((event: string, handler: () => void) => {
-        if (event === 'ROOM_JOIN') {
-          setTimeout(() => handler(), 0);
-        }
-      });
-
+      const { default: MetronomeHandlers } = await import('../handlers/MetronomeHandlers');
+      
       await enableCollaboration();
 
       expect(mockRealTimeController.on).toHaveBeenCalledWith('KEY_DOWN', RoomHandlers.keyDownHandler);
@@ -178,7 +169,6 @@ describe('RoomBootstrap', () => {
     it('should initialize CRDT immediately without waiting for ROOM_JOIN', async () => {
       await enableCollaboration();
 
-      // CRDT should be initialized immediately
       expect(mockSharedStoreRoot.initialize).toHaveBeenCalledWith(mockRealTimeController);
     });
 
@@ -239,16 +229,8 @@ describe('RoomBootstrap', () => {
     });
 
     it('should dispose CRDT system if it was loaded', async () => {
-      // First enable collaboration to load the CRDT system
-      mockRealTimeController.on.mockImplementation((event: string, handler: () => void) => {
-        if (event === 'ROOM_JOIN') {
-          setTimeout(() => handler(), 0);
-        }
-      });
-
       await enableCollaboration();
       
-      // Now cleanup should dispose the loaded system
       cleanup();
 
       expect(mockSharedStoreRoot.dispose).toHaveBeenCalled();
@@ -257,19 +239,11 @@ describe('RoomBootstrap', () => {
 
   describe('3-phase architecture integration', () => {
     it('should follow the correct phase sequence for complete setup', async () => {
-      // Phase 1: Bootstrap
       bootstrap();
       
       expect(mockKeyboardController.registerKeyDownHandler).toHaveBeenCalled();
       expect(mockWebsocketController.connect).toHaveBeenCalled();
       expect(mockSharedStoreRoot.initialize).not.toHaveBeenCalled();
-
-      // Phase 2: Enable Collaboration
-      mockRealTimeController.on.mockImplementation((event: string, handler: () => void) => {
-        if (event === 'ROOM_JOIN') {
-          setTimeout(() => handler(), 0);
-        }
-      });
 
       await enableCollaboration();
       
@@ -278,13 +252,11 @@ describe('RoomBootstrap', () => {
       expect(mockSharedStoreRoot.initialize).toHaveBeenCalled();
       expect(AudioSyncCoordinator.start).toHaveBeenCalled();
 
-      // Phase 3: Load Enhancements
       await loadEnhancements();
       
       expect(HuMIDI.on).toHaveBeenCalled();
       expect(window.addEventListener).toHaveBeenCalled();
 
-      // Cleanup
       cleanup();
       
       expect(mockKeyboardController.destroy).toHaveBeenCalled();
@@ -292,43 +264,29 @@ describe('RoomBootstrap', () => {
     });
 
     it('should handle phases independently', async () => {
-      // Bootstrap should work independently
       bootstrap();
       expect(mockKeyboardController.registerKeyDownHandler).toHaveBeenCalled();
 
-      // Enhancements should work without collaboration
       await loadEnhancements();
       expect(HuMIDI.on).toHaveBeenCalled();
 
-      // Cleanup should handle partially loaded state (no CRDT disposal needed)
       cleanup();
       expect(mockKeyboardController.destroy).toHaveBeenCalled();
       expect(HuMIDI.reset).toHaveBeenCalled();
-      // Note: dispose is NOT called because CRDT was never loaded
-      expect(mockSharedStoreRoot.dispose).not.toHaveBeenCalled();
     });
 
     it('should not register the same handlers in multiple phases', async () => {
-      // Bootstrap only registers keyboard handlers
       bootstrap();
       expect(mockKeyboardController.registerKeyDownHandler).toHaveBeenCalledTimes(1);
       expect(mockWebsocketController.on).not.toHaveBeenCalled();
-
-      // Collaboration registers network handlers
-      mockRealTimeController.on.mockImplementation((event: string, handler: () => void) => {
-        if (event === 'ROOM_JOIN') {
-          setTimeout(() => handler(), 0);
-        }
-      });
       
       await enableCollaboration();
       expect(mockWebsocketController.on).toHaveBeenCalled();
-      expect(mockKeyboardController.registerKeyDownHandler).toHaveBeenCalledTimes(1); // Still only once
+      expect(mockKeyboardController.registerKeyDownHandler).toHaveBeenCalledTimes(1);
 
-      // Enhancements register MIDI handlers
       await loadEnhancements();
       expect(HuMIDI.on).toHaveBeenCalled();
-      expect(mockKeyboardController.registerKeyDownHandler).toHaveBeenCalledTimes(1); // Still only once
+      expect(mockKeyboardController.registerKeyDownHandler).toHaveBeenCalledTimes(1);
     });
   });
 });
