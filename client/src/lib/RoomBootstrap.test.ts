@@ -141,11 +141,9 @@ describe('RoomBootstrap', () => {
 
       expect(HuMIDI.on).not.toHaveBeenCalled();
     });
-  });
 
-  describe('enableCollaboration()', () => {
-    it('should register WebSocket handlers', async () => {
-      await enableCollaboration();
+    it('should register WebSocket handlers', () => {
+      bootstrap();
 
       expect(mockWebsocketController.on).toHaveBeenCalledWith('ROOM_JOIN', RoomHandlers.roomJoinHandler);
       expect(mockWebsocketController.on).toHaveBeenCalledWith('USER_CONNECT', RoomHandlers.userConnectHandler);
@@ -153,7 +151,9 @@ describe('RoomBootstrap', () => {
       expect(mockWebsocketController.on).toHaveBeenCalledWith('USER_UPDATE', RoomHandlers.userUpdateHandler);
       expect(mockWebsocketController.on).toHaveBeenCalledWith('NEWER_CONNECTION', RoomHandlers.newerConnectionHandler);
     });
+  });
 
+  describe('enableCollaboration()', () => {
     it('should register RealTimeController handlers', async () => {
       const { default: MetronomeHandlers } = await import('../handlers/MetronomeHandlers');
       
@@ -278,10 +278,10 @@ describe('RoomBootstrap', () => {
     it('should not register the same handlers in multiple phases', async () => {
       bootstrap();
       expect(mockKeyboardController.registerKeyDownHandler).toHaveBeenCalledTimes(1);
-      expect(mockWebsocketController.on).not.toHaveBeenCalled();
+      expect(mockWebsocketController.on).toHaveBeenCalled();
       
       await enableCollaboration();
-      expect(mockWebsocketController.on).toHaveBeenCalled();
+      expect(mockRealTimeController.on).toHaveBeenCalled();
       expect(mockKeyboardController.registerKeyDownHandler).toHaveBeenCalledTimes(1);
 
       await loadEnhancements();
