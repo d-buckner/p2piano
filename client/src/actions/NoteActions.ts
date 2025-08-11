@@ -1,6 +1,6 @@
 import { setStore } from '../app/store';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
-import { getAudioDelay } from '../audio/syncronization/utils';
+import { getAudioDelay } from '../audio/synchronization/utils';
 import PianoClient from '../clients/PianoClient';
 import { DEFAULT_VELOCITY, type Note } from '../constants';
 import { getResolvedUserId, getUserColor } from './utils';

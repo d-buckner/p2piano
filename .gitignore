@@ -5,5 +5,6 @@ node_modules
 integration-tests/playwright-report
 integration-tests/test-results
 
-# README drafts and planning
-README_next.md
+Trace-*.json
+*.har
+PROJECT_RESEARCH.md

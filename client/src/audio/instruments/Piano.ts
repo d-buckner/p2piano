@@ -72,7 +72,6 @@ export default class Piano implements Instrument {
   }
 
   // everything below here is for the progressive sample streaming
-  // TODO: generalize this implementation so it can be used by any old sampler
 
 
   private async load(): Promise<void> {

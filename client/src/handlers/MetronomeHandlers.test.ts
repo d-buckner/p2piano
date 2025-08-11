@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import AudioManager from '../audio/AudioManager';
 import ClickSampler from '../audio/metronome/ClickSampler';
-import { getAudioDelay } from '../audio/syncronization/utils';
+import { getAudioDelay } from '../audio/synchronization/utils';
 import { TICK_TYPE } from '../constants/metronome';
 import { selectMyUser } from '../selectors/workspaceSelectors';
 import MetronomeHandlers from './MetronomeHandlers';

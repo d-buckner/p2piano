@@ -2,7 +2,7 @@ import HuMIDI from 'humidi';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as NoteActions from '../actions/NoteActions';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
-import AudioSyncCoordinator from '../audio/syncronization/AudioSyncCoordinator';
+import AudioSyncCoordinator from '../audio/synchronization/AudioSyncCoordinator';
 import KeyboardController from '../controllers/KeyboardController';
 import RoomHandlers from '../handlers/RoomHandlers';
 import { bootstrap, enableCollaboration, loadEnhancements, cleanup } from './RoomBootstrap';

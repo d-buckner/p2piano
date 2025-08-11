@@ -133,6 +133,20 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       sourcemap: 'hidden',
+      modulePreload: {
+        // Selectively preload only critical routes
+        resolveDependencies: (filename, deps) => {
+          // Only preload Room and Home route chunks (most critical for performance)
+          return deps.filter(dep => {
+            const isRoomChunk = dep.includes('Room-') || dep.includes('room');
+            const isHomeChunk = dep.includes('Home-') || dep.includes('home');
+            const isCriticalSharedChunk = dep.includes('SharedSystems') || 
+                                         dep.includes('index-') ||
+                                         dep.includes('components-');
+            return isRoomChunk || isHomeChunk || isCriticalSharedChunk;
+          });
+        }
+      },
       rollupOptions: {
         input: {
           main: './index.html',

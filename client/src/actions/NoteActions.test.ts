@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { setStore } from '../app/store';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
-import { getAudioDelay } from '../audio/syncronization/utils';
+import { getAudioDelay } from '../audio/synchronization/utils';
 import PianoClient from '../clients/PianoClient';
 import { DEFAULT_VELOCITY, type Note } from '../constants';
 import { selectUser, selectWorkspace } from '../selectors/workspaceSelectors';

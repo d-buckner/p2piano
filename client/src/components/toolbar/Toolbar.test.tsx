@@ -1,6 +1,6 @@
 import { render, cleanup } from '@solidjs/testing-library';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import Toolbar from './Toolbar';
+import Toolbar from './';
 
 // Mock the child components
 vi.mock('./controls/MetronomeControl', () => ({

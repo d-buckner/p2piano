@@ -2,7 +2,7 @@ import { A } from '@solidjs/router';
 import clsx from 'clsx';
 import * as WorkspaceActions from '../actions/WorkspaceActions';
 import * as styles from './RoomNav.css';
-import Toolbar from './Toolbar';
+import Toolbar from './toolbar';
 import InviteButton from './toolbar/controls/InviteButton';
 import RoomCode from './toolbar/controls/RoomCode';
 

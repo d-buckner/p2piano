@@ -1,7 +1,7 @@
 import { store } from '../app/store';
 import AudioManager from '../audio/AudioManager';
 import ClickSampler from '../audio/metronome/ClickSampler';
-import { getAudioDelay } from '../audio/syncronization/utils';
+import { getAudioDelay } from '../audio/synchronization/utils';
 import { TICK_TYPE, type TickType } from '../constants/metronome';
 import { selectMyUser } from '../selectors/workspaceSelectors';
 

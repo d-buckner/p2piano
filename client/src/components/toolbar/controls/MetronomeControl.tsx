@@ -1,7 +1,7 @@
 import { createSignal, createEffect, onCleanup, For } from 'solid-js';
 import { useAppSelector } from '../../../app/hooks';
 import { MIN_BPM, MAX_BPM } from '../../../constants/metronome';
-import { metronomeActions } from '../../../crdt';
+import { metronomeActions } from '../../../crdt/actions';
 import { selectMetronome } from '../../../selectors/metronomeSelectors';
 import { selectMyUser } from '../../../selectors/workspaceSelectors';
 import Dropdown from '../../ui/Dropdown';
