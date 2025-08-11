@@ -26,12 +26,8 @@ vi.mock('../audio/instruments/InstrumentRegistry', () => ({
   },
 }));
 
-vi.mock('../audio/syncronization/AudioSyncCoordinator', () => ({
-  default: {
-    start: vi.fn(),
-    stop: vi.fn(),
-  },
-}));
+vi.mock('../audio/synchronization/AudioSyncCoordinator');
+const MockedAudioSyncCoordinator = vi.mocked(AudioSyncCoordinator);
 
 vi.mock('../controllers/KeyboardController', () => ({
   default: {
@@ -95,6 +91,7 @@ const mockKeyboardController = {
 const mockRealTimeController = {
   on: vi.fn(),
   off: vi.fn(),
+  once: vi.fn(),
 };
 
 const mockWebsocketController = {
@@ -133,7 +130,7 @@ describe('RoomBootstrap', () => {
     it('should not start AudioSyncCoordinator in bootstrap phase', () => {
       bootstrap();
 
-      expect(AudioSyncCoordinator.start).not.toHaveBeenCalled();
+      expect(MockedAudioSyncCoordinator.start).not.toHaveBeenCalled();
     });
 
     it('should not register MIDI handlers in bootstrap phase', () => {
@@ -175,7 +172,7 @@ describe('RoomBootstrap', () => {
     it('should start AudioSyncCoordinator immediately', async () => {
       await enableCollaboration();
 
-      expect(AudioSyncCoordinator.start).toHaveBeenCalled();
+      expect(MockedAudioSyncCoordinator.start).toHaveBeenCalled();
     });
 
   });
@@ -219,7 +216,7 @@ describe('RoomBootstrap', () => {
     it('should stop audio sync coordinator', () => {
       cleanup();
 
-      expect(AudioSyncCoordinator.stop).toHaveBeenCalled();
+      expect(MockedAudioSyncCoordinator.stop).toHaveBeenCalled();
     });
 
     it('should remove window blur handler', () => {
@@ -250,7 +247,7 @@ describe('RoomBootstrap', () => {
       expect(mockWebsocketController.on).toHaveBeenCalled();
       expect(mockRealTimeController.on).toHaveBeenCalled();
       expect(mockSharedStoreRoot.initialize).toHaveBeenCalled();
-      expect(AudioSyncCoordinator.start).toHaveBeenCalled();
+      expect(MockedAudioSyncCoordinator.start).toHaveBeenCalled();
 
       await loadEnhancements();
       

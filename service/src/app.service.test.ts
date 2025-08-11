@@ -9,6 +9,14 @@ import type { TestingModule } from '@nestjs/testing';
 vi.mock('./entities/Room');
 const MockedRoom = vi.mocked(Room);
 
+// Mock the telemetry metrics
+vi.mock('./telemetry/metrics', () => ({
+  applicationMetrics: {
+    recordRoomCreated: vi.fn(),
+    recordRoomCreationFailed: vi.fn(),
+  },
+}));
+
 describe('AppService', () => {
   let service: AppService;
 

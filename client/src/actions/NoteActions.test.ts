@@ -8,34 +8,11 @@ import { selectUser, selectWorkspace } from '../selectors/workspaceSelectors';
 import { keyDown, keyUp, sustainDown, sustainUp } from './NoteActions';
 
 // Mock dependencies
-vi.mock('../app/store', () => ({
-  store: {},
-  setStore: vi.fn(),
-}));
-
-vi.mock('../audio/instruments/InstrumentRegistry', () => ({
-  default: {
-    get: vi.fn(),
-  },
-}));
-
-vi.mock('../audio/syncronization/utils', () => ({
-  getAudioDelay: vi.fn(() => 0),
-}));
-
-vi.mock('../clients/PianoClient', () => ({
-  default: {
-    keyDown: vi.fn(),
-    keyUp: vi.fn(),
-    sustainDown: vi.fn(),
-    sustainUp: vi.fn(),
-  },
-}));
-
-vi.mock('../selectors/workspaceSelectors', () => ({
-  selectUser: vi.fn(() => () => ({ color: '#ff0000' })),
-  selectWorkspace: vi.fn(() => ({ userId: 'current-user-id' })),
-}));
+vi.mock('../app/store');
+vi.mock('../audio/instruments/InstrumentRegistry');
+vi.mock('../audio/synchronization/utils');
+vi.mock('../clients/PianoClient');
+vi.mock('../selectors/workspaceSelectors');
 
 describe('NoteActions', () => {
   const mockInstrument = {
@@ -48,6 +25,7 @@ describe('NoteActions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
+    // Setup mocked functions
     vi.mocked(InstrumentRegistry.get).mockReturnValue(mockInstrument);
     vi.mocked(getAudioDelay).mockReturnValue(0);
     vi.mocked(selectUser).mockReturnValue(() => ({ color: '#ff0000' }));

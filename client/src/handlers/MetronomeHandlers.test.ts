@@ -28,7 +28,7 @@ vi.mock('../audio/metronome/ClickSampler', () => ({
   }
 }));
 
-vi.mock('../audio/syncronization/utils', () => ({
+vi.mock('../audio/synchronization/utils', () => ({
   getAudioDelay: vi.fn().mockReturnValue(0.1)
 }));
 

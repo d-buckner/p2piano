@@ -4,6 +4,13 @@ import { AppService } from './app.service';
 import Room from './entities/Room';
 import type { TestingModule } from '@nestjs/testing';
 
+// Mock the telemetry metrics
+vi.mock('./telemetry/metrics', () => ({
+  applicationMetrics: {
+    recordRoomCreated: vi.fn(),
+    recordRoomCreationFailed: vi.fn(),
+  },
+}));
 
 // Mock the Room entity
 vi.mock('./entities/Room', () => {
