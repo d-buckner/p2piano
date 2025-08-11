@@ -1,3 +1,4 @@
+import { preloadSamples } from 'd-piano';
 import HuMIDI from 'humidi';
 import * as NoteActions from '../actions/NoteActions';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
@@ -77,6 +78,7 @@ export async function enableCollaboration() {
   await sharedStoreRoot.initialize(realTimeController);
   disposalCallbacks.push(() => sharedStoreRoot.dispose());
   AudioSyncCoordinator.start();
+  preloadSamples(1);
 }
 
 /**

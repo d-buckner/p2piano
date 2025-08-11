@@ -1,3 +1,4 @@
+import { preloadSamples } from 'd-piano';
 import HuMIDI from 'humidi';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as NoteActions from '../actions/NoteActions';
@@ -13,6 +14,10 @@ vi.mock('humidi', () => ({
     on: vi.fn(),
     reset: vi.fn(),
   },
+}));
+
+vi.mock('d-piano', () => ({
+  preloadSamples: vi.fn(),
 }));
 
 vi.mock('../actions/NoteActions', () => ({
@@ -175,6 +180,11 @@ describe('RoomBootstrap', () => {
       expect(MockedAudioSyncCoordinator.start).toHaveBeenCalled();
     });
 
+    it('should preload piano samples', async () => {
+      await enableCollaboration();
+
+      expect(preloadSamples).to.have.been.toBeCalledWith(1);
+    });
   });
 
   describe('loadEnhancements()', () => {
