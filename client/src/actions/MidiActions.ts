@@ -1,19 +1,18 @@
 import HuMIDI from 'humidi';
-import { setStore, store } from '../app/store';
-import { selectMidiAccess, selectMidiEnabled } from '../selectors/midiSelectors';
+import { midiStore, setMidiStore } from '../stores/MidiStore';
 
 
 export function setMidiEnabled(enabled: boolean) {
-  setStore('midi', 'enabled', enabled);
+  setMidiStore('enabled', enabled);
 }
 
 export function setMidiAccess(hasAccess: boolean) {
-  setStore('midi', 'hasAccess', hasAccess);
+  setMidiStore('hasAccess', hasAccess);
 }
 
 export function toggleMidiEnabled() {
-  if (!selectMidiAccess(store)) {
+  if (!midiStore.hasAccess) {
     HuMIDI.requestAccess().then(() => setMidiAccess(true));
   }
-  setStore('midi', 'enabled', !selectMidiEnabled(store));
+  setMidiStore('enabled', !midiStore.enabled);
 }

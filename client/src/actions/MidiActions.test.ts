@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { setStore } from '../app/store';
+import { setMidiStore } from '../stores/MidiStore';
 import { setMidiEnabled } from './MidiActions';
 
 
 // Mock the store
-vi.mock('../app/store', () => ({
-  setStore: vi.fn(),
+vi.mock('../stores/MidiStore', () => ({
+  setMidiStore: vi.fn(),
 }));
 
-const mockSetStore = vi.mocked(setStore);
+const mockSetMidiStore = vi.mocked(setMidiStore);
 
 describe('MidiActions', () => {
   beforeEach(() => {
@@ -19,13 +19,13 @@ describe('MidiActions', () => {
     it('should set MIDI enabled to true', () => {
       setMidiEnabled(true);
       
-      expect(mockSetStore).toHaveBeenCalledWith('midi', 'enabled', true);
+      expect(mockSetMidiStore).toHaveBeenCalledWith('enabled', true);
     });
 
     it('should set MIDI enabled to false', () => {
       setMidiEnabled(false);
       
-      expect(mockSetStore).toHaveBeenCalledWith('midi', 'enabled', false);
+      expect(mockSetMidiStore).toHaveBeenCalledWith('enabled', false);
     });
   });
 });
