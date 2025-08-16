@@ -11,12 +11,17 @@ vi.mock('../../../actions/MidiActions', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
-    toggleMidiEnabled: vi.fn(),
+    enableMidi: vi.fn(),
+    disableMidi: vi.fn(),
+    selectMidiInput: vi.fn(),
+    setMidiInputs: vi.fn(),
   };
 });
 
 vi.mock('../../../selectors/midiSelectors', () => ({
-  selectMidi: vi.fn(),
+  selectMidiEnabled: vi.fn(),
+  selectMidiInputs: vi.fn(),
+  selectSelectedMidiInput: vi.fn(),
 }));
 
 vi.mock('../../ui/Dropdown', () => ({
@@ -47,16 +52,23 @@ vi.mock('humidi', () => ({
 }));
 
 const mockUseAppSelector = vi.mocked(await import('../../../app/hooks')).useAppSelector;
+const { selectMidiEnabled, selectMidiInputs, selectSelectedMidiInput } = vi.mocked(await import('../../../selectors/midiSelectors'));
 
 describe('MidiControl', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     
-    // Default mock implementation
-    mockUseAppSelector.mockReturnValue(() => ({
-      enabled: false,
-      hasAccess: false,
-    }));
+    // Default mock implementations for each selector
+    selectMidiEnabled.mockReturnValue(() => false);
+    selectMidiInputs.mockReturnValue(() => []);
+    selectSelectedMidiInput.mockReturnValue(() => null);
+    
+    mockUseAppSelector.mockImplementation((selector) => {
+      if (selector === selectMidiEnabled) return selectMidiEnabled();
+      if (selector === selectMidiInputs) return selectMidiInputs();
+      if (selector === selectSelectedMidiInput) return selectSelectedMidiInput();
+      return () => null;
+    });
   });
 
   afterEach(() => {
@@ -82,10 +94,16 @@ describe('MidiControl', () => {
   });
 
   it('should handle different MIDI states', () => {
-    mockUseAppSelector.mockReturnValue(() => ({
-      enabled: true,
-      hasAccess: true,
-    }));
+    selectMidiEnabled.mockReturnValue(() => true);
+    selectMidiInputs.mockReturnValue(() => []);
+    selectSelectedMidiInput.mockReturnValue(() => null);
+    
+    mockUseAppSelector.mockImplementation((selector) => {
+      if (selector === selectMidiEnabled) return selectMidiEnabled();
+      if (selector === selectMidiInputs) return selectMidiInputs();
+      if (selector === selectSelectedMidiInput) return selectSelectedMidiInput();
+      return () => null;
+    });
     
     expect(() => {
       render(() => <MidiControl />);

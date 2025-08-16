@@ -1,5 +1,6 @@
 import { preloadSamples } from 'd-piano';
 import HuMIDI from 'humidi';
+import * as MidiActions from '../actions/MidiActions';
 import * as NoteActions from '../actions/NoteActions';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import AudioSyncCoordinator from '../audio/synchronization/AudioSyncCoordinator';
@@ -7,6 +8,7 @@ import KeyboardController from '../controllers/KeyboardController';
 import RoomHandlers from '../handlers/RoomHandlers';
 import RealTimeController from '../networking/RealTimeController';
 import WebsocketController from '../networking/transports/WebsocketController';
+import { midiStore } from '../stores/MidiStore';
 import type { MessageHandler } from '../networking/AbstractNetworkController';
 
 /**
@@ -31,6 +33,8 @@ const MIDI_HANDLERS = {
   noteoff: RoomHandlers.keyUpHandler,
   sustainon: RoomHandlers.sustainDownHandler,
   sustainoff: RoomHandlers.sustainUpHandler,
+  inputconnected: updateMidiInputs,
+  inputdisconnected: updateMidiInputs,
 } as const;
 
 interface EventEmitter {
@@ -43,6 +47,7 @@ interface EventEmitter {
  * This is the only phase that blocks the UI
  */
 export function bootstrap() {
+  window.addEventListener('blur', RoomHandlers.blurHandler);
   // Essential keyboard input for local piano playing
   const keyboardController = KeyboardController.getInstance();
   keyboardController.registerKeyDownHandler(NoteActions.keyDown);
@@ -72,7 +77,7 @@ export async function enableCollaboration() {
   subscribe(realTimeController, {
     METRONOME_TICK: MetronomeHandlers.tickHandler,
   });
-
+  
   // Dynamically import and initialize CRDT system (heavy Automerge loading)
   const { sharedStoreRoot } = await import('../crdt');
   await sharedStoreRoot.initialize(realTimeController);
@@ -88,9 +93,14 @@ export async function enableCollaboration() {
 export async function loadEnhancements() {
   // MIDI device integration
   subscribe(HuMIDI as EventEmitter, MIDI_HANDLERS);
-
-  // Window blur handler for pausing when window loses focus
-  window.addEventListener('blur', RoomHandlers.blurHandler);
+  // Check if MIDI permissions are already granted and enable if so
+  if (await HuMIDI.hasPermissions()) {
+    await HuMIDI.requestAccess();
+    await MidiActions.enableMidi();
+  }
+  
+  // Initialize MIDI input device tracking (after permissions check)
+  updateMidiInputs(); // Set initial inputs
 }
 
 /**
@@ -119,3 +129,11 @@ function subscribe(
     subscribable.on(action, handler);
   });
 }
+
+function updateMidiInputs() {
+  const inputs = HuMIDI.getInputs();
+  MidiActions.setMidiInputs(inputs);
+  if (!midiStore.selectedInput) {
+    MidiActions.selectMidiInput(inputs[0]);
+  }
+} 

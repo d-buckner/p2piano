@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { createSignal, createEffect, For } from 'solid-js';
 import Dropdown from '../../ui/Dropdown';
 import Tooltip from '../../ui/Tooltip';
@@ -53,7 +54,7 @@ function RecordingControl() {
         trigger={
           <Tooltip text={isRecording() ? 'Stop Recording' : 'Start Recording'} shortcut="R">
             <button
-              class={`${styles.recordButton} ${isRecording() ? styles.recording : ''}`}
+              class={clsx(styles.recordButton, { [styles.recording]: isRecording() })}
               onClick={handleRecordClick}
             >
               {isRecording() ? <SquareIcon size={14} /> : <CircleIcon size={14} />}

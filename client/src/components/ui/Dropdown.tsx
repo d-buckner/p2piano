@@ -29,12 +29,19 @@ function Dropdown(props: DropdownProps) {
     }
   };
 
+  const handleEscapeKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      setOpen(false);
+    }
+  };
+
   const handleTriggerClick = () => {
     setOpen(!isOpen());
   };
 
   onCleanup(() => {
     document.removeEventListener('mousedown', handleClickOutside);
+    document.removeEventListener('keydown', handleEscapeKey);
   });
 
   return (
@@ -45,6 +52,7 @@ function Dropdown(props: DropdownProps) {
       <Show when={isOpen()}>
         {(() => {
           document.addEventListener('mousedown', handleClickOutside);
+          document.addEventListener('keydown', handleEscapeKey);
           return (
             <div class={styles.dropdownContent}>
               {props.children}

@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { createSignal, createEffect, onCleanup, For } from 'solid-js';
 import { useAppSelector } from '../../../app/hooks';
 import { MIN_BPM, MAX_BPM } from '../../../constants/metronome';
@@ -59,12 +60,12 @@ function MetronomeControl() {
   return (
     <div class={styles.metronomeControl}>
       <div class={styles.metronomeContainer}>
-        <Tooltip text="Start/Stop Metronome" shortcut="Space">
+        <Tooltip text='Start/Stop Metronome'>
           <button
-            class={`${styles.toggleButton} ${metronome().active ? styles.active : ''}`}
+            class={clsx(styles.toggleButton, { [styles.active]: metronome().active })}
             onClick={toggleMetronome}
           >
-            <div class={`${styles.iconWrapper} ${isPulsing() && metronome().active ? styles.pulse : ''}`}>
+            <div class={clsx(styles.iconWrapper, { [styles.pulse]: isPulsing() && metronome().active })}>
               {metronome().active ? <StopIcon size={16} /> : <PlayIcon size={16} />}
             </div>
           </button>
@@ -75,11 +76,11 @@ function MetronomeControl() {
           onOpenChange={setIsDropdownOpen}
           trigger={
             <button
-              class={`${styles.dropdownTrigger} ${isDropdownOpen() ? styles.dropdownOpen : ''}`}
+              class={clsx(styles.dropdownTrigger, { [styles.dropdownOpen]: isDropdownOpen() })}
             >
               <span class={styles.bpmValue}>{metronome().bpm}</span>
               <span class={styles.bpmLabel}>BPM</span>
-              <ChevronDownIcon size={12} class={`${styles.chevron} ${isDropdownOpen() ? styles.chevronRotated : ''}`} />
+              <ChevronDownIcon size={12} class={clsx(styles.chevron, { [styles.chevronRotated]: isDropdownOpen() })} />
             </button>
           }
         >
@@ -113,7 +114,7 @@ function MetronomeControl() {
               <div class={styles.timeSignatureGrid}>
                 <For each={timeSignatures}>{sig => (
                   <button
-                    class={`${styles.timeSignatureButton} ${metronome().beatsPerMeasure === sig.value ? styles.selected : ''}`}
+                    class={clsx(styles.timeSignatureButton, { [styles.selected]: metronome().beatsPerMeasure === sig.value })}
                     onClick={() => metronomeActions.setBeatsPerMeasure(sig.value)}
                   >
                     {sig.label}

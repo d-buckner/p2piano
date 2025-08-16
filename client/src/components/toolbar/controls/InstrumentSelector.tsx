@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { createSignal, For } from 'solid-js';
 import { updateInstrument } from '../../../actions/WorkspaceActions';
 import { useAppSelector } from '../../../app/hooks';
@@ -35,18 +36,18 @@ function InstrumentSelector() {
         onOpenChange={setIsDropdownOpen}
         trigger={
           <button
-            class={`${styles.selectorButton} ${isDropdownOpen() ? styles.open : ''}`}
+            class={clsx(styles.selectorButton, { [styles.open]: isDropdownOpen() })}
           >
             <span class={styles.icon}>{currentInstrument()?.icon}</span>
             <span>{currentInstrument()?.label}</span>
-            <ChevronDownIcon size={12} class={`${styles.chevron} ${isDropdownOpen() ? styles.chevronRotated : ''}`} />
+            <ChevronDownIcon size={12} class={clsx(styles.chevron, { [styles.chevronRotated]: isDropdownOpen() })} />
           </button>
         }
       >
         <div class={styles.dropdownContent}>
           <For each={instruments}>{inst => (
             <button
-              class={`${styles.instrumentItem} ${currentInstrument().value === inst.value ? styles.selected : ''}`}
+              class={clsx(styles.instrumentItem, { [styles.selected]: currentInstrument().value === inst.value })}
               onClick={() => handleInstrumentSelect(inst.value)}
             >
               <span class={styles.icon}>{inst.icon}</span>

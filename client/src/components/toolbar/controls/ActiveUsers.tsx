@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { createSignal, Show, For } from 'solid-js';
 import { useAppSelector } from '../../../app/hooks';
 import { InstrumentType } from '../../../audio/instruments/Instrument';
@@ -83,7 +84,7 @@ function ActiveUsers() {
           <h3 class={styles.dropdownTitle}>Active Users ({displayUsers().length})</h3>
           <div class={styles.usersList}>
             <For each={displayUsers()}>{user => (
-              <div class={`${styles.userItem} ${isCurrentUser(user.userId) ? styles.currentUser : ''}`}>
+              <div class={clsx(styles.userItem, { [styles.currentUser]: isCurrentUser(user.userId) })}>
                 <div class={styles.userInfo}>
                   <div
                     class={styles.userAvatar}

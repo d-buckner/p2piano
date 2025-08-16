@@ -36,6 +36,7 @@ export async function joinRoom(roomId: string) {
   setStore('workspace', 'isLoading', false);
 
   if (isValid) {
+    const RoomBootstrap = await import('../lib/RoomBootstrap');
     // Phase 1: Bootstrap essential features (deferred)
     defer(RoomBootstrap.bootstrap);
     

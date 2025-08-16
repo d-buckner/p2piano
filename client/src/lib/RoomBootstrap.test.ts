@@ -13,6 +13,9 @@ vi.mock('humidi', () => ({
   default: {
     on: vi.fn(),
     reset: vi.fn(),
+    hasPermissions: vi.fn(() => Promise.resolve(false)),
+    requestAccess: vi.fn(),
+    getInputs: vi.fn(() => []),
   },
 }));
 
@@ -23,6 +26,18 @@ vi.mock('d-piano', () => ({
 vi.mock('../actions/NoteActions', () => ({
   keyDown: vi.fn(),
   keyUp: vi.fn(),
+}));
+
+vi.mock('../actions/MidiActions', () => ({
+  enableMidi: vi.fn(),
+  setMidiInputs: vi.fn(),
+  selectMidiInput: vi.fn(),
+}));
+
+vi.mock('../stores/MidiStore', () => ({
+  midiStore: {
+    selectedInput: null,
+  },
 }));
 
 vi.mock('../audio/instruments/InstrumentRegistry', () => ({
@@ -197,8 +212,23 @@ describe('RoomBootstrap', () => {
       expect(HuMIDI.on).toHaveBeenCalledWith('sustainoff', RoomHandlers.sustainUpHandler);
     });
 
-    it('should register window blur handler', async () => {
+    it('should register MIDI device tracking handlers', async () => {
       await loadEnhancements();
+
+      expect(HuMIDI.on).toHaveBeenCalledWith('inputconnected', expect.any(Function));
+      expect(HuMIDI.on).toHaveBeenCalledWith('inputdisconnected', expect.any(Function));
+    });
+
+    it('should initialize MIDI input tracking', async () => {
+      const { setMidiInputs } = await import('../actions/MidiActions');
+      await loadEnhancements();
+
+      expect(HuMIDI.getInputs).toHaveBeenCalled();
+      expect(setMidiInputs).toHaveBeenCalledWith([]);
+    });
+
+    it('should register window blur handler', async () => {
+      bootstrap();
 
       expect(window.addEventListener).toHaveBeenCalledWith('blur', RoomHandlers.blurHandler);
     });

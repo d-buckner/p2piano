@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import * as styles from './DisplayName.css';
 import Label from './Label';
 
@@ -27,7 +28,7 @@ export default function DisplayName(props: Props) {
     <fieldset class={styles.fieldset}>
       <Label label='display name' />
       <input
-        class={`${styles.input} ${props.hasError ? styles.inputError : ''}`}
+        class={clsx(styles.input, { [styles.inputError]: props.hasError })}
         value={props.name}
         onInput={onChange}
         onKeyDown={onKeyDown}

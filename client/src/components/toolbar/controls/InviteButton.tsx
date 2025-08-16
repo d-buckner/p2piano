@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { createSignal } from 'solid-js';
 import Modal from '../../ui/Modal';
 import Tooltip from '../../ui/Tooltip';
@@ -47,7 +48,7 @@ function InviteButton() {
             />
             <button
               onClick={handleCopyLink}
-              class={`${styles.copyButton} ${copied() ? styles.copied : ''}`}
+              class={clsx(styles.copyButton, { [styles.copied]: copied() })}
               aria-label="Copy room link"
             >
               {copied() ? <CheckIcon size={16} /> : <CopyIcon size={16} />}

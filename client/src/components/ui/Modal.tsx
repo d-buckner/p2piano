@@ -1,4 +1,4 @@
-import { Show, type JSX } from 'solid-js';
+import { Show, createEffect, onCleanup, type JSX } from 'solid-js';
 import { Portal } from 'solid-js/web';
 import * as styles from './Modal.css';
 
@@ -16,6 +16,26 @@ function Modal(props: ModalProps) {
       props.onClose();
     }
   };
+
+  const handleEscapeKey = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      props.onClose();
+    }
+  };
+
+  // Add/remove escape key listener when modal opens/closes
+  createEffect(() => {
+    if (props.open) {
+      document.addEventListener('keydown', handleEscapeKey);
+    } else {
+      document.removeEventListener('keydown', handleEscapeKey);
+    }
+  });
+
+  // Cleanup on component unmount
+  onCleanup(() => {
+    document.removeEventListener('keydown', handleEscapeKey);
+  });
 
   return (
     <Show when={props.open}>

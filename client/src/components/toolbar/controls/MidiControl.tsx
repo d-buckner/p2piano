@@ -1,70 +1,61 @@
-import HuMIDI from 'humidi';
-import { createSignal, Show, createMemo, For } from 'solid-js';
-import { toggleMidiEnabled } from '../../../actions/MidiActions';
+import clsx from 'clsx';
+import { createSignal, Show, For } from 'solid-js';
+import * as MidiActions from '../../../actions/MidiActions';
 import { useAppSelector } from '../../../app/hooks';
-import { selectMidi } from '../../../selectors/midiSelectors';
+import { selectMidiEnabled, selectMidiInputs, selectSelectedMidiInput } from '../../../selectors/midiSelectors';
 import Dropdown from '../../ui/Dropdown';
 import Tooltip from '../../ui/Tooltip';
 import UsbIcon from '../../UsbIcon';
 import { ChevronDownIcon } from '../icons';
 import * as styles from './MidiControl.css';
+import type { MIDIInput } from 'humidi';
 
 
 function MidiControl() {
-  const midi = useAppSelector(selectMidi);
-  const [selectedDevice, setSelectedDevice] = createSignal<MIDIInput | null>(null);
+  const midiEnabled = useAppSelector(selectMidiEnabled);
+  const midiDevices = useAppSelector(selectMidiInputs);
+  const selectedInput = useAppSelector(selectSelectedMidiInput);
   const [isDropdownOpen, setIsDropdownOpen] = createSignal(false);
-  
-  // Get actual MIDI devices from humidi
-  const midiDevices = createMemo(() => {
-    try {
-      // Only try to get devices if MIDI is enabled/has access
-      if (midi().hasAccess) {
-        return HuMIDI.getInputs();
-      }
-      return [];
-    } catch {
-      return []; // Return empty array if MIDI access not available
-    }
-  });
 
   const handleDeviceSelect = (device: MIDIInput) => {
-    setSelectedDevice(device);
+    MidiActions.selectMidiInput(device);
+    device.enable();
     setIsDropdownOpen(false);
   };
 
   const handleDisconnect = () => {
-    toggleMidiEnabled();
-    setSelectedDevice(null);
+    MidiActions.disableMidi();
     setIsDropdownOpen(false);
   };
 
-  const handleButtonClick = async () => {
-    if (!midi().enabled) {
-      // Toggle MIDI enabled - this will request access if needed
-      toggleMidiEnabled();
-      
-      // After enabling, try to select the first device if available
-      setTimeout(() => {
-        const devices = midiDevices();
-        if (devices.length > 0) {
-          setSelectedDevice(devices[0]);
-        }
-      }, 100); // Small delay to allow access to be granted
-    } else if (midi().enabled) {
+  const onToggle = async (e: MouseEvent) => {
+    e.stopPropagation(); // Prevent Dropdown's handler from firing
+    
+    if (midiEnabled()) {
       setIsDropdownOpen(!isDropdownOpen());
+
+      if (midiDevices().length) {
+        return;
+      }
+    }
+
+    try {
+      await MidiActions.enableMidi();
+    } catch {
+      // Error is already logged in the action
+      // TODO: Show user notification about MIDI access failure
     }
   };
 
   return (
     <div class={styles.midiControl}>
       <Show
-        when={midi().enabled}
+        when={midiEnabled()}
         fallback={
           <Tooltip text="Enable MIDI">
             <button
               class={styles.midiButton}
-              onClick={handleButtonClick}
+              onClick={onToggle}
             >
               <UsbIcon width={14} height={14} />
               <span>MIDI</span>
@@ -78,13 +69,13 @@ function MidiControl() {
           trigger={
             <Tooltip text="MIDI Device Settings">
               <button
-                class={`${styles.midiButton} ${styles.active}`}
-                onClick={() => setIsDropdownOpen(!isDropdownOpen())}
+                class={clsx(styles.midiButton, styles.active)}
+                onClick={onToggle}
               >
                 <UsbIcon width={14} height={14} />
-                <span>{selectedDevice()?.name || 'MIDI'}</span>
+                <span>{selectedInput()?.name || 'MIDI'}</span>
                 <Show when={midiDevices().length > 1}>
-                  <ChevronDownIcon size={12} class={`${styles.chevron} ${isDropdownOpen() ? styles.chevronRotated : ''}`} />
+                  <ChevronDownIcon size={12} class={clsx(styles.chevron, { [styles.chevronRotated]: isDropdownOpen() })} />
                 </Show>
               </button>
             </Tooltip>
@@ -95,11 +86,11 @@ function MidiControl() {
             <div class={styles.deviceList}>
               <For each={midiDevices()}>{device => (
                 <button
-                  class={`${styles.deviceItem} ${selectedDevice()?.id === device.id ? styles.selected : ''}`}
+                  class={clsx(styles.deviceItem, { [styles.selected]: selectedInput()?.id === device.id })}
                   onClick={() => handleDeviceSelect(device)}
                 >
                   <span>{device.name}</span>
-                  <Show when={selectedDevice()?.id === device.id}>
+                  <Show when={selectedInput()?.id === device.id}>
                     <span class={styles.checkmark}>✓</span>
                   </Show>
                 </button>
