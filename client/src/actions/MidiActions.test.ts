@@ -98,5 +98,40 @@ describe('MidiActions', () => {
       expect(mockSetMidiStore).toHaveBeenCalledWith('inputs', {});
       expect(mockSetMidiStore).toHaveBeenCalledWith('selectedInputId', null);
     });
+
+    it('should handle single device correctly', () => {
+      mockMidiStore.selectedInputId = null;
+      
+      setMidiInputs([mockDevice1]);
+      
+      expect(mockSetMidiStore).toHaveBeenCalledWith('inputs', { device1: mockDevice1 });
+      expect(mockSetMidiStore).toHaveBeenCalledWith('selectedInputId', 'device1');
+    });
+
+    it('should preserve selection when device order changes', () => {
+      mockMidiStore.selectedInputId = 'device2';
+      
+      // Same devices, different order - selection should remain stable
+      setMidiInputs([mockDevice2, mockDevice1]);
+      
+      expect(mockSetMidiStore).toHaveBeenCalledWith('selectedInputId', 'device2');
+    });
+
+    it('should auto-select first device when selected device disconnects from multiple', () => {
+      const mockDevice3: DeviceMetadata = {
+        id: 'device3',
+        name: 'Piano 3',
+        manufacturer: 'Test',
+        state: 'connected',
+        enabled: true,
+      };
+      
+      mockMidiStore.selectedInputId = 'device2';
+      
+      // device2 disconnects, device1 and device3 remain
+      setMidiInputs([mockDevice1, mockDevice3]);
+      
+      expect(mockSetMidiStore).toHaveBeenCalledWith('selectedInputId', 'device1');
+    });
   });
 });

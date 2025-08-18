@@ -2,9 +2,16 @@ import HuMIDI, { type DeviceMetadata } from 'humidi';
 import { midiStore, setMidiStore } from '../stores/MidiStore';
 
 
+const Attributes = {
+  ENABLED: 'enabled',
+  HAS_ACCESS: 'hasAccess',
+  INPUTS: 'inputs',
+  SELECTED_INPUT_ID: 'selectedInputId',
+} as const;
+
 export async function enableMidi() {
   if (midiStore.hasAccess) {
-    setMidiStore('enabled', true);
+    setMidiStore(Attributes.ENABLED, true);
     if (midiStore.selectedInputId) {
       HuMIDI.enableDevice(midiStore.selectedInputId);
     }
@@ -14,7 +21,7 @@ export async function enableMidi() {
   try {
     await HuMIDI.requestAccess();
     setMidiAccess(true);
-    setMidiStore('enabled', true);
+    setMidiStore(Attributes.ENABLED, true);
 
     const inputs = HuMIDI.getInputs();
     if (!inputs.length) return;
@@ -29,7 +36,7 @@ export async function enableMidi() {
   } catch (error) {
     // Handle permission denied, device errors, etc.
     console.error('Failed to enable MIDI:', error);
-    setMidiStore('enabled', false); // Reset state on failure
+    setMidiStore(Attributes.ENABLED, false); // Reset state on failure
     throw error; // Re-throw so component can handle it
   }
 }
@@ -39,20 +46,20 @@ export function syncDevices() {
 }
 
 export function disableMidi() {
-  setMidiStore('enabled', false);
+  setMidiStore(Attributes.ENABLED, false);
   Object.values(midiStore.inputs).forEach(input => HuMIDI.disableDevice(input.id));
 }
 
 export function selectMidiInput(input: DeviceMetadata) {
-  setMidiStore('selectedInputId', input.id);
+  setMidiStore(Attributes.SELECTED_INPUT_ID, input.id);
 }
 
 export function selectMidiInputById(deviceId: string) {
-  setMidiStore('selectedInputId', deviceId);
+  setMidiStore(Attributes.SELECTED_INPUT_ID, deviceId);
 }
 
 export function setMidiAccess(hasAccess: boolean) {
-  setMidiStore('hasAccess', hasAccess);
+  setMidiStore(Attributes.HAS_ACCESS, hasAccess);
 }
 
 export function setMidiInputs(inputs: DeviceMetadata[]) {
@@ -73,8 +80,8 @@ export function setMidiInputs(inputs: DeviceMetadata[]) {
     currentSelectedInputId = inputs[0].id;
   }
   
-  setMidiStore('inputs', inputsRecord);
-  setMidiStore('selectedInputId', currentSelectedInputId);
+  setMidiStore(Attributes.INPUTS, inputsRecord);
+  setMidiStore(Attributes.SELECTED_INPUT_ID, currentSelectedInputId);
 
 }
 
