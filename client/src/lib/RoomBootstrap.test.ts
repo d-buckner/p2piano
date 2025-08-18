@@ -32,11 +32,12 @@ vi.mock('../actions/MidiActions', () => ({
   enableMidi: vi.fn(),
   setMidiInputs: vi.fn(),
   selectMidiInput: vi.fn(),
+  syncDevices: vi.fn(),
 }));
 
 vi.mock('../stores/MidiStore', () => ({
   midiStore: {
-    selectedInput: null,
+    selectedInputId: null,
   },
 }));
 
@@ -220,11 +221,10 @@ describe('RoomBootstrap', () => {
     });
 
     it('should initialize MIDI input tracking', async () => {
-      const { setMidiInputs } = await import('../actions/MidiActions');
+      const { syncDevices } = await import('../actions/MidiActions');
       await loadEnhancements();
 
-      expect(HuMIDI.getInputs).toHaveBeenCalled();
-      expect(setMidiInputs).toHaveBeenCalledWith([]);
+      expect(syncDevices).toHaveBeenCalled();
     });
 
     it('should register window blur handler', async () => {

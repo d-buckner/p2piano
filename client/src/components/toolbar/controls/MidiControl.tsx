@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import HuMIDI, { type DeviceMetadata } from 'humidi';
 import { createSignal, Show, For } from 'solid-js';
 import * as MidiActions from '../../../actions/MidiActions';
 import { useAppSelector } from '../../../app/hooks';
@@ -8,7 +9,6 @@ import Tooltip from '../../ui/Tooltip';
 import UsbIcon from '../../UsbIcon';
 import { ChevronDownIcon } from '../icons';
 import * as styles from './MidiControl.css';
-import type { MIDIInput } from 'humidi';
 
 
 function MidiControl() {
@@ -17,9 +17,9 @@ function MidiControl() {
   const selectedInput = useAppSelector(selectSelectedMidiInput);
   const [isDropdownOpen, setIsDropdownOpen] = createSignal(false);
 
-  const handleDeviceSelect = (device: MIDIInput) => {
+  const handleDeviceSelect = (device: DeviceMetadata) => {
     MidiActions.selectMidiInput(device);
-    device.enable();
+    HuMIDI.enableDevice(device.id);
     setIsDropdownOpen(false);
   };
 
@@ -34,7 +34,7 @@ function MidiControl() {
     if (midiEnabled()) {
       setIsDropdownOpen(!isDropdownOpen());
 
-      if (midiDevices().length) {
+      if (Object.keys(midiDevices()).length) {
         return;
       }
     }
@@ -74,7 +74,7 @@ function MidiControl() {
               >
                 <UsbIcon width={14} height={14} />
                 <span>{selectedInput()?.name || 'MIDI'}</span>
-                <Show when={midiDevices().length > 1}>
+                <Show when={Object.keys(midiDevices()).length > 1}>
                   <ChevronDownIcon size={12} class={clsx(styles.chevron, { [styles.chevronRotated]: isDropdownOpen() })} />
                 </Show>
               </button>
@@ -84,17 +84,26 @@ function MidiControl() {
           <div class={styles.dropdownContent}>
             <h3 class={styles.dropdownTitle}>MIDI Devices</h3>
             <div class={styles.deviceList}>
-              <For each={midiDevices()}>{device => (
-                <button
-                  class={clsx(styles.deviceItem, { [styles.selected]: selectedInput()?.id === device.id })}
-                  onClick={() => handleDeviceSelect(device)}
-                >
-                  <span>{device.name}</span>
-                  <Show when={selectedInput()?.id === device.id}>
-                    <span class={styles.checkmark}>✓</span>
-                  </Show>
-                </button>
-              )}</For>
+              <Show 
+                when={Object.keys(midiDevices()).length > 0} 
+                fallback={
+                  <div class={styles.deviceItem}>
+                    <span>No devices connected</span>
+                  </div>
+                }
+              >
+                <For each={Object.values(midiDevices())}>{device => (
+                  <button
+                    class={clsx(styles.deviceItem, { [styles.selected]: selectedInput()?.id === device.id })}
+                    onClick={() => handleDeviceSelect(device)}
+                  >
+                    <span>{device.name}</span>
+                    <Show when={selectedInput()?.id === device.id}>
+                      <span class={styles.checkmark}>✓</span>
+                    </Show>
+                  </button>
+                )}</For>
+              </Show>
             </div>
             <div class={styles.divider} />
             <button

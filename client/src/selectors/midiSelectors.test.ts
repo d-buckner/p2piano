@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { selectMidi, selectMidiEnabled } from './midiSelectors';
+import { selectMidi, selectMidiEnabled, selectMidiInputs, selectSelectedMidiInput } from './midiSelectors';
 import type { RootState } from '../app/store';
+import type { DeviceMetadata } from 'humidi';
 
 
 describe('midiSelectors', () => {
@@ -19,6 +20,9 @@ describe('midiSelectors', () => {
     },
     midi: {
       enabled: midiEnabled,
+      hasAccess: false,
+      selectedInputId: null,
+      inputs: {},
     },
     metronome: {
       active: false,
@@ -36,6 +40,9 @@ describe('midiSelectors', () => {
 
       expect(result).toEqual({
         enabled: true,
+        hasAccess: false,
+        selectedInputId: null,
+        inputs: {},
       });
     });
 
@@ -46,6 +53,9 @@ describe('midiSelectors', () => {
 
       expect(result).toEqual({
         enabled: false,
+        hasAccess: false,
+        selectedInputId: null,
+        inputs: {},
       });
     });
   });
@@ -65,6 +75,90 @@ describe('midiSelectors', () => {
       const result = selectMidiEnabled(mockState);
 
       expect(result).toBe(false);
+    });
+  });
+
+  describe('selectMidiInputs', () => {
+    it('should return empty object when no inputs', () => {
+      const mockState = createMockState(false);
+      
+      const result = selectMidiInputs(mockState);
+      
+      expect(result).toEqual({});
+    });
+    
+    it('should return inputs record', () => {
+      const mockDevice: DeviceMetadata = {
+        id: 'device1',
+        name: 'Piano',
+        manufacturer: 'Test',
+        state: 'connected',
+        enabled: true,
+      };
+      
+      const mockState = {
+        ...createMockState(false),
+        midi: {
+          enabled: false,
+          hasAccess: false,
+          selectedInputId: null,
+          inputs: { device1: mockDevice },
+        },
+      };
+      
+      const result = selectMidiInputs(mockState);
+      
+      expect(result).toEqual({ device1: mockDevice });
+    });
+  });
+
+  describe('selectSelectedMidiInput', () => {
+    const mockDevice: DeviceMetadata = {
+      id: 'device1',
+      name: 'Piano',
+      manufacturer: 'Test',
+      state: 'connected',
+      enabled: true,
+    };
+    
+    it('should return null when no device selected', () => {
+      const mockState = createMockState(false);
+      
+      const result = selectSelectedMidiInput(mockState);
+      
+      expect(result).toBe(null);
+    });
+    
+    it('should return selected device when available', () => {
+      const mockState = {
+        ...createMockState(false),
+        midi: {
+          enabled: false,
+          hasAccess: false,
+          selectedInputId: 'device1',
+          inputs: { device1: mockDevice },
+        },
+      };
+      
+      const result = selectSelectedMidiInput(mockState);
+      
+      expect(result).toEqual(mockDevice);
+    });
+    
+    it('should return null when selected device is not in inputs', () => {
+      const mockState = {
+        ...createMockState(false),
+        midi: {
+          enabled: false,
+          hasAccess: false,
+          selectedInputId: 'device1',
+          inputs: {},
+        },
+      };
+      
+      const result = selectSelectedMidiInput(mockState);
+      
+      expect(result).toBe(null);
     });
   });
 });

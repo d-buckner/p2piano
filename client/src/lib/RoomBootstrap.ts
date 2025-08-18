@@ -8,7 +8,6 @@ import KeyboardController from '../controllers/KeyboardController';
 import RoomHandlers from '../handlers/RoomHandlers';
 import RealTimeController from '../networking/RealTimeController';
 import WebsocketController from '../networking/transports/WebsocketController';
-import { midiStore } from '../stores/MidiStore';
 import type { MessageHandler } from '../networking/AbstractNetworkController';
 
 /**
@@ -33,8 +32,8 @@ const MIDI_HANDLERS = {
   noteoff: RoomHandlers.keyUpHandler,
   sustainon: RoomHandlers.sustainDownHandler,
   sustainoff: RoomHandlers.sustainUpHandler,
-  inputconnected: updateMidiInputs,
-  inputdisconnected: updateMidiInputs,
+  inputconnected: MidiActions.syncDevices,
+  inputdisconnected: MidiActions.syncDevices,
 } as const;
 
 interface EventEmitter {
@@ -100,7 +99,7 @@ export async function loadEnhancements() {
   }
   
   // Initialize MIDI input device tracking (after permissions check)
-  updateMidiInputs(); // Set initial inputs
+  MidiActions.syncDevices();
 }
 
 /**
@@ -129,11 +128,3 @@ function subscribe(
     subscribable.on(action, handler);
   });
 }
-
-function updateMidiInputs() {
-  const inputs = HuMIDI.getInputs();
-  MidiActions.setMidiInputs(inputs);
-  if (!midiStore.selectedInput) {
-    MidiActions.selectMidiInput(inputs[0]);
-  }
-} 
