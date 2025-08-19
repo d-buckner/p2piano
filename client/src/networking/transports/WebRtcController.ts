@@ -1,6 +1,7 @@
 import SimplePeer from 'simple-peer';
 import { updatePeerTransport } from '../../actions/ConnectionActions';
 import { store } from '../../app/store';
+import { decodeEnvelope, encodeEnvelope } from '../../codecs/EventCodec';
 import { Transport } from '../../constants';
 import Logger from '../../lib/Logger';
 import { requestIdleCallback } from '../../lib/ponyfill';
@@ -52,7 +53,6 @@ export default class WebRtcController extends AbstractNetworkController {
   private peers = new Map<string, SimplePeer.Instance>();
   private activePeerIds = new Set<string>();
   private pendingConnections = new Set<string>();
-  private textDecoder = new TextDecoder();
 
   private constructor() {
     super();
@@ -84,17 +84,14 @@ export default class WebRtcController extends AbstractNetworkController {
     });
   }
 
-  public sendToPeer<T extends Message>(peerId: string, action: string, message?: T) {
+  public sendToPeer<T extends Message>(peerId: string, eventType: string, payload?: T) {
     const peer = this.peers.get(peerId);
 
     if (!peer || !this.activePeerIds.has(peerId)) {
       throw new Error('Cannot send message to unavailable peer');
     }
 
-    peer.send(JSON.stringify({
-      action,
-      payload: message,
-    }));
+    peer.send(encodeEnvelope(eventType, payload));
   }
 
   public getActivePeerIds(): Set<string> {
@@ -199,10 +196,10 @@ export default class WebRtcController extends AbstractNetworkController {
 
     peer.on(PEER_EVENT.DATA, data => {
       try {
-        const message = JSON.parse(this.textDecoder.decode(data));
-        Logger.DEBUG(`[WebRTC] Data from ${userId}: ${message.action}`);
-        const callbacks = this.messageHandlers.get(message.action);
-        callbacks?.forEach(cb => cb({ ...message.payload, userId }));
+        const { eventType, payload } = decodeEnvelope(data);
+        Logger.DEBUG(`[WebRTC] Data from ${userId}: ${eventType}`);
+        const callbacks = this.messageHandlers.get(eventType);
+        callbacks?.forEach(cb => cb({ ...payload, userId }));
       } catch (error) {
         Logger.ERROR(`[WebRTC] Parse error from ${userId}: ${error instanceof Error ? error.message : 'Unknown'}`);
       }

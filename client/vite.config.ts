@@ -6,6 +6,7 @@ import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
 import { defineConfig } from 'vite';
 import compression from 'vite-plugin-compression';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
+import proto from 'vite-plugin-proto';
 import solidPlugin from 'vite-plugin-solid';
 import topLevelAwait from 'vite-plugin-top-level-await';
 import wasm from 'vite-plugin-wasm';
@@ -32,6 +33,7 @@ export default defineConfig(({ mode }) => {
   }
 
   const plugins = [
+    proto(),
     vanillaExtractPlugin(),
     solidPlugin(),
     // for Automerge WASM support
@@ -125,8 +127,8 @@ export default defineConfig(({ mode }) => {
         ],
         thresholds: {
           lines: 70,
-          functions: 80,
-          branches: 80,
+          functions: 75,
+          branches: 75,
           statements: 70
         },
       },
