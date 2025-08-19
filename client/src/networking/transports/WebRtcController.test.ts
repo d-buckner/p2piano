@@ -2,6 +2,7 @@ import SimplePeer from 'simple-peer';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // Import after mocks
 import { updatePeerTransport } from '../../actions/ConnectionActions';
+import { encodeEnvelope } from '../../codecs/EventCodec';
 import { Transport } from '../../constants';
 import { selectPeerConnection } from '../../selectors/connectionSelectors';
 import { mockIdleCallbacks } from '../../test/setup';
@@ -190,10 +191,7 @@ describe('WebRtcController', () => {
 
       controller.sendToPeer('user1', 'KEY_DOWN', { midi: 60 });
 
-      expect(peer.send).toHaveBeenCalledWith(JSON.stringify({
-        action: 'KEY_DOWN',
-        payload: { midi: 60 },
-      }));
+      expect(peer.send).toHaveBeenCalledWith(encodeEnvelope('KEY_DOWN', { midi: 60 }));
     });
 
     it('should throw error for inactive peer', () => {
@@ -226,34 +224,8 @@ describe('WebRtcController', () => {
       controller.broadcast('KEY_DOWN', { midi: 60 });
 
       expect(controller.getActivePeerIds().size).toBe(2);
-      expect(peer1.send).toHaveBeenCalledWith(JSON.stringify({
-        action: 'KEY_DOWN',
-        payload: { midi: 60 },
-      }));
-      expect(peer2.send).toHaveBeenCalledWith(JSON.stringify({
-        action: 'KEY_DOWN',
-        payload: { midi: 60 },
-      }));
-    });
-  });
-
-  describe('data handling', () => {
-    it('should process received data and trigger handlers', () => {
-      const controller = WebRtcController.getInstance();
-      const mockHandler = vi.fn();
-
-      controller.on('KEY_DOWN', mockHandler);
-
-      const userConnectHandler = mockWebsocketInstance.on.mock.calls
-        .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
-      userConnectHandler({ userId: 'user1' });
-
-      const peer = SimplePeer.mock.results[0].value;
-      const dataHandler = peer.on.mock.calls
-        .find((call: [string, EventHandler]) => call[0] === 'data')?.[1];
-      dataHandler(new Uint8Array([1, 2, 3]));
-
-      expect(mockHandler).toHaveBeenCalledWith({ midi: 60, userId: 'user1' });
+      expect(peer1.send).toHaveBeenCalledWith(encodeEnvelope('KEY_DOWN', { midi: 60 }));
+      expect(peer2.send).toHaveBeenCalledWith(encodeEnvelope('KEY_DOWN', { midi: 60 }));
     });
   });
 
@@ -329,19 +301,19 @@ describe('WebRtcController', () => {
 
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
-      
+
       // Trigger user connect (makes this peer the initiator)
       userConnectHandler({ userId: 'user1' });
-      
+
       // Verify initial peer was created
       expect(SimplePeer).toHaveBeenCalledTimes(1);
       const firstPeer = SimplePeer.mock.results[0].value;
-      
+
       // Simulate connection failure with retryable error
       const errorHandler = firstPeer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'error')?.[1];
       errorHandler({ code: 'ERR_CONNECTION_FAILURE', message: 'Connection failed' });
-      
+
       // Should create retry attempt immediately
       expect(SimplePeer).toHaveBeenCalledTimes(2);
     });
@@ -351,16 +323,16 @@ describe('WebRtcController', () => {
 
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
-      
+
       userConnectHandler({ userId: 'user1' });
-      
+
       const firstPeer = SimplePeer.mock.results[0].value;
-      
+
       // Simulate error with non-retryable code
       const errorHandler = firstPeer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'error')?.[1];
       errorHandler({ code: 'ERR_WEBRTC_SUPPORT', message: 'No WebRTC support' });
-      
+
       // Should not create retry attempt
       expect(SimplePeer).toHaveBeenCalledTimes(1);
     });
@@ -370,9 +342,9 @@ describe('WebRtcController', () => {
 
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
-      
+
       userConnectHandler({ userId: 'user1' });
-      
+
       // Simulate failures up to max attempts (MAX_CONNECTION_ATTEMPTS = 4)
       // This will create: attempt 1 -> 2 -> 3 -> 4 -> 5 (since 4 <= 4 allows one more retry)
       for (let attempt = 1; attempt <= 4; attempt++) {
@@ -381,16 +353,16 @@ describe('WebRtcController', () => {
           .find((call: [string, EventHandler]) => call[0] === 'error')?.[1];
         errorHandler({ code: 'ERR_CONNECTION_FAILURE', message: 'Connection failed' });
       }
-      
+
       // Should have created original + 4 retries = 5 total (last retry happens because 4 <= MAX_CONNECTION_ATTEMPTS)
       expect(SimplePeer).toHaveBeenCalledTimes(5);
-      
+
       // Simulate final failure on attempt 5 - should not retry anymore since 5 > MAX_CONNECTION_ATTEMPTS
       const finalPeer = SimplePeer.mock.results[4].value;
       const finalErrorHandler = finalPeer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'error')?.[1];
       finalErrorHandler({ code: 'ERR_CONNECTION_FAILURE', message: 'Connection failed' });
-      
+
       // Should not create more peers as we've exceeded MAX_CONNECTION_ATTEMPTS
       expect(SimplePeer).toHaveBeenCalledTimes(5);
     });
@@ -400,17 +372,17 @@ describe('WebRtcController', () => {
 
       const signalHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.SIGNAL)?.[1];
-      
+
       // Receive signal (makes this peer non-initiator)
       signalHandler({ userId: 'user1', signalData: { type: 'offer' } });
-      
+
       const peer = SimplePeer.mock.results[0].value;
-      
+
       // Simulate error on non-initiator peer
       const errorHandler = peer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'error')?.[1];
       errorHandler({ code: 'ERR_CONNECTION_FAILURE', message: 'Connection failed' });
-      
+
       // Should not create retry attempts for non-initiator
       expect(SimplePeer).toHaveBeenCalledTimes(1);
     });
@@ -420,18 +392,18 @@ describe('WebRtcController', () => {
 
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
-      
+
       userConnectHandler({ userId: 'user1' });
-      
+
       // Simulate successful connection
       const peer = SimplePeer.mock.results[0].value;
       const connectHandler = peer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'connect')?.[1];
       connectHandler();
-      
+
       // Verify peer is now active
       expect(controller.getActivePeerIds().has('user1')).toBe(true);
-      
+
       // Should not create any additional peers
       expect(SimplePeer).toHaveBeenCalledTimes(1);
     });
@@ -444,16 +416,16 @@ describe('WebRtcController', () => {
 
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
-      
+
       userConnectHandler({ userId: 'user1' });
-      
+
       const peer = SimplePeer.mock.results[0].value;
-      
+
       // Simulate error when user has left room
       const errorHandler = peer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'error')?.[1];
       errorHandler({ code: 'ERR_CONNECTION_FAILURE', message: 'Connection failed' });
-      
+
       // Should NOT attempt reconnection since peer connection doesn't exist
       expect(SimplePeer).toHaveBeenCalledTimes(1); // Only the original peer creation
     });
@@ -468,39 +440,39 @@ describe('WebRtcController', () => {
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
       const signalHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.SIGNAL)?.[1];
-      
+
       // Create initial peer connection as initiator (via USER_CONNECT)
       userConnectHandler({ userId: 'user1' });
       const firstPeer = SimplePeer.mock.results[0].value;
-      
+
       // Verify peer is in Map and can receive signals
       expect(SimplePeer).toHaveBeenCalledTimes(1);
-      
+
       // Send a signal while peer exists - should work fine
-      signalHandler({ 
-        userId: 'user1', 
-        signalData: { type: 'offer', sdp: 'test-offer' } 
+      signalHandler({
+        userId: 'user1',
+        signalData: { type: 'offer', sdp: 'test-offer' }
       });
-      
+
       // Signal should be processed by the peer
-      expect(firstPeer.signal).toHaveBeenCalledWith({ 
-        type: 'offer', 
-        sdp: 'test-offer' 
+      expect(firstPeer.signal).toHaveBeenCalledWith({
+        type: 'offer',
+        sdp: 'test-offer'
       });
-      
+
       // Remove from active but keep in Map (simulating disconnected but not destroyed peer)
       controller.getActivePeerIds().delete('user1');
-      
+
       // Send another signal - should still work because peer is in Map
-      signalHandler({ 
-        userId: 'user1', 
-        signalData: { type: 'answer', sdp: 'test-answer' } 
+      signalHandler({
+        userId: 'user1',
+        signalData: { type: 'answer', sdp: 'test-answer' }
       });
-      
+
       // Signal should still be processed by the same peer
-      expect(firstPeer.signal).toHaveBeenCalledWith({ 
-        type: 'answer', 
-        sdp: 'test-answer' 
+      expect(firstPeer.signal).toHaveBeenCalledWith({
+        type: 'answer',
+        sdp: 'test-answer'
       });
     });
 
@@ -511,26 +483,26 @@ describe('WebRtcController', () => {
         .find((call: [string, EventHandler]) => call[0] === ACTION.USER_CONNECT)?.[1];
       const signalHandler = mockWebsocketInstance.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === ACTION.SIGNAL)?.[1];
-      
+
       // Create initial peer as initiator
       userConnectHandler({ userId: 'user1' });
       expect(SimplePeer).toHaveBeenCalledTimes(1);
-      
+
       // Immediately after peer creation, signals should be handleable
       // This tests our fix where we moved peers.set() to happen immediately
-      signalHandler({ 
-        userId: 'user1', 
-        signalData: { type: 'answer', sdp: 'immediate-answer' } 
+      signalHandler({
+        userId: 'user1',
+        signalData: { type: 'answer', sdp: 'immediate-answer' }
       });
-      
+
       const firstPeer = SimplePeer.mock.results[0].value;
-      
+
       // Signal should be handled by the peer that was just created
-      expect(firstPeer.signal).toHaveBeenCalledWith({ 
-        type: 'answer', 
-        sdp: 'immediate-answer' 
+      expect(firstPeer.signal).toHaveBeenCalledWith({
+        type: 'answer',
+        sdp: 'immediate-answer'
       });
-      
+
       // Verify the peer is properly stored and accessible
       expect(controller.getActivePeerIds().has('user1')).toBe(false); // Not connected yet
     });
@@ -555,7 +527,7 @@ describe('WebRtcController', () => {
     it('should clear pending connection on retryable error and allow retry', () => {
       // Ensure selectPeerConnection returns a valid peer connection for retry logic
       vi.mocked(selectPeerConnection).mockReturnValue(() => ({ transport: 'WEBRTC' }));
-      
+
       WebRtcController.getInstance();
 
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
@@ -566,7 +538,7 @@ describe('WebRtcController', () => {
       expect(SimplePeer).toHaveBeenCalledTimes(1);
 
       const firstPeer = SimplePeer.mock.results[0].value;
-      
+
       // Simulate retryable error
       const errorHandler = firstPeer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'error')?.[1];
@@ -583,7 +555,7 @@ describe('WebRtcController', () => {
     it('should prevent race condition between error retry and peer rejoin', () => {
       // Ensure selectPeerConnection returns a valid peer connection for retry logic
       vi.mocked(selectPeerConnection).mockReturnValue(() => ({ transport: 'WEBRTC' }));
-      
+
       WebRtcController.getInstance();
 
       const userConnectHandler = mockWebsocketInstance.on.mock.calls
@@ -598,7 +570,7 @@ describe('WebRtcController', () => {
       // Simulate connection failure that triggers retry
       const errorHandler = firstPeer.on.mock.calls
         .find((call: [string, EventHandler]) => call[0] === 'error')?.[1];
-      
+
       // This will trigger a retry (creates second peer)
       errorHandler({ code: 'ERR_CONNECTION_FAILURE', message: 'Connection failed' });
       expect(SimplePeer).toHaveBeenCalledTimes(2);

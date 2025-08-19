@@ -1,0 +1,24 @@
+syntax = "proto3";
+package events;
+
+// Event Envelope for WebRTC Transport
+message Envelope {
+  string eventType = 1;    // e.g., "KEY_DOWN", "KEY_UP"
+  bytes payload = 2;        // Encoded event payload
+}
+
+// Note Events
+message KeyDownEvent {
+  uint32 note = 1;
+  uint32 velocity = 2;
+}
+
+message KeyUpEvent {
+  uint32 note = 1;
+}
+
+// Audio Sync Events
+message LatencyEvent {
+  double pingTime = 1;     // performance.now() timestamp  
+  string peerId = 2;       // User ID sending the message
+}

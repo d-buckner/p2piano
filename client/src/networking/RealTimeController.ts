@@ -85,7 +85,7 @@ export default class RealTimeController extends AbstractNetworkController {
     peerId: string,
     action: string,
     message?: T,
-    fallback: () => void,
+    fallback?: () => void,
   ) {
     const peerConnection = selectPeerConnection(peerId)(store);
     if (peerConnection?.transport === Transport.WEBRTC) {
@@ -99,7 +99,7 @@ export default class RealTimeController extends AbstractNetworkController {
       }
     }
 
-    fallback();
+    fallback?.();
   }
 
   public isWebSocketConnected(): boolean {
