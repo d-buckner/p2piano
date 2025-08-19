@@ -1,5 +1,5 @@
-import { events } from '../../proto/events.js';
-import type { Codec } from '../types.js';
+import { events } from '../proto/events.js';
+import type { Codec } from './types.js';
 
 
 interface KeyDownPayload {
@@ -11,20 +11,20 @@ interface KeyUpPayload {
   note: number;
 }
 
-export const KeyDownEvent: Codec<KeyDownPayload> = {
+export const KeyDownCodec: Codec<KeyDownPayload> = {
   encode(payload: KeyDownPayload): Uint8Array {
     return events.KeyDownEvent.encode(payload).finish();
   },
-  decode(buffer: Uint8Array): KeyDownPayload {
+  decode(buffer: Uint8Array) {
     return events.KeyDownEvent.decode(buffer);
   },
 } as const;
 
-export const KeyUpEvent: Codec<KeyUpPayload> = {
+export const KeyUpCodec: Codec<KeyUpPayload> = {
   encode(payload: KeyUpPayload): Uint8Array {
     return events.KeyUpEvent.encode(payload).finish();
   },
-  decode(buffer: Uint8Array): KeyUpPayload {
+  decode(buffer: Uint8Array) {
     return events.KeyUpEvent.decode(buffer);
   },
 } as const;

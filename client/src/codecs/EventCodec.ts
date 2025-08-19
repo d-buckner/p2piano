@@ -1,11 +1,9 @@
-import { EnvelopeEvent } from './EnvelopeCodec';
-import { KeyDownEvent, KeyUpEvent } from './note/NoteCodec';
-import { LatencyEvent } from './sync/SyncCodec';
+import { EnvelopeCodec } from './EnvelopeCodec';
+import { KeyDownCodec, KeyUpCodec } from './NoteCodec';
+import { LatencyCodec } from './SyncCodec';
+import { TextCodec } from './TextCodec';
 import type { Payload, Codec } from './types';
 
-
-const textEncoder = new TextEncoder();
-const textDecoder = new TextDecoder();
 
 interface DecodedEnvelope<T> {
   eventType: string,
@@ -13,10 +11,10 @@ interface DecodedEnvelope<T> {
 }
 
 const CodecRegistry: Record<string, Codec> = {
-  KEY_DOWN: KeyDownEvent,
-  KEY_UP: KeyUpEvent,
-  LATENCY_PING: LatencyEvent,
-  LATENCY_PONG: LatencyEvent,
+  KEY_DOWN: KeyDownCodec,
+  KEY_UP: KeyUpCodec,
+  LATENCY_PING: LatencyCodec,
+  LATENCY_PONG: LatencyCodec,
 } as const;
 
 function getCodec<T = unknown>(eventType: string): Codec<T> | undefined {
@@ -29,7 +27,7 @@ export function encode<T = unknown>(eventType: string, payload: T): Uint8Array {
     return codec.encode(payload);
   }
 
-  return textEncoder.encode(JSON.stringify(payload));
+  return TextCodec.encode(payload);
 }
 
 export function decode<T = unknown>(eventType: string, payload: Uint8Array): T {
@@ -38,18 +36,18 @@ export function decode<T = unknown>(eventType: string, payload: Uint8Array): T {
     return codec.decode(payload);
   }
 
-  return JSON.parse(textDecoder.decode(payload));
+  return TextCodec.decode(payload) as T;
 }
 
 export function encodeEnvelope<T extends Payload = Payload>(eventType: string, payload?: T): Uint8Array {
-  return EnvelopeEvent.encode({
+  return EnvelopeCodec.encode({
     eventType,
     payload: encode(eventType, payload),
   });
 }
 
 export function decodeEnvelope<T extends Payload = Payload>(envelope: Uint8Array): DecodedEnvelope<T> {
-  const { eventType, payload } = EnvelopeEvent.decode(envelope);
+  const { eventType, payload } = EnvelopeCodec.decode(envelope);
 
   return {
     eventType,

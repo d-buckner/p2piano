@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { KeyDownEvent, KeyUpEvent } from './NoteCodec';
+import { KeyDownCodec, KeyUpCodec } from './NoteCodec';
 
 
 describe('NoteCodec', () => {
@@ -10,11 +10,11 @@ describe('NoteCodec', () => {
         velocity: 100
       } as const;
 
-      const encoded = KeyDownEvent.encode(payload);
+      const encoded = KeyDownCodec.encode(payload);
       expect(encoded).toBeInstanceOf(Uint8Array);
       expect(encoded.length).toBeGreaterThan(0);
 
-      const decoded = KeyDownEvent.decode(encoded);
+      const decoded = KeyDownCodec.decode(encoded);
       expect(decoded).toEqual(payload);
     });
   });
@@ -25,11 +25,11 @@ describe('NoteCodec', () => {
         note: 41,
       } as const;
 
-      const encoded = KeyUpEvent.encode(payload);
+      const encoded = KeyUpCodec.encode(payload);
       expect(encoded).toBeInstanceOf(Uint8Array);
       expect(encoded.length).toBeGreaterThan(0);
 
-      const decoded = KeyUpEvent.decode(encoded);
+      const decoded = KeyUpCodec.decode(encoded);
       expect(decoded).toEqual(payload);
     });
   });

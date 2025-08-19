@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { LatencyEvent } from './SyncCodec';
+import { LatencyCodec } from './SyncCodec';
 
 
 describe('SyncCodec', () => {
@@ -10,11 +10,11 @@ describe('SyncCodec', () => {
         peerId: 'test-peer-id'
       };
 
-      const encoded = LatencyEvent.encode(payload);
+      const encoded = LatencyCodec.encode(payload);
       expect(encoded).toBeInstanceOf(Uint8Array);
       expect(encoded.length).toBeGreaterThan(0);
 
-      const decoded = LatencyEvent.decode(encoded);
+      const decoded = LatencyCodec.decode(encoded);
       expect(decoded).toEqual(payload);
     });
   });

@@ -7,11 +7,11 @@ interface EnvelopePayload {
   payload: Uint8Array;
 }
 
-export const EnvelopeEvent: Codec<EnvelopePayload> = {
+export const EnvelopeCodec: Codec<EnvelopePayload> = {
   encode(payload: EnvelopePayload): Uint8Array {
     return events.Envelope.encode(payload).finish();
   },
-  decode(buffer: Uint8Array): EnvelopePayload {
+  decode(buffer: Uint8Array) {
     return events.Envelope.decode(buffer);
   },
 } as const;
