@@ -1,4 +1,3 @@
-import { preloadSamples } from 'd-piano';
 import HuMIDI from 'humidi';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as NoteActions from '../actions/NoteActions';
@@ -194,12 +193,6 @@ describe('RoomBootstrap', () => {
       await enableCollaboration();
 
       expect(MockedAudioSyncCoordinator.start).toHaveBeenCalled();
-    });
-
-    it('should preload piano samples', async () => {
-      await enableCollaboration();
-
-      expect(preloadSamples).to.have.been.toBeCalledWith(1);
     });
   });
 
