@@ -22,3 +22,8 @@ message LatencyEvent {
   double pingTime = 1;     // performance.now() timestamp  
   string peerId = 2;       // User ID sending the message
 }
+
+// Metronome Events
+message MetronomeTickEvent {
+  string type = 1;         // "high" or "low"
+}

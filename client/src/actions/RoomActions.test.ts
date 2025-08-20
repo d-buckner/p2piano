@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { setStore } from '../app/store';
+import { setWorkspaceStore } from '../stores/WorkspaceStore';
 import { setRoom, setUserId } from './RoomActions';
 import type { Room, User } from '../lib/workspaceTypes';
 
 // Mock the store
-vi.mock('../app/store', () => ({
-  setStore: vi.fn(),
+vi.mock('../stores/WorkspaceStore', () => ({
+  setWorkspaceStore: vi.fn(),
 }));
 
 describe('RoomActions', () => {
@@ -36,7 +36,7 @@ describe('RoomActions', () => {
 
       setRoom(mockRoom);
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'room', mockRoom);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('room', mockRoom);
     });
 
     it('should set room with minimal room data', () => {
@@ -50,7 +50,7 @@ describe('RoomActions', () => {
 
       setRoom(mockRoom);
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'room', mockRoom);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('room', mockRoom);
     });
 
     it('should handle room with single user', () => {
@@ -70,7 +70,7 @@ describe('RoomActions', () => {
 
       setRoom(mockRoom);
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'room', mockRoom);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('room', mockRoom);
     });
 
     it('should handle room with many users', () => {
@@ -94,7 +94,7 @@ describe('RoomActions', () => {
 
       setRoom(mockRoom);
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'room', mockRoom);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('room', mockRoom);
     });
 
     it('should handle room with special characters in name', () => {
@@ -108,7 +108,7 @@ describe('RoomActions', () => {
 
       setRoom(mockRoom);
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'room', mockRoom);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('room', mockRoom);
     });
 
     it('should handle room updates (same room ID, different data)', () => {
@@ -137,9 +137,9 @@ describe('RoomActions', () => {
       setRoom(initialRoom);
       setRoom(updatedRoom);
 
-      expect(setStore).toHaveBeenCalledTimes(2);
-      expect(setStore).toHaveBeenNthCalledWith(1, 'workspace', 'room', initialRoom);
-      expect(setStore).toHaveBeenNthCalledWith(2, 'workspace', 'room', updatedRoom);
+      expect(setWorkspaceStore).toHaveBeenCalledTimes(2);
+      expect(setWorkspaceStore).toHaveBeenNthCalledWith(1, 'room', initialRoom);
+      expect(setWorkspaceStore).toHaveBeenNthCalledWith(2, 'room', updatedRoom);
     });
 
     it('should preserve room object integrity', () => {
@@ -159,7 +159,7 @@ describe('RoomActions', () => {
 
       setRoom(mockRoom);
 
-      const passedRoom = vi.mocked(setStore).mock.calls[0][2];
+      const passedRoom = vi.mocked(setWorkspaceStore).mock.calls[0][1];
       expect(passedRoom).toBe(mockRoom); // Should pass the exact same object reference
       expect(passedRoom).toEqual(mockRoom); // Should have the same content
     });
@@ -169,27 +169,27 @@ describe('RoomActions', () => {
     it('should set user ID with string value', () => {
       setUserId('user-12345');
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'userId', 'user-12345');
+      expect(setWorkspaceStore).toHaveBeenCalledWith('userId', 'user-12345');
     });
 
     it('should set user ID with UUID format', () => {
       const uuid = '550e8400-e29b-41d4-a716-446655440000';
       setUserId(uuid);
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'userId', uuid);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('userId', uuid);
     });
 
     it('should set user ID with session-based format', () => {
       const sessionId = 'session_abc123def456';
       setUserId(sessionId);
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'userId', sessionId);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('userId', sessionId);
     });
 
     it('should handle empty string user ID', () => {
       setUserId('');
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'userId', '');
+      expect(setWorkspaceStore).toHaveBeenCalledWith('userId', '');
     });
 
     it('should handle user ID changes', () => {
@@ -197,23 +197,23 @@ describe('RoomActions', () => {
       setUserId('updated-user');
       setUserId('final-user');
 
-      expect(setStore).toHaveBeenCalledTimes(3);
-      expect(setStore).toHaveBeenNthCalledWith(1, 'workspace', 'userId', 'initial-user');
-      expect(setStore).toHaveBeenNthCalledWith(2, 'workspace', 'userId', 'updated-user');
-      expect(setStore).toHaveBeenNthCalledWith(3, 'workspace', 'userId', 'final-user');
+      expect(setWorkspaceStore).toHaveBeenCalledTimes(3);
+      expect(setWorkspaceStore).toHaveBeenNthCalledWith(1, 'userId', 'initial-user');
+      expect(setWorkspaceStore).toHaveBeenNthCalledWith(2, 'userId', 'updated-user');
+      expect(setWorkspaceStore).toHaveBeenNthCalledWith(3, 'userId', 'final-user');
     });
 
     it('should handle user ID with special characters', () => {
       const specialUserId = 'user@domain.com-123_test';
       setUserId(specialUserId);
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'userId', specialUserId);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('userId', specialUserId);
     });
 
     it('should handle numeric user ID (as string)', () => {
       setUserId('123456789');
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'userId', '123456789');
+      expect(setWorkspaceStore).toHaveBeenCalledWith('userId', '123456789');
     });
   });
 
@@ -244,9 +244,9 @@ describe('RoomActions', () => {
 
       setRoom(mockRoom);
 
-      expect(setStore).toHaveBeenCalledTimes(2);
-      expect(setStore).toHaveBeenNthCalledWith(1, 'workspace', 'userId', 'current-user-123');
-      expect(setStore).toHaveBeenNthCalledWith(2, 'workspace', 'room', mockRoom);
+      expect(setWorkspaceStore).toHaveBeenCalledTimes(2);
+      expect(setWorkspaceStore).toHaveBeenNthCalledWith(1, 'userId', 'current-user-123');
+      expect(setWorkspaceStore).toHaveBeenNthCalledWith(2, 'room', mockRoom);
     });
 
     it('should handle room user changes after initial setup', () => {
@@ -297,7 +297,7 @@ describe('RoomActions', () => {
 
       setRoom(roomAfterUserLeaves);
 
-      expect(setStore).toHaveBeenCalledTimes(4); // 1 setUserId + 3 setRoom calls
+      expect(setWorkspaceStore).toHaveBeenCalledTimes(4); // 1 setUserId + 3 setRoom calls
     });
 
     it('should handle concurrent room and user updates', () => {
@@ -320,7 +320,7 @@ describe('RoomActions', () => {
         updatedAt: new Date(),
       });
 
-      expect(setStore).toHaveBeenCalledTimes(4);
+      expect(setWorkspaceStore).toHaveBeenCalledTimes(4);
     });
   });
 });

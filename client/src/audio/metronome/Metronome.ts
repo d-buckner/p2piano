@@ -50,12 +50,13 @@ class Metronome {
     const maxLatency = selectMaxLatency(store);
     // Determine tick type
     const tickType = this.currentBeat === 0 ? TICK_TYPE.HI : TICK_TYPE.LOW;
+    const tickTime = time + maxLatency / 1000;
     // Schedule audio at precise time with latency compensation using Tone.js scheduler
     // This avoids JS timing dependency by letting Tone.js handle the exact timing
     if (tickType === TICK_TYPE.HI) {
-      ClickSampler.scheduleHigh(time + maxLatency / 1000);
+      ClickSampler.scheduleHigh(tickTime);
     } else {
-      ClickSampler.scheduleLow(time + maxLatency / 1000);
+      ClickSampler.scheduleLow(tickTime);
     }
     // Broadcast tick to other clients
     RealTimeController.getInstance().broadcast('METRONOME_TICK', { type: tickType });

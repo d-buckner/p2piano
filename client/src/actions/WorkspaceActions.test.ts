@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { setStore } from '../app/store';
 import { getRoom } from '../clients/RoomClient';
 import { Transport } from '../constants';
 import ClientPreferences from '../lib/ClientPreferences';
@@ -7,6 +6,8 @@ import * as RoomBootstrap from '../lib/RoomBootstrap';
 import WebRtcController from '../networking/transports/WebRtcController';
 import WebsocketController from '../networking/transports/WebsocketController';
 import * as workspaceSelectors from '../selectors/workspaceSelectors';
+import { setWorkspaceStore } from '../stores/WorkspaceStore';
+import { addPeerConnection } from './ConnectionActions';
 import {
   joinRoom,
   updateDisplayName,
@@ -17,9 +18,19 @@ import type { Room } from '../lib/workspaceTypes';
 import type { Message } from '../networking/AbstractNetworkController';
 
 // Mock all dependencies
-vi.mock('../app/store', () => ({
-  setStore: vi.fn(),
-  store: {},
+vi.mock('../stores/WorkspaceStore', () => ({
+  setWorkspaceStore: vi.fn(),
+  workspaceStore: {
+    roomId: undefined,
+    userId: 'current-user-123',
+    isValid: undefined,
+    isLoading: undefined,
+    room: undefined,
+  },
+}));
+
+vi.mock('./ConnectionActions', () => ({
+  addPeerConnection: vi.fn(),
 }));
 
 vi.mock('../clients/RoomClient');
@@ -99,25 +110,19 @@ describe('WorkspaceActions', () => {
       vi.runAllTimers();
 
       // Should set roomId and loading state
-      expect(setStore).toHaveBeenCalledWith('workspace', 'roomId', 'room-123');
-      expect(setStore).toHaveBeenCalledWith('workspace', 'isLoading', true);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('roomId', 'room-123');
+      expect(setWorkspaceStore).toHaveBeenCalledWith('isLoading', true);
       
       // Should set the room data
-      expect(setStore).toHaveBeenCalledWith('workspace', 'room', mockRoom);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('room', mockRoom);
       
       // Should add peer connections for each user
-      expect(setStore).toHaveBeenCalledWith('connection', 'peerConnections', 'user-1', {
-        latency: 0,
-        transport: Transport.WEBSOCKET,
-      });
-      expect(setStore).toHaveBeenCalledWith('connection', 'peerConnections', 'user-2', {
-        latency: 0,
-        transport: Transport.WEBSOCKET,
-      });
+      expect(addPeerConnection).toHaveBeenCalledWith('user-1', Transport.WEBSOCKET, 0);
+      expect(addPeerConnection).toHaveBeenCalledWith('user-2', Transport.WEBSOCKET, 0);
       
       // Should set valid state and stop loading
-      expect(setStore).toHaveBeenCalledWith('workspace', 'isValid', true);
-      expect(setStore).toHaveBeenCalledWith('workspace', 'isLoading', false);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('isValid', true);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('isLoading', false);
       
       // Should run all RoomBootstrap phases
       expect(RoomBootstrap.bootstrap).toHaveBeenCalled();
@@ -151,10 +156,10 @@ describe('WorkspaceActions', () => {
       expect(getRoom).not.toHaveBeenCalled();
       
       // Should still set loading states
-      expect(setStore).toHaveBeenCalledWith('workspace', 'roomId', 'existing-room');
-      expect(setStore).toHaveBeenCalledWith('workspace', 'isLoading', true);
-      expect(setStore).toHaveBeenCalledWith('workspace', 'isValid', true);
-      expect(setStore).toHaveBeenCalledWith('workspace', 'isLoading', false);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('roomId', 'existing-room');
+      expect(setWorkspaceStore).toHaveBeenCalledWith('isLoading', true);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('isValid', true);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('isLoading', false);
       
       // Should run all RoomBootstrap phases
       expect(RoomBootstrap.bootstrap).toHaveBeenCalled();
@@ -178,8 +183,8 @@ describe('WorkspaceActions', () => {
       // Run deferred bootstrap call
       vi.runAllTimers();
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'room', emptyRoom);
-      expect(setStore).toHaveBeenCalledWith('workspace', 'isValid', true);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('room', emptyRoom);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('isValid', true);
       // Should run all RoomBootstrap phases
       expect(RoomBootstrap.bootstrap).toHaveBeenCalled();
       expect(RoomBootstrap.enableCollaboration).toHaveBeenCalled();
@@ -202,8 +207,8 @@ describe('WorkspaceActions', () => {
       // Run deferred bootstrap call
       vi.runAllTimers();
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'room', roomWithUndefinedUsers);
-      expect(setStore).toHaveBeenCalledWith('workspace', 'isValid', true);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('room', roomWithUndefinedUsers);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('isValid', true);
       // Should not try to add peer connections for undefined users
       // Should run all RoomBootstrap phases
       expect(RoomBootstrap.bootstrap).toHaveBeenCalled();
@@ -216,12 +221,12 @@ describe('WorkspaceActions', () => {
 
       await joinRoom('nonexistent-room');
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'roomId', 'nonexistent-room');
-      expect(setStore).toHaveBeenCalledWith('workspace', 'isLoading', true);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('roomId', 'nonexistent-room');
+      expect(setWorkspaceStore).toHaveBeenCalledWith('isLoading', true);
       
       // Should mark as invalid
-      expect(setStore).toHaveBeenCalledWith('workspace', 'isValid', false);
-      expect(setStore).toHaveBeenCalledWith('workspace', 'isLoading', false);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('isValid', false);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('isLoading', false);
       
       // Should not run RoomBootstrap phases
       expect(RoomBootstrap.bootstrap).not.toHaveBeenCalled();
@@ -234,7 +239,7 @@ describe('WorkspaceActions', () => {
 
       await joinRoom('timeout-room');
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'isValid', false);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('isValid', false);
       // Should not run RoomBootstrap phases
       expect(RoomBootstrap.bootstrap).not.toHaveBeenCalled();
       expect(RoomBootstrap.enableCollaboration).not.toHaveBeenCalled();
@@ -265,10 +270,7 @@ describe('WorkspaceActions', () => {
 
       // Should add peer connection for each user
       for (let i = 1; i <= 5; i++) {
-        expect(setStore).toHaveBeenCalledWith('connection', 'peerConnections', `user-${i}`, {
-          latency: 0,
-          transport: Transport.WEBSOCKET,
-        });
+        expect(addPeerConnection).toHaveBeenCalledWith(`user-${i}`, Transport.WEBSOCKET, 0);
       }
     });
   });
@@ -409,7 +411,7 @@ describe('WorkspaceActions', () => {
       expect(WebsocketController.destroy).toHaveBeenCalled();
 
       // Should reset workspace state
-      expect(setStore).toHaveBeenCalledWith('workspace', {
+      expect(setWorkspaceStore).toHaveBeenCalledWith({
         roomId: undefined,
         userId: undefined,
         isValid: undefined,
@@ -427,15 +429,15 @@ describe('WorkspaceActions', () => {
       expect(RoomBootstrap.cleanup).toHaveBeenCalledTimes(3);
       expect(WebRtcController.destroy).toHaveBeenCalledTimes(3);
       expect(WebsocketController.destroy).toHaveBeenCalledTimes(3);
-      expect(setStore).toHaveBeenCalledTimes(3);
+      expect(setWorkspaceStore).toHaveBeenCalledTimes(3);
     });
 
     it('should clean up state completely', () => {
       destroyRoom();
 
-      const resetState = vi.mocked(setStore).mock.calls.find(
-        call => call[0] === 'workspace' && typeof call[1] === 'object'
-      )?.[1];
+      const resetState = vi.mocked(setWorkspaceStore).mock.calls.find(
+        call => typeof call[0] === 'object'
+      )?.[0];
 
       expect(resetState).toEqual({
         roomId: undefined,
@@ -486,8 +488,8 @@ describe('WorkspaceActions', () => {
       destroyRoom();
 
       // Verify the sequence
-      expect(setStore).toHaveBeenCalledWith('workspace', 'roomId', 'lifecycle-room');
-      expect(setStore).toHaveBeenCalledWith('workspace', 'room', mockRoom);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('roomId', 'lifecycle-room');
+      expect(setWorkspaceStore).toHaveBeenCalledWith('room', mockRoom);
       // Should run all RoomBootstrap phases
       expect(RoomBootstrap.bootstrap).toHaveBeenCalled();
       expect(RoomBootstrap.enableCollaboration).toHaveBeenCalled();
@@ -533,7 +535,7 @@ describe('WorkspaceActions', () => {
 
       await joinRoom('error-room');
 
-      expect(setStore).toHaveBeenCalledWith('workspace', 'isValid', false);
+      expect(setWorkspaceStore).toHaveBeenCalledWith('isValid', false);
 
       // Other operations should still work
       const validUser = {

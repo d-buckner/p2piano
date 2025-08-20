@@ -917,6 +917,211 @@ export const events = $root.events = (() => {
         return LatencyEvent;
     })();
 
+    events.MetronomeTickEvent = (function() {
+
+        /**
+         * Properties of a MetronomeTickEvent.
+         * @memberof events
+         * @interface IMetronomeTickEvent
+         * @property {string|null} [type] MetronomeTickEvent type
+         */
+
+        /**
+         * Constructs a new MetronomeTickEvent.
+         * @memberof events
+         * @classdesc Represents a MetronomeTickEvent.
+         * @implements IMetronomeTickEvent
+         * @constructor
+         * @param {events.IMetronomeTickEvent=} [properties] Properties to set
+         */
+        function MetronomeTickEvent(properties) {
+            if (properties)
+                for (let keys = Object.keys(properties), i = 0; i < keys.length; ++i)
+                    if (properties[keys[i]] != null)
+                        this[keys[i]] = properties[keys[i]];
+        }
+
+        /**
+         * MetronomeTickEvent type.
+         * @member {string} type
+         * @memberof events.MetronomeTickEvent
+         * @instance
+         */
+        MetronomeTickEvent.prototype.type = "";
+
+        /**
+         * Creates a new MetronomeTickEvent instance using the specified properties.
+         * @function create
+         * @memberof events.MetronomeTickEvent
+         * @static
+         * @param {events.IMetronomeTickEvent=} [properties] Properties to set
+         * @returns {events.MetronomeTickEvent} MetronomeTickEvent instance
+         */
+        MetronomeTickEvent.create = function create(properties) {
+            return new MetronomeTickEvent(properties);
+        };
+
+        /**
+         * Encodes the specified MetronomeTickEvent message. Does not implicitly {@link events.MetronomeTickEvent.verify|verify} messages.
+         * @function encode
+         * @memberof events.MetronomeTickEvent
+         * @static
+         * @param {events.IMetronomeTickEvent} message MetronomeTickEvent message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MetronomeTickEvent.encode = function encode(message, writer) {
+            if (!writer)
+                writer = $Writer.create();
+            if (message.type != null && Object.hasOwnProperty.call(message, "type"))
+                writer.uint32(/* id 1, wireType 2 =*/10).string(message.type);
+            return writer;
+        };
+
+        /**
+         * Encodes the specified MetronomeTickEvent message, length delimited. Does not implicitly {@link events.MetronomeTickEvent.verify|verify} messages.
+         * @function encodeDelimited
+         * @memberof events.MetronomeTickEvent
+         * @static
+         * @param {events.IMetronomeTickEvent} message MetronomeTickEvent message or plain object to encode
+         * @param {$protobuf.Writer} [writer] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        MetronomeTickEvent.encodeDelimited = function encodeDelimited(message, writer) {
+            return this.encode(message, writer).ldelim();
+        };
+
+        /**
+         * Decodes a MetronomeTickEvent message from the specified reader or buffer.
+         * @function decode
+         * @memberof events.MetronomeTickEvent
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @param {number} [length] Message length if known beforehand
+         * @returns {events.MetronomeTickEvent} MetronomeTickEvent
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MetronomeTickEvent.decode = function decode(reader, length, error) {
+            if (!(reader instanceof $Reader))
+                reader = $Reader.create(reader);
+            let end = length === undefined ? reader.len : reader.pos + length, message = new $root.events.MetronomeTickEvent();
+            while (reader.pos < end) {
+                let tag = reader.uint32();
+                if (tag === error)
+                    break;
+                switch (tag >>> 3) {
+                case 1: {
+                        message.type = reader.string();
+                        break;
+                    }
+                default:
+                    reader.skipType(tag & 7);
+                    break;
+                }
+            }
+            return message;
+        };
+
+        /**
+         * Decodes a MetronomeTickEvent message from the specified reader or buffer, length delimited.
+         * @function decodeDelimited
+         * @memberof events.MetronomeTickEvent
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} reader Reader or buffer to decode from
+         * @returns {events.MetronomeTickEvent} MetronomeTickEvent
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        MetronomeTickEvent.decodeDelimited = function decodeDelimited(reader) {
+            if (!(reader instanceof $Reader))
+                reader = new $Reader(reader);
+            return this.decode(reader, reader.uint32());
+        };
+
+        /**
+         * Verifies a MetronomeTickEvent message.
+         * @function verify
+         * @memberof events.MetronomeTickEvent
+         * @static
+         * @param {Object.<string,*>} message Plain object to verify
+         * @returns {string|null} `null` if valid, otherwise the reason why it is not
+         */
+        MetronomeTickEvent.verify = function verify(message) {
+            if (typeof message !== "object" || message === null)
+                return "object expected";
+            if (message.type != null && message.hasOwnProperty("type"))
+                if (!$util.isString(message.type))
+                    return "type: string expected";
+            return null;
+        };
+
+        /**
+         * Creates a MetronomeTickEvent message from a plain object. Also converts values to their respective internal types.
+         * @function fromObject
+         * @memberof events.MetronomeTickEvent
+         * @static
+         * @param {Object.<string,*>} object Plain object
+         * @returns {events.MetronomeTickEvent} MetronomeTickEvent
+         */
+        MetronomeTickEvent.fromObject = function fromObject(object) {
+            if (object instanceof $root.events.MetronomeTickEvent)
+                return object;
+            let message = new $root.events.MetronomeTickEvent();
+            if (object.type != null)
+                message.type = String(object.type);
+            return message;
+        };
+
+        /**
+         * Creates a plain object from a MetronomeTickEvent message. Also converts values to other types if specified.
+         * @function toObject
+         * @memberof events.MetronomeTickEvent
+         * @static
+         * @param {events.MetronomeTickEvent} message MetronomeTickEvent
+         * @param {$protobuf.IConversionOptions} [options] Conversion options
+         * @returns {Object.<string,*>} Plain object
+         */
+        MetronomeTickEvent.toObject = function toObject(message, options) {
+            if (!options)
+                options = {};
+            let object = {};
+            if (options.defaults)
+                object.type = "";
+            if (message.type != null && message.hasOwnProperty("type"))
+                object.type = message.type;
+            return object;
+        };
+
+        /**
+         * Converts this MetronomeTickEvent to JSON.
+         * @function toJSON
+         * @memberof events.MetronomeTickEvent
+         * @instance
+         * @returns {Object.<string,*>} JSON object
+         */
+        MetronomeTickEvent.prototype.toJSON = function toJSON() {
+            return this.constructor.toObject(this, $protobuf.util.toJSONOptions);
+        };
+
+        /**
+         * Gets the default type url for MetronomeTickEvent
+         * @function getTypeUrl
+         * @memberof events.MetronomeTickEvent
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        MetronomeTickEvent.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/events.MetronomeTickEvent";
+        };
+
+        return MetronomeTickEvent;
+    })();
+
     return events;
 })();
 

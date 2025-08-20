@@ -1,4 +1,3 @@
-import { setStore, store } from '../app/store';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import { getRoom } from '../clients/RoomClient';
 import { Transport } from '../constants';
@@ -8,32 +7,39 @@ import * as RoomBootstrap from '../lib/RoomBootstrap';
 import WebRtcController from '../networking/transports/WebRtcController';
 import WebsocketController from '../networking/transports/WebsocketController';
 import { selectMyUser, selectWorkspace } from '../selectors/workspaceSelectors';
+import { workspaceStore, setWorkspaceStore } from '../stores/WorkspaceStore';
+import { addPeerConnection } from './ConnectionActions';
 import type { InstrumentType } from '../audio/instruments/Instrument';
 
 
+const Attributes = {
+  ROOM_ID: 'roomId',
+  USER_ID: 'userId',
+  IS_VALID: 'isValid',
+  IS_LOADING: 'isLoading',
+  ROOM: 'room',
+} as const;
+
 export async function joinRoom(roomId: string) {
-  setStore('workspace', 'roomId', roomId);
-  setStore('workspace', 'isLoading', true);
+  setWorkspaceStore(Attributes.ROOM_ID, roomId);
+  setWorkspaceStore(Attributes.IS_LOADING, true);
 
   let isValid = true;
   try {
-    const { room } = selectWorkspace(store);
+    const { room } = selectWorkspace({ workspace: workspaceStore });
     if (!room) {
       const room = await getRoom(roomId);
-      setStore('workspace', 'room', room);
+      setWorkspaceStore(Attributes.ROOM, room);
       Object.values(room.users ?? {}).forEach(user => {
-        setStore('connection', 'peerConnections', user.userId, {
-          latency: 0,
-          transport: Transport.WEBSOCKET,
-        });
+        addPeerConnection(user.userId, Transport.WEBSOCKET, 0);
       });
     }
   } catch {
     isValid = false;
   }
 
-  setStore('workspace', 'isValid', isValid);
-  setStore('workspace', 'isLoading', false);
+  setWorkspaceStore(Attributes.IS_VALID, isValid);
+  setWorkspaceStore(Attributes.IS_LOADING, false);
 
   if (isValid) {
     const RoomBootstrap = await import('../lib/RoomBootstrap');
@@ -47,13 +53,13 @@ export async function joinRoom(roomId: string) {
 }
 
 export function updateDisplayName(displayName: string) {
-  const user = selectMyUser(store);
+  const user = selectMyUser({ workspace: workspaceStore });
   if (!user) {
     return;
   }
   
   // Update optimistically - focused update to just the user's displayName
-  setStore('workspace', 'room', 'users', user.userId, 'displayName', displayName);
+  setWorkspaceStore(Attributes.ROOM, 'users', user.userId, 'displayName', displayName);
   
   ClientPreferences.setDisplayName(displayName);
   WebsocketController.getInstance().broadcast('USER_UPDATE', {
@@ -63,13 +69,13 @@ export function updateDisplayName(displayName: string) {
 }
 
 export function updateInstrument(instrument: InstrumentType) {
-  const user = selectMyUser(store);
+  const user = selectMyUser({ workspace: workspaceStore });
   if (!user) {
     return;
   }
   
   // Update optimistically - focused update to just the user's instrument
-  setStore('workspace', 'room', 'users', user.userId, 'instrument', instrument);
+  setWorkspaceStore(Attributes.ROOM, 'users', user.userId, 'instrument', instrument);
   
   // Update instrument registry immediately for optimistic update
   InstrumentRegistry.register(user.userId, instrument);
@@ -85,7 +91,7 @@ export function destroyRoom() {
   WebRtcController.destroy();
   WebsocketController.destroy();
   // Reset workspace state
-  setStore('workspace', {
+  setWorkspaceStore({
     roomId: undefined,
     userId: undefined,
     isValid: undefined,

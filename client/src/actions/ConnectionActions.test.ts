@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { setStore } from '../app/store';
 import { Transport } from '../constants';
+import { setConnectionStore } from '../stores/ConnectionStore';
 import {
   addPeerConnection,
   removePeerConnection,
@@ -14,15 +14,14 @@ type PeerConnections = Record<string, { latency: number; transport: Transport }>
 type SetConnections = (connections: PeerConnections) => PeerConnections;
 
 // Mock the store
-vi.mock('../app/store', () => ({
-  setStore: vi.fn(),
-  store: {
-    connection: {
-      peerConnections: {
-        'user-123': { transport: 'websocket', latency: 25 },
-        'user-456': { transport: 'webrtc', latency: 50 },
-      }
-    }
+vi.mock('../stores/ConnectionStore', () => ({
+  setConnectionStore: vi.fn(),
+  connectionStore: {
+    peerConnections: {
+      'user-123': { transport: 'websocket', latency: 25 },
+      'user-456': { transport: 'webrtc', latency: 50 },
+    },
+    maxLatency: 0,
   },
 }));
 
@@ -35,7 +34,7 @@ describe('ConnectionActions', () => {
     it('should add peer connection with default values', () => {
       addPeerConnection('user-123');
 
-      expect(setStore).toHaveBeenCalledWith('connection', 'peerConnections', 'user-123', {
+      expect(setConnectionStore).toHaveBeenCalledWith('peerConnections', 'user-123', {
         latency: 0,
         transport: Transport.WEBSOCKET,
       });
@@ -44,7 +43,7 @@ describe('ConnectionActions', () => {
     it('should add peer connection with custom transport and latency', () => {
       addPeerConnection('user-456', Transport.WEBRTC, 50);
 
-      expect(setStore).toHaveBeenCalledWith('connection', 'peerConnections', 'user-456', {
+      expect(setConnectionStore).toHaveBeenCalledWith('peerConnections', 'user-456', {
         latency: 50,
         transport: Transport.WEBRTC,
       });
@@ -54,7 +53,7 @@ describe('ConnectionActions', () => {
     it('should create connection with default WebSocket transport when no transport specified', () => {
       addPeerConnection('user-default');
 
-      expect(setStore).toHaveBeenCalledWith('connection', 'peerConnections', 'user-default', {
+      expect(setConnectionStore).toHaveBeenCalledWith('peerConnections', 'user-default', {
         latency: 0,
         transport: Transport.WEBSOCKET,
       });
@@ -65,10 +64,10 @@ describe('ConnectionActions', () => {
     it('should remove peer connection by updating state with function', () => {
       removePeerConnection('user-123');
 
-      expect(setStore).toHaveBeenCalledWith('connection', 'peerConnections', expect.any(Function));
+      expect(setConnectionStore).toHaveBeenCalledWith('peerConnections', expect.any(Function));
       
-      // Test the function passed to setStore
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2] as SetConnections;
+      // Test the function passed to setConnectionStore
+      const updateFunction = vi.mocked(setConnectionStore).mock.calls[0][1] as SetConnections;
       const mockConnections = {
         'user-123': { latency: 50, transport: Transport.WEBRTC },
         'user-456': { latency: 25, transport: Transport.WEBSOCKET },
@@ -85,7 +84,7 @@ describe('ConnectionActions', () => {
     it('should handle removing non-existent user gracefully', () => {
       removePeerConnection('nonexistent-user');
 
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2] as SetConnections;
+      const updateFunction = vi.mocked(setConnectionStore).mock.calls[0][1] as SetConnections;
       const mockConnections = {
         'user-456': { latency: 25, transport: Transport.WEBSOCKET },
       };
@@ -100,7 +99,7 @@ describe('ConnectionActions', () => {
     it('should not mutate original connections object', () => {
       removePeerConnection('user-123');
 
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2] as SetConnections;
+      const updateFunction = vi.mocked(setConnectionStore).mock.calls[0][1] as SetConnections;
       const originalConnections = {
         'user-123': { latency: 50, transport: Transport.WEBRTC },
         'user-456': { latency: 25, transport: Transport.WEBSOCKET },
@@ -119,7 +118,7 @@ describe('ConnectionActions', () => {
     it('should handle empty connections object', () => {
       removePeerConnection('user-123');
 
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2] as SetConnections;
+      const updateFunction = vi.mocked(setConnectionStore).mock.calls[0][1] as SetConnections;
       const result = updateFunction({});
 
       expect(result).toEqual({});
@@ -130,8 +129,7 @@ describe('ConnectionActions', () => {
     it('should update peer transport to WebRTC', () => {
       updatePeerTransport('user-123', Transport.WEBRTC);
 
-      expect(setStore).toHaveBeenCalledWith(
-        'connection',
+      expect(setConnectionStore).toHaveBeenCalledWith(
         'peerConnections',
         'user-123',
         'transport',
@@ -142,8 +140,7 @@ describe('ConnectionActions', () => {
     it('should update peer transport to WebSocket', () => {
       updatePeerTransport('user-456', Transport.WEBSOCKET);
 
-      expect(setStore).toHaveBeenCalledWith(
-        'connection',
+      expect(setConnectionStore).toHaveBeenCalledWith(
         'peerConnections',
         'user-456',
         'transport',
@@ -157,8 +154,7 @@ describe('ConnectionActions', () => {
     it('should update peer latency with positive value', () => {
       updatePeerLatency('user-123', 45.67);
 
-      expect(setStore).toHaveBeenCalledWith(
-        'connection',
+      expect(setConnectionStore).toHaveBeenCalledWith(
         'peerConnections',
         'user-123',
         'latency',
@@ -169,8 +165,7 @@ describe('ConnectionActions', () => {
     it('should update peer latency with zero', () => {
       updatePeerLatency('user-456', 0);
 
-      expect(setStore).toHaveBeenCalledWith(
-        'connection',
+      expect(setConnectionStore).toHaveBeenCalledWith(
         'peerConnections',
         'user-456',
         'latency',
@@ -181,8 +176,7 @@ describe('ConnectionActions', () => {
     it('should handle fractional latency values', () => {
       updatePeerLatency('user-123', 123.45);
 
-      expect(setStore).toHaveBeenCalledWith(
-        'connection',
+      expect(setConnectionStore).toHaveBeenCalledWith(
         'peerConnections',
         'user-123',
         'latency',
@@ -193,7 +187,7 @@ describe('ConnectionActions', () => {
     it('should not update latency for non-existent peer', () => {
       updatePeerLatency('non-existent-user', 50);
 
-      expect(setStore).not.toHaveBeenCalled();
+      expect(setConnectionStore).not.toHaveBeenCalled();
     });
 
   });
@@ -202,19 +196,19 @@ describe('ConnectionActions', () => {
     it('should set max latency with positive value', () => {
       setMaxLatency(100);
 
-      expect(setStore).toHaveBeenCalledWith('connection', 'maxLatency', 100);
+      expect(setConnectionStore).toHaveBeenCalledWith('maxLatency', 100);
     });
 
     it('should set max latency to zero', () => {
       setMaxLatency(0);
 
-      expect(setStore).toHaveBeenCalledWith('connection', 'maxLatency', 0);
+      expect(setConnectionStore).toHaveBeenCalledWith('maxLatency', 0);
     });
 
     it('should accept high precision latency values', () => {
       setMaxLatency(67.89123);
 
-      expect(setStore).toHaveBeenCalledWith('connection', 'maxLatency', 67.89123);
+      expect(setConnectionStore).toHaveBeenCalledWith('maxLatency', 67.89123);
     });
 
   });
@@ -235,13 +229,13 @@ describe('ConnectionActions', () => {
 
       
       // Verify each call
-      expect(setStore).toHaveBeenNthCalledWith(1, 'connection', 'peerConnections', 'user-123', {
+      expect(setConnectionStore).toHaveBeenNthCalledWith(1, 'peerConnections', 'user-123', {
         latency: 0,
         transport: Transport.WEBSOCKET,
       });
-      expect(setStore).toHaveBeenNthCalledWith(2, 'connection', 'peerConnections', 'user-123', 'transport', Transport.WEBRTC);
-      expect(setStore).toHaveBeenNthCalledWith(3, 'connection', 'peerConnections', 'user-123', 'latency', 45.5);
-      expect(setStore).toHaveBeenNthCalledWith(4, 'connection', 'peerConnections', expect.any(Function));
+      expect(setConnectionStore).toHaveBeenNthCalledWith(2, 'peerConnections', 'user-123', 'transport', Transport.WEBRTC);
+      expect(setConnectionStore).toHaveBeenNthCalledWith(3, 'peerConnections', 'user-123', 'latency', 45.5);
+      expect(setConnectionStore).toHaveBeenNthCalledWith(4, 'peerConnections', expect.any(Function));
     });
 
     it('should maintain separate state for different peers', () => {
@@ -250,11 +244,11 @@ describe('ConnectionActions', () => {
       addPeerConnection('webrtc-user', Transport.WEBRTC, 50);
       
       // Verify each peer gets their own connection object
-      expect(setStore).toHaveBeenCalledWith('connection', 'peerConnections', 'websocket-user', {
+      expect(setConnectionStore).toHaveBeenCalledWith('peerConnections', 'websocket-user', {
         latency: 25,
         transport: Transport.WEBSOCKET,
       });
-      expect(setStore).toHaveBeenCalledWith('connection', 'peerConnections', 'webrtc-user', {
+      expect(setConnectionStore).toHaveBeenCalledWith('peerConnections', 'webrtc-user', {
         latency: 50,
         transport: Transport.WEBRTC,
       });
@@ -266,8 +260,8 @@ describe('ConnectionActions', () => {
       removePeerConnection('temp-user');
       
       // Verify the removal function behavior
-      const updateFunction = vi.mocked(setStore).mock.calls
-        .find(call => typeof call[2] === 'function')?.[2] as SetConnections;
+      const updateFunction = vi.mocked(setConnectionStore).mock.calls
+        .find(call => typeof call[1] === 'function')?.[1] as SetConnections;
       
       const mockConnections = {
         'temp-user': { latency: 50, transport: Transport.WEBRTC },

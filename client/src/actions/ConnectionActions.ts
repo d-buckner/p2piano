@@ -1,16 +1,21 @@
-import { setStore, store } from '../app/store';
 import { Transport } from '../constants';
+import { connectionStore, setConnectionStore } from '../stores/ConnectionStore';
 
+
+const Attributes = {
+  MAX_LATENCY: 'maxLatency',
+  PEER_CONNECTIONS: 'peerConnections',
+} as const;
 
 export function addPeerConnection(userId: string, transport: Transport = Transport.WEBSOCKET, latency: number = 0) {
-  setStore('connection', 'peerConnections', userId, {
+  setConnectionStore(Attributes.PEER_CONNECTIONS, userId, {
     latency,
     transport,
   });
 }
 
 export function removePeerConnection(userId: string) {
-  setStore('connection', 'peerConnections', (connections) => {
+  setConnectionStore(Attributes.PEER_CONNECTIONS, (connections) => {
     const newConnections = { ...connections };
     delete newConnections[userId];
     return newConnections;
@@ -18,18 +23,18 @@ export function removePeerConnection(userId: string) {
 }
 
 export function updatePeerTransport(userId: string, transport: Transport) {
-  setStore('connection', 'peerConnections', userId, 'transport', transport);
+  setConnectionStore(Attributes.PEER_CONNECTIONS, userId, 'transport', transport);
 }
 
 export function updatePeerLatency(userId: string, latency: number) {
   // Only update latency if peer connection already exists
   // This prevents re-creating connections for disconnected peers
-  const currentConnections = store.connection?.peerConnections;
+  const currentConnections = connectionStore.peerConnections;
   if (currentConnections?.[userId]) {
-    setStore('connection', 'peerConnections', userId, 'latency', latency);
+    setConnectionStore(Attributes.PEER_CONNECTIONS, userId, 'latency', latency);
   }
 }
 
 export function setMaxLatency(maxLatency: number) {
-  setStore('connection', 'maxLatency', maxLatency);
+  setConnectionStore(Attributes.MAX_LATENCY, maxLatency);
 }

@@ -1,4 +1,5 @@
 import { EnvelopeCodec } from './EnvelopeCodec';
+import { MetronomeTickCodec } from './MetronomeTickCodec';
 import { KeyDownCodec, KeyUpCodec } from './NoteCodec';
 import { LatencyCodec } from './SyncCodec';
 import { TextCodec } from './TextCodec';
@@ -15,6 +16,7 @@ const CodecRegistry: Record<string, Codec> = {
   KEY_UP: KeyUpCodec,
   LATENCY_PING: LatencyCodec,
   LATENCY_PONG: LatencyCodec,
+  METRONOME_TICK: MetronomeTickCodec,
 } as const;
 
 function getCodec<T = unknown>(eventType: string): Codec<T> | undefined {
