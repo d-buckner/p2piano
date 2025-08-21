@@ -28,3 +28,9 @@ export enum Transport {
 
 export const DEFAULT_VELOCITY = 80;
 
+export enum KeyActions {
+  KEY_DOWN = 'KEY_DOWN',
+  KEY_UP = 'KEY_UP',
+  SUSTAIN_DOWN = 'SUSTAIN_DOWN',
+  SUSTAIN_UP = 'SUSTAIN_UP',
+}
