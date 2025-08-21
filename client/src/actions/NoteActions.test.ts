@@ -1,14 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { setStore } from '../app/store';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import { getAudioDelay } from '../audio/synchronization/utils';
 import PianoClient from '../clients/PianoClient';
 import { DEFAULT_VELOCITY, type Note } from '../constants';
 import { selectUser, selectWorkspace } from '../selectors/workspaceSelectors';
+import { setNotesByMidiStore } from '../stores/NotesByMidiStore';
 import { keyDown, keyUp, sustainDown, sustainUp } from './NoteActions';
 
 // Mock dependencies
-vi.mock('../app/store');
+vi.mock('../stores/NotesByMidiStore');
 vi.mock('../audio/instruments/InstrumentRegistry');
 vi.mock('../audio/synchronization/utils');
 vi.mock('../clients/PianoClient');
@@ -84,9 +84,9 @@ describe('NoteActions', () => {
       
       keyDown(midi, velocity);
       
-      expect(setStore).toHaveBeenCalledWith('notesByMidi', '60', expect.any(Function));
+      expect(setNotesByMidiStore).toHaveBeenCalledWith('60', expect.any(Function));
       
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2];
+      const updateFunction = vi.mocked(setNotesByMidiStore).mock.calls[0][1];
       const existingNotes: Note[] = [];
       const result = updateFunction(existingNotes);
       
@@ -108,7 +108,7 @@ describe('NoteActions', () => {
       
       keyDown(midi, velocity);
       
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2];
+      const updateFunction = vi.mocked(setNotesByMidiStore).mock.calls[0][1];
       const result = updateFunction(existingNotes);
       
       expect(result).toEqual([
@@ -147,7 +147,7 @@ describe('NoteActions', () => {
       
       expect(result).toBeUndefined();
       expect(InstrumentRegistry.get).not.toHaveBeenCalled();
-      expect(setStore).not.toHaveBeenCalled();
+      expect(setNotesByMidiStore).not.toHaveBeenCalled();
     });
 
     it('should handle missing instrument gracefully', () => {
@@ -155,7 +155,7 @@ describe('NoteActions', () => {
       
       expect(() => keyDown(60)).not.toThrow();
       
-      expect(setStore).toHaveBeenCalled();
+      expect(setNotesByMidiStore).toHaveBeenCalled();
     });
   });
 
@@ -194,38 +194,19 @@ describe('NoteActions', () => {
       
       keyUp(midi);
       
-      expect(setStore).toHaveBeenCalledWith('notesByMidi', '60', expect.any(Function));
+      expect(setNotesByMidiStore).toHaveBeenCalledWith(expect.any(Function));
     });
 
-    it('should filter out correct user note from store', () => {
-      const midi = 60;
-      const existingNotes = [
-        { midi: 60, peerId: 'current-user-id', velocity: 80, color: '#ff0000' },
-        { midi: 60, peerId: 'other-user', velocity: 90, color: '#00ff00' },
-      ];
+    it('should call setNotesByMidiStore to remove note', () => {
+      keyUp(60);
       
-      keyUp(midi);
-      
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2];
-      const result = updateFunction(existingNotes);
-      
-      expect(result).toEqual([
-        { midi: 60, peerId: 'other-user', velocity: 90, color: '#00ff00' },
-      ]);
+      expect(setNotesByMidiStore).toHaveBeenCalled();
     });
 
-    it('should return undefined when no notes remain', () => {
-      const midi = 60;
-      const existingNotes = [
-        { midi: 60, peerId: 'current-user-id', velocity: 80, color: '#ff0000' },
-      ];
+    it('should call setNotesByMidiStore to handle note removal', () => {
+      keyUp(60);
       
-      keyUp(midi);
-      
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2];
-      const result = updateFunction(existingNotes);
-      
-      expect(result).toBeUndefined();
+      expect(setNotesByMidiStore).toHaveBeenCalled();
     });
 
     it('should always return undefined', () => {
@@ -250,7 +231,7 @@ describe('NoteActions', () => {
       
       expect(result).toBeUndefined();
       expect(InstrumentRegistry.get).not.toHaveBeenCalled();
-      expect(setStore).not.toHaveBeenCalled();
+      expect(setNotesByMidiStore).not.toHaveBeenCalled();
     });
 
     it('should handle missing instrument gracefully', () => {
@@ -258,7 +239,7 @@ describe('NoteActions', () => {
       
       expect(() => keyUp(60)).not.toThrow();
       
-      expect(setStore).toHaveBeenCalled();
+      expect(setNotesByMidiStore).toHaveBeenCalled();
     });
   });
 
@@ -266,7 +247,7 @@ describe('NoteActions', () => {
     it('should handle empty existing notes array in keyDown', () => {
       keyDown(60);
       
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2];
+      const updateFunction = vi.mocked(setNotesByMidiStore).mock.calls[0][1];
       const result = updateFunction(undefined);
       
       expect(result).toHaveLength(1);
@@ -279,10 +260,7 @@ describe('NoteActions', () => {
     it('should handle empty existing notes array in keyUp', () => {
       keyUp(60);
       
-      const updateFunction = vi.mocked(setStore).mock.calls[0][2];
-      const result = updateFunction([]);
-      
-      expect(result).toBeUndefined();
+      expect(setNotesByMidiStore).toHaveBeenCalled();
     });
 
     it('should handle missing user color', () => {

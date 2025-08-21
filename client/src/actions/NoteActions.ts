@@ -1,8 +1,9 @@
-import { setStore } from '../app/store';
+import { produce } from 'solid-js/store';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import { getAudioDelay } from '../audio/synchronization/utils';
 import PianoClient from '../clients/PianoClient';
 import { DEFAULT_VELOCITY, type Note } from '../constants';
+import { setNotesByMidiStore } from '../stores/NotesByMidiStore';
 import { getResolvedUserId, getUserColor } from './utils';
 
 
@@ -24,23 +25,11 @@ export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: stri
   );
 
   const color = getUserColor(resolvedUserId);
-  const note: Note = {
+  addNote({
     midi,
     peerId: resolvedUserId,
     velocity,
     color
-  };
-  
-  // Add note to the store
-  setStore('notesByMidi', midi.toString(), (existingNotes = []) => {
-    const noteIndex = existingNotes.findIndex(n => n.peerId === resolvedUserId);
-    if (noteIndex === -1) {
-      return [...existingNotes, note];
-    } else {
-      const newNotes = [...existingNotes];
-      newNotes[noteIndex] = note;
-      return newNotes;
-    }
   });
 
   // Return color for piano visualizer
@@ -62,11 +51,8 @@ export function keyUp(midi: number, peerId?: string): string | undefined {
     midi,
     getAudioDelay(resolvedUserId),
   );
-  // Remove note from the store
-  setStore('notesByMidi', midi.toString(), (existingNotes = []) => {
-    const filteredNotes = existingNotes.filter(note => note.peerId !== resolvedUserId);
-    return filteredNotes.length > 0 ? filteredNotes : undefined;
-  });
+
+  removeNote(midi, resolvedUserId);
 
   // keyUp doesn't need to return a color for visualization
   return undefined;
@@ -100,3 +86,30 @@ export function sustainUp(peerId?: string): void {
   InstrumentRegistry.get(resolvedUserId)?.sustainUp?.();
 }
 
+function addNote(note: Note) {
+   // Add note to the store
+  setNotesByMidiStore(note.midi.toString(), (existingNotes = []) => {
+    const noteIndex = existingNotes.findIndex(n => n.peerId === note.peerId);
+    if (noteIndex === -1) {
+      return [...existingNotes, note];
+    } else {
+      const newNotes = [...existingNotes];
+      newNotes[noteIndex] = note;
+      return newNotes;
+    }
+  }); 
+}
+
+function removeNote(midi: number, peerId: string) {
+    setNotesByMidiStore(produce((store) => {
+    if (!store[midi]) return;
+    
+    const filteredNotes = store[midi].filter(note => note.peerId !== peerId);
+    if (filteredNotes.length === 0) {
+      delete store[midi];
+      return;
+    }
+    
+    store[midi] = filteredNotes;
+  }));
+}
