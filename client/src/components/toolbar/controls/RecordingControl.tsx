@@ -1,5 +1,10 @@
 import clsx from 'clsx';
 import { createSignal, createEffect, For } from 'solid-js';
+import recordingActions from '../../../actions/RecordingActions';
+import { useAppSelector } from '../../../app/hooks';
+import Playback from '../../../audio/recording/Playback';
+import { selectIsRecording, selectRecordings, selectRecordingStartTime } from '../../../selectors/recordingSelectors';
+import { selectMyUser } from '../../../selectors/workspaceSelectors';
 import Dropdown from '../../ui/Dropdown';
 import Tooltip from '../../ui/Tooltip';
 import { CircleIcon, SquareIcon } from '../icons';
@@ -7,26 +12,23 @@ import * as styles from './RecordingControl.css';
 
 
 function RecordingControl() {
-  const [isRecording, setIsRecording] = createSignal(false);
+  const isRecording = useAppSelector(selectIsRecording);
+  const recordingStartTime = useAppSelector(selectRecordingStartTime);
+  const recordings = useAppSelector(selectRecordings);
+  const myUser = useAppSelector(selectMyUser);
   const [recordingTime, setRecordingTime] = createSignal(0);
   const [showRecordingsDropdown, setShowRecordingsDropdown] = createSignal(false);
   
-  // Mock recordings for UI demo
-  const recordings = [
-    { id: 1, name: 'Recording 1', date: '2024-03-20 14:30' },
-    { id: 2, name: 'Recording 2', date: '2024-03-20 15:45' },
-    { id: 3, name: 'Recording 3', date: '2024-03-21 10:15' }
-  ];
-
   // Timer effect
   createEffect(() => {
-    let interval: number;
+    let interval: NodeJS.Timeout;
     if (isRecording()) {
       interval = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
+        const elapsed = Math.floor((performance.now() - recordingStartTime()) / 1000);
+        setRecordingTime(elapsed);
       }, 1000);
     } else {
-      setRecordingTime(0);
+      setRecordingTime(Math.floor(performance.now()));
     }
     return () => clearInterval(interval);
   });
@@ -37,13 +39,21 @@ function RecordingControl() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleRecordClick = () => {
+  const handleRecordClick = async () => {
+    const user = myUser();
+    if (!user) return;
+
     if (!isRecording()) {
-      setIsRecording(true);
+      recordingActions.start();
     } else {
-      setIsRecording(false);
+      recordingActions.stop();
       setShowRecordingsDropdown(true);
     }
+  };
+
+  const handlePlayRecording = async (recordingId: string) => {
+    const playback = await Playback.load(recordingId);
+    playback.start();
   };
 
   return (
@@ -66,10 +76,13 @@ function RecordingControl() {
         <div class={styles.dropdownContent}>
           <h3 class={styles.dropdownTitle}>Recordings</h3>
           <div class={styles.recordingsList}>
-            <For each={recordings}>{rec => (
-              <button class={styles.recordingItem} aria-label={`Play recording: ${rec.name}`}>
-                <span>{rec.name}</span>
-                <span class={styles.recordingDate}>{rec.date}</span>
+            <For each={recordings()}>{rec => (
+              <button 
+                class={styles.recordingItem} 
+                aria-label={`Play recording: ${rec.title}`}
+                onClick={() => handlePlayRecording(rec.id)}
+              >
+                <span>{rec.title}</span>
               </button>
             )}</For>
           </div>

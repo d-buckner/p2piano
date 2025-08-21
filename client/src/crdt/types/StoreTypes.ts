@@ -5,13 +5,18 @@
  * based on the current p2piano application collaborative requirements.
  */
 
+import type { RecordingMetadata } from '../../audio/recording/types';
+
 /**
  * Shared state that is synchronized across all peers via CRDT.
- * Only contains metronome state for musical coordination.
+ * Contains metronome state for musical coordination and recording state.
  */
 export interface SharedStore {
   /** Metronome state for musical synchronization */
   metronome: SharedMetronomeState;
+  
+  /** Recording state for session recording */
+  recording: SharedRecordingState;
 }
 
 /**
@@ -37,6 +42,25 @@ export interface SharedMetronomeState {
   startTimestamp: number;
 }
 
+/**
+ * Recording state that must stay synchronized across all peers
+ */
+export interface SharedRecordingState {
+  /** Whether recording is currently active */
+  active: boolean;
+  
+  /** ID of the user who leads the recording (only they write to IndexedDB) */
+  leaderId: string;
+  
+  /** ID of the current recording session */
+  recordingId: string;
+  
+  /** Timestamp when recording started (for relative timing) */
+  startTimestamp: number;
+
+  items: RecordingMetadata[],
+}
+
 
 /**
  * Default/initial state values
@@ -49,6 +73,13 @@ export const initialSharedStore: SharedStore = {
     leaderId: '',
     currentBeat: 0,
     startTimestamp: 0,
+  },
+  recording: {
+    active: false,
+    leaderId: '',
+    recordingId: '',
+    startTimestamp: 0,
+    items: [],
   },
 };
 

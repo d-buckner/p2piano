@@ -3,13 +3,14 @@ import { DEFAULT_VELOCITY } from '../../constants';
 import Logger from '../../lib/Logger';
 import { requestIdleCallback } from '../../lib/ponyfill';
 import getDelayTime from './getDelayTime';
-import type { Instrument } from './Instrument';
+import { InstrumentType, type Instrument } from './Instrument';
 
 
 const VOLUME = -3;
 const URL = '/assets/samples/piano/';
 
 export default class Piano implements Instrument {
+  public readonly type = InstrumentType.PIANO;
   private static readonly velocityProgression: number[] = [1, 8];
   private loadStart = Date.now();
   private instrument?: DPiano;

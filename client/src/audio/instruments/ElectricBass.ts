@@ -1,9 +1,11 @@
+import { InstrumentType, type Instrument } from './Instrument';
 import Sampler from './Sampler';
 
 
 const MIDI_OFFSET = -24;
 
-export default class ElectricBass extends Sampler {
+export default class ElectricBass extends Sampler implements Instrument {
+  public readonly type = InstrumentType.ELECTRIC_BASS;
   constructor() {
     super('bass-electric', [
       'G2',

@@ -1,8 +1,8 @@
 import clsx from 'clsx';
 import { createSignal, onCleanup } from 'solid-js';
+import MetronomeActions from '../actions/MetronomeActions';
 import { useAppSelector } from '../app/hooks';
 import { MIN_BPM, MAX_BPM } from '../constants/metronome';
-import { metronomeActions } from '../crdt';
 import { selectMetronome } from '../selectors/metronomeSelectors';
 import { selectMyUser } from '../selectors/workspaceSelectors';
 import * as styles from './Metronome.css';
@@ -28,7 +28,7 @@ function Metronome() {
     const newBpm = Number(target.value);
     
     // Update via CRDT - automatically synced
-    metronomeActions.setBpm(newBpm);
+    MetronomeActions.setBpm(newBpm);
   }
 
   function toggleMetronome() {
@@ -38,12 +38,12 @@ function Metronome() {
       // Starting metronome - become leader
       const myUserId = myUser()?.userId;
       if (!myUserId) return;
-      metronomeActions.start(myUserId);
+      MetronomeActions.start(myUserId);
       return;
     }
     
     // Stopping metronome - automatically synced via CRDT
-    metronomeActions.stop();
+    MetronomeActions.stop();
   }
 
   function changeBpm(delta: number) {
@@ -52,7 +52,7 @@ function Metronome() {
     
     if (newBpm !== currentBpm) {
       // Update via CRDT - automatically synced
-      metronomeActions.setBpm(newBpm);
+      MetronomeActions.setBpm(newBpm);
     }
   }
 

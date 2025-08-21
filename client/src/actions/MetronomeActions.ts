@@ -1,6 +1,6 @@
 import { MIN_BPM, MAX_BPM } from '../constants/metronome';
+import { sharedStoreRoot } from '../crdt/store';
 import { SharedStoreActions } from '../crdt/store/SharedStoreActions';
-import type { SharedStoreRoot } from '../crdt/store/SharedStoreRoot';
 import type { SharedMetronomeState } from '../crdt/types/StoreTypes';
 
 /**
@@ -9,9 +9,9 @@ import type { SharedMetronomeState } from '../crdt/types/StoreTypes';
  * This class doesn't need to know about CRDT internals - it just uses the
  * change() method from SharedStoreActions to make modifications.
  */
-export class MetronomeActions extends SharedStoreActions<SharedMetronomeState> {
-  constructor(sharedRoot: SharedStoreRoot) {
-    super('metronome', sharedRoot);
+class MetronomeActions extends SharedStoreActions<SharedMetronomeState> {
+  constructor() {
+    super('metronome', sharedStoreRoot);
   }
 
   setActive(active: boolean) {
@@ -63,3 +63,5 @@ export class MetronomeActions extends SharedStoreActions<SharedMetronomeState> {
     });
   }
 }
+
+export default new MetronomeActions();
