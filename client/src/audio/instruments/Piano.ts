@@ -50,13 +50,13 @@ export default class Piano implements Instrument {
     }
   }
 
-  public sustainDown(): void {
-    this.instrument?.pedalDown();
+  public sustainDown(delay?: number): void {
+    this.instrument?.pedalDown({ time: getDelayTime(delay) });
     this.isSustained = true;
   }
 
-  public sustainUp(): void {
-    this.instrument?.pedalUp();
+  public sustainUp(delay?: number): void {
+    this.instrument?.pedalUp({ time: getDelayTime(delay) });
     this.isSustained = false;
     this.sustainedKeys.clear();
     if (!this.isActive()) {

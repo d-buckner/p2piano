@@ -5,7 +5,7 @@ import type { InstrumentType } from '../instruments/Instrument';
 export interface RecordingMetadata {
   title: string,
   id: string, // client generated (can't trust)
-  displayNames: string[]
+  displayNames: string[],
 }
 
 export type PersistedRecordingMetadata = {
@@ -46,3 +46,9 @@ export type SustainUpEvent = {
 } & BaseRecordingEvent;
 
 export type RecordingEvent = KeyUpEvent | KeyDownEvent | SustainDownEvent | SustainUpEvent;
+
+export interface EventsPageResult {
+  events: RecordingEvent[];
+  hasMore: boolean;
+  lastTimestamp?: number;
+}

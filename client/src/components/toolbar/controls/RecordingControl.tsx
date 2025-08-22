@@ -7,7 +7,7 @@ import { selectIsRecording, selectRecordings, selectRecordingStartTime } from '.
 import { selectMyUser } from '../../../selectors/workspaceSelectors';
 import Dropdown from '../../ui/Dropdown';
 import Tooltip from '../../ui/Tooltip';
-import { CircleIcon, SquareIcon } from '../icons';
+import { CircleIcon, SquareIcon, PlayIcon, StopIcon, ChevronDownIcon } from '../icons';
 import * as styles from './RecordingControl.css';
 
 
@@ -18,6 +18,8 @@ function RecordingControl() {
   const myUser = useAppSelector(selectMyUser);
   const [recordingTime, setRecordingTime] = createSignal(0);
   const [showRecordingsDropdown, setShowRecordingsDropdown] = createSignal(false);
+  const [currentPlayback, setCurrentPlayback] = createSignal<Playback | null>(null);
+  const [playingRecordingId, setPlayingRecordingId] = createSignal<string | null>(null);
   
   // Timer effect
   createEffect(() => {
@@ -47,44 +49,103 @@ function RecordingControl() {
       recordingActions.start();
     } else {
       recordingActions.stop();
-      setShowRecordingsDropdown(true);
     }
   };
 
   const handlePlayRecording = async (recordingId: string) => {
+    const current = currentPlayback();
+    if (current) {
+      current.stop();
+    }
+    
     const playback = await Playback.load(recordingId);
-    playback.start();
+    await playback.start();
+    setCurrentPlayback(playback);
+    setPlayingRecordingId(recordingId);
+  };
+
+  const handleStopPlayback = () => {
+    const playback = currentPlayback();
+    if (playback) {
+      playback.stop();
+      setCurrentPlayback(null);
+      setPlayingRecordingId(null);
+    }
+  };
+
+  const formatRecordingDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return dateString;
+    }
   };
 
   return (
     <div class={styles.recordingControl}>
+      {/* Record Button */}
+      <Tooltip text={isRecording() ? 'Stop Recording' : 'Start Recording'}>
+        <button
+          class={clsx(styles.recordButton, { [styles.recording]: isRecording() })}
+          onClick={handleRecordClick}
+        >
+          {isRecording() ? <SquareIcon size={14} /> : <CircleIcon size={14} />}
+          <span>{isRecording() ? formatTime(recordingTime()) : 'REC'}</span>
+        </button>
+      </Tooltip>
+
+      {/* Recordings Dropdown */}
       <Dropdown
         open={showRecordingsDropdown()}
         onOpenChange={setShowRecordingsDropdown}
         trigger={
-          <Tooltip text={isRecording() ? 'Stop Recording' : 'Start Recording'} shortcut="R">
-            <button
-              class={clsx(styles.recordButton, { [styles.recording]: isRecording() })}
-              onClick={handleRecordClick}
-            >
-              {isRecording() ? <SquareIcon size={14} /> : <CircleIcon size={14} />}
-              <span>{isRecording() ? formatTime(recordingTime()) : 'REC'}</span>
+          <Tooltip text="Browse Recordings">
+            <button class={styles.browseButton}>
+              <ChevronDownIcon size={14} />
             </button>
           </Tooltip>
         }
       >
         <div class={styles.dropdownContent}>
-          <h3 class={styles.dropdownTitle}>Recordings</h3>
-          <div class={styles.recordingsList}>
-            <For each={recordings()}>{rec => (
+          <div class={styles.dropdownHeader}>
+            <h3 class={styles.dropdownTitle}>Recordings</h3>
+            {playingRecordingId() && (
               <button 
-                class={styles.recordingItem} 
-                aria-label={`Play recording: ${rec.title}`}
-                onClick={() => handlePlayRecording(rec.id)}
+                class={styles.stopButton}
+                onClick={handleStopPlayback}
+                aria-label="Stop playback"
               >
-                <span>{rec.title}</span>
+                <StopIcon size={12} />
               </button>
-            )}</For>
+            )}
+          </div>
+          
+          <div class={styles.recordingsList}>
+            {recordings().length === 0 ? (
+              <div class={styles.emptyState}>No recordings yet</div>
+            ) : (
+              <For each={recordings()}>{rec => {
+                const isPlaying = playingRecordingId() === rec.id;
+                return (
+                  <button 
+                    class={clsx(styles.recordingItem, { [styles.playing]: isPlaying })}
+                    aria-label={`${isPlaying ? 'Stop' : 'Play'} recording: ${rec.title}`}
+                    onClick={() => isPlaying ? handleStopPlayback() : handlePlayRecording(rec.id)}
+                  >
+                    <div class={styles.recordingInfo}>
+                      <div class={styles.recordingTitle}>{rec.title}</div>
+                      <div class={styles.recordingMeta}>
+                        {formatRecordingDate(rec.title)} • {rec.displayNames.join(', ')}
+                      </div>
+                    </div>
+                    <div class={styles.playButton}>
+                      {isPlaying ? <StopIcon size={12} /> : <PlayIcon size={12} />}
+                    </div>
+                  </button>
+                );
+              }}</For>
+            )}
           </div>
         </div>
       </Dropdown>

@@ -16,6 +16,7 @@ const pulseAnimation = keyframes({
 export const recordingControl = style({
   display: 'flex',
   alignItems: 'center',
+  gap: '2px',
 });
 
 export const recordButton = style({
@@ -71,23 +72,103 @@ export const recordingItem = style({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  padding: `${vars.spacing.xs} ${vars.spacing.sm}`,
+  padding: `${vars.spacing.sm}`,
   border: 'none',
   backgroundColor: 'transparent',
-  color: vars.colors.foreground,
-  fontSize: vars.fontSizes.xs,
   borderRadius: vars.radii.sm,
   cursor: 'pointer',
   transition: vars.transitions.fast,
   textAlign: 'left',
   width: '100%',
+  gap: vars.spacing.sm,
   
   ':hover': {
     backgroundColor: vars.overlays.hover,
   },
 });
 
-export const recordingDate = style({
+export const browseButton = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '24px',
+  height: '24px',
+  borderRadius: vars.radii.md,
+  border: `1px solid ${vars.overlays.border}`,
+  backgroundColor: vars.overlays.subtle,
+  color: vars.colors.muted,
+  cursor: 'pointer',
+  transition: vars.transitions.fast,
+  
+  ':hover': {
+    backgroundColor: vars.overlays.hover,
+  },
+});
+
+export const dropdownHeader = style({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: vars.spacing.sm,
+});
+
+export const stopButton = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '20px',
+  height: '20px',
+  border: 'none',
+  borderRadius: vars.radii.sm,
+  backgroundColor: vars.colors.danger,
+  color: vars.colors.foreground,
+  cursor: 'pointer',
+  transition: vars.transitions.fast,
+  
+  ':hover': {
+    opacity: 0.8,
+  },
+});
+
+export const emptyState = style({
+  padding: `${vars.spacing.md} ${vars.spacing.sm}`,
+  textAlign: 'center',
   fontSize: vars.fontSizes.xs,
   color: vars.colors.muted,
+  fontStyle: 'italic',
+});
+
+export const playing = style({
+  backgroundColor: vars.overlays.hover,
+  borderLeft: `3px solid ${vars.colors.primary}`,
+});
+
+export const recordingInfo = style({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  flex: 1,
+  gap: '2px',
+});
+
+export const recordingTitle = style({
+  fontSize: vars.fontSizes.xs,
+  fontWeight: 500,
+  color: vars.colors.foreground,
+});
+
+export const recordingMeta = style({
+  fontSize: '10px',
+  color: vars.colors.muted,
+  lineHeight: 1.2,
+});
+
+export const playButton = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '20px',
+  height: '20px',
+  color: vars.colors.primary,
+  flexShrink: 0,
 });

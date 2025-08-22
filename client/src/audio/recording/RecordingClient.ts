@@ -1,11 +1,13 @@
 import { store } from '../../app/store';
-import IndexDBClient, { type IndexDBConfig } from '../../clients/IndexDBClient';
+import IndexedDBClient, { type IndexedDBConfig } from '../../clients/IndexedDBClient';
 import { KeyActions, type Note } from '../../constants';
 import { selectUsers } from '../../selectors/workspaceSelectors';
 import type {
+  EventsPageResult,
   KeyDownEvent,
   KeyUpEvent,
   RecordingEvent,
+  RecordingMetadata,
   SustainDownEvent,
   SustainUpEvent,
 } from './types';
@@ -13,7 +15,8 @@ import type { InstrumentType } from '../instruments/Instrument';
 
 
 export default class RecordingClient {
-  private db?: IndexDBClient;
+  private db?: IndexedDBClient;
+  private metadata?: RecordingMetadata;
   private readonly dbName = 'recordings';
   private readonly tables = {
     EVENTS: 'events',
@@ -23,7 +26,14 @@ export default class RecordingClient {
   constructor(private recordingId: string) { }
 
   public async initialize(): Promise<void> {
-    const config: IndexDBConfig = {
+    const users = selectUsers(store);
+    this.metadata = {
+      id: this.recordingId,
+      title: new Date().toLocaleString(),
+      displayNames: Object.values(users).map(u => u.displayName),
+    };
+
+    const config: IndexedDBConfig = {
       dbName: this.dbName,
       version: 1,
       objectStores: [
@@ -38,18 +48,14 @@ export default class RecordingClient {
           indexes: [
             { name: 'recordingId', keyPath: 'recordingId', unique: false },
             { name: 'timestamp', keyPath: 'timestamp', unique: false },
+            { name: 'by-recording-timestamp', keyPath: ['recordingId', 'timestamp'], unique: false },
           ],
         },
       ],
     } as const;
 
-    this.db = await IndexDBClient.open(config);
-    const users = selectUsers(store);
-    await this.db.put(this.tables.METADATA, {
-      id: this.recordingId,
-      title: new Date().toLocaleString(),
-      displayNames: Object.values(users).map(u => u.displayName),
-    });
+    this.db = await IndexedDBClient.open(config);
+    await this.db.put(this.tables.METADATA, this.metadata);
   }
 
   public keyDown(note: Note, instrument: InstrumentType, timestamp: number): void {
@@ -97,19 +103,23 @@ export default class RecordingClient {
     });
   }
 
-  // gets all events for this recording, sorted by timestamp ascending
-  public async getNextEventBatch(): Promise<RecordingEvent[]> {
+  public async getEventsByRecording(pageSize = 100, lastTimestamp?: number): Promise<EventsPageResult> {
     this.ensureInitialized();
     
-    // Get all events for this recording
-    const allEvents = await this.db!.getAll<RecordingEvent>(this.tables.EVENTS);
+    const result = await this.db!.queryCompoundIndex<RecordingEvent>(
+      this.tables.EVENTS,
+      'by-recording-timestamp',
+      [this.recordingId],
+      { pageSize, startAfter: lastTimestamp }
+    );
     
-    // Filter by recordingId and sort by timestamp
-    const filteredEvents = allEvents
-      .filter(event => event.recordingId === this.recordingId)
-      .sort((a, b) => a.timestamp - b.timestamp);
-    
-    return filteredEvents;
+    return {
+      events: result.items,
+      hasMore: result.hasMore,
+      lastTimestamp: result.items.length > 0
+        ? result.items[result.items.length - 1].timestamp
+        : undefined
+    };
   }
 
   public close(): void {

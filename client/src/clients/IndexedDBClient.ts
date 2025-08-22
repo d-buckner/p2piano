@@ -1,4 +1,4 @@
-export interface IndexDBConfig {
+export interface IndexedDBConfig {
   dbName: string;
   version: number;
   objectStores: {
@@ -13,14 +13,20 @@ export interface IndexDBConfig {
   }[];
 }
 
-class IndexDBClient {
+export interface CompoundPageResult<T> {
+  items: T[];
+  hasMore: boolean;
+  nextCursor?: IDBValidKey[];
+}
+
+class IndexedDBClient {
   private db: IDBDatabase;
 
   private constructor(db: IDBDatabase) {
     this.db = db;
   }
 
-  static open(config: IndexDBConfig): Promise<IndexDBClient> {
+  static open(config: IndexedDBConfig): Promise<IndexedDBClient> {
     return new Promise((resolve, reject) => {
       console.log(`Opening IndexedDB: ${config.dbName} v${config.version}`);
       const request = indexedDB.open(config.dbName, config.version);
@@ -32,7 +38,7 @@ class IndexDBClient {
 
       request.onsuccess = () => {
         console.log(`IndexedDB opened successfully: ${config.dbName}`);
-        resolve(new IndexDBClient(request.result));
+        resolve(new IndexedDBClient(request.result));
       };
 
       request.onupgradeneeded = (event) => {
@@ -198,6 +204,62 @@ class IndexDBClient {
     });
   }
 
+  createCompoundRange(
+    prefix: IDBValidKey[], 
+    startSuffix?: IDBValidKey, 
+    endSuffix: IDBValidKey = Infinity,
+    excludeStart = false
+  ): IDBKeyRange {
+    const start = startSuffix !== undefined ? [...prefix, startSuffix] : prefix;
+    const end = [...prefix, endSuffix];
+    
+    return IDBKeyRange.bound(start, end, excludeStart, false);
+  }
+
+  queryCompoundIndex<T>(
+    storeName: string,
+    indexName: string,
+    prefix: IDBValidKey[],
+    options: {
+      pageSize?: number;
+      startAfter?: IDBValidKey;
+      direction?: IDBCursorDirection;
+    } = {}
+  ): Promise<CompoundPageResult<T>> {
+    const { pageSize = 100, startAfter, direction = 'next' } = options;
+    const transaction = this.db.transaction([storeName], 'readonly');
+    const store = transaction.objectStore(storeName);
+    const index = store.index(indexName);
+    
+    const keyRange = this.createCompoundRange(prefix, startAfter, Infinity, startAfter !== undefined);
+    const request = index.openCursor(keyRange, direction);
+    
+    const items: T[] = [];
+    let count = 0;
+    
+    return new Promise((resolve, reject) => {
+      
+      request.onerror = () => reject(request.error);
+      
+      request.onsuccess = () => {
+        const cursor = request.result;
+        
+        if (!cursor || count >= pageSize) {
+          resolve({
+            items,
+            hasMore: cursor !== null && count >= pageSize,
+            nextCursor: cursor ? cursor.key as IDBValidKey[] : undefined
+          });
+          return;
+        }
+        
+        items.push(cursor.value);
+        count++;
+        cursor.continue();
+      };
+    });
+  }
+
   transaction(
     storeNames: string | string[],
     mode: IDBTransactionMode = 'readonly'
@@ -267,4 +329,4 @@ class TransactionStore {
   }
 }
 
-export default IndexDBClient;
+export default IndexedDBClient;
