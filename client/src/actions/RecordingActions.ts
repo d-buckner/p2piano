@@ -1,89 +1,79 @@
 import { store } from '../app/store';
 import RecordingClient from '../audio/recording/RecordingClient';
-import { sharedStoreRoot } from '../crdt/store';
-import { SharedStoreActions } from '../crdt/store/SharedStoreActions';
+import { setRecordingStore } from '../stores/RecordingStore';
 import { selectRecordingStartTime } from '../selectors/recordingSelectors';
-import { selectMyUser, selectUsers } from '../selectors/workspaceSelectors';
 import type { InstrumentType } from '../audio/instruments/Instrument';
 import type { Note } from '../constants';
-import type { SharedRecordingState } from '../crdt/types/StoreTypes';
 
 
-/**
- * CRDT-based recording actions that synchronize recording state across peers.
- * 
- * This class doesn't need to know about CRDT internals - it just uses the
- * change() method from SharedStoreActions to make modifications.
- */
-class RecordingActions extends SharedStoreActions<SharedRecordingState> {
-  private recordingClient?: RecordingClient;
+const Attributes = {
+  RECORDINGS: 'recordings',
+  IS_LOADED: 'isLoaded',
+  IS_RECORDING: 'isRecording',
+  CURRENT_RECORDING_ID: 'currentRecordingId',
+  RECORDING_START_TIME: 'recordingStartTime',
+} as const;
 
-  constructor() {
-    super('recording', sharedStoreRoot);
-  }
+let recordingClient: RecordingClient | undefined;
 
-  async start() {
-    const recordingId = crypto.randomUUID();
-    const users = selectUsers(store);
-    const metadata = {
-      id: recordingId,
-      title: new Date().toLocaleString(),
-      displayNames: Object.values(users).map(u => u.displayName),
-    };
-
-    this.change(recording => {
-      recording.active = true;
-      recording.leaderId = selectMyUser(store)?.userId ?? '';
-      recording.recordingId = recordingId;
-      recording.startTimestamp = Math.floor(performance.now());
-      recording.items.push(metadata);
-    });
-
-    this.recordingClient = new RecordingClient(recordingId);
-    await this.recordingClient.initialize();
-  }
-
-  stop() {
-    this.recordingClient?.close();
-    this.recordingClient = undefined;
-
-    this.change(recording => {
-      recording.active = false;
-      recording.leaderId = '';
-      recording.recordingId = '';
-      recording.startTimestamp = 0;
-    });
-  }
-
-  recordKeyDown(note: Note, instrument: InstrumentType, audioDelay?: number) {
-    this.ensureClient();
-    this.recordingClient!.keyDown(note, instrument, this.getTimestamp(audioDelay));
-  }
-
-  recordKeyUp(midi: number, userId: string, audioDelay?: number) {
-    this.ensureClient();
-    this.recordingClient!.keyUp(midi, userId, this.getTimestamp(audioDelay));
-  }
-
-  recordSustainDown(userId: string) {
-    this.ensureClient();
-    this.recordingClient!.sustainDown(userId, this.getTimestamp());
-  }
-
-  recordSustainUp(userId: string) {
-    this.ensureClient();
-    this.recordingClient!.sustainUp(userId, this.getTimestamp());
-  }
-
-  private ensureClient() {
-    if (!this.recordingClient) {
-      throw new Error('Cannot record before recording client is initialized');
-    }
-  }
-
-  private getTimestamp(audioDelay = 0): number {
-    return Math.floor(performance.now() - selectRecordingStartTime(store) + audioDelay);
-  }
+export async function loadUserRecordings() {
+  const recordings = await RecordingClient.getUserRecordings();
+  setRecordingStore(Attributes.RECORDINGS, recordings);
+  setRecordingStore(Attributes.IS_LOADED, true);
 }
 
-export default new RecordingActions();
+export async function startRecording() {
+  const recordingId = crypto.randomUUID();
+  const startTime = Math.floor(performance.now());
+
+  setRecordingStore(Attributes.IS_RECORDING, true);
+  setRecordingStore(Attributes.CURRENT_RECORDING_ID, recordingId);
+  setRecordingStore(Attributes.RECORDING_START_TIME, startTime);
+
+  recordingClient = new RecordingClient(recordingId);
+  await recordingClient.initialize();
+  
+  // Reload recordings to include the new one
+  await loadUserRecordings();
+}
+
+export function stopRecording() {
+  recordingClient?.close();
+  recordingClient = undefined;
+
+  setRecordingStore(Attributes.IS_RECORDING, false);
+  setRecordingStore(Attributes.CURRENT_RECORDING_ID, undefined);
+  setRecordingStore(Attributes.RECORDING_START_TIME, 0);
+}
+
+export function recordKeyDown(note: Note, instrument: InstrumentType, audioDelay?: number) {
+  if (!recordingClient) {
+    throw new Error('Cannot record before recording client is initialized');
+  }
+  recordingClient.keyDown(note, instrument, getTimestamp(audioDelay));
+}
+
+export function recordKeyUp(midi: number, userId: string, audioDelay?: number) {
+  if (!recordingClient) {
+    throw new Error('Cannot record before recording client is initialized');
+  }
+  recordingClient.keyUp(midi, userId, getTimestamp(audioDelay));
+}
+
+export function recordSustainDown(userId: string) {
+  if (!recordingClient) {
+    throw new Error('Cannot record before recording client is initialized');
+  }
+  recordingClient.sustainDown(userId, getTimestamp());
+}
+
+export function recordSustainUp(userId: string) {
+  if (!recordingClient) {
+    throw new Error('Cannot record before recording client is initialized');
+  }
+  recordingClient.sustainUp(userId, getTimestamp());
+}
+
+function getTimestamp(audioDelay = 0): number {
+  return Math.floor(performance.now() - selectRecordingStartTime(store) + audioDelay);
+}

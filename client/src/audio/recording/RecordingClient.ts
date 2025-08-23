@@ -1,7 +1,8 @@
 import { store } from '../../app/store';
-import IndexedDBClient, { type IndexedDBConfig } from '../../clients/IndexedDBClient';
+import IndexedDBClient from '../../clients/IndexedDBClient';
 import { KeyActions, type Note } from '../../constants';
 import { selectUsers } from '../../selectors/workspaceSelectors';
+import { RECORDING_DB_CONFIG } from './constants';
 import type {
   EventsPageResult,
   KeyDownEvent,
@@ -17,13 +18,20 @@ import type { InstrumentType } from '../instruments/Instrument';
 export default class RecordingClient {
   private db?: IndexedDBClient;
   private metadata?: RecordingMetadata;
-  private readonly dbName = 'recordings';
   private readonly tables = {
     EVENTS: 'events',
     METADATA: 'metadata'
   };
   
   constructor(private recordingId: string) { }
+
+  static async getUserRecordings(): Promise<RecordingMetadata[]> {
+    const db = await IndexedDBClient.open(RECORDING_DB_CONFIG);
+    const recordings = await db.getAll<RecordingMetadata>('metadata');
+    db.close();
+    
+    return recordings;
+  }
 
   public async initialize(): Promise<void> {
     const users = selectUsers(store);
@@ -32,29 +40,7 @@ export default class RecordingClient {
       title: new Date().toLocaleString(),
       displayNames: Object.values(users).map(u => u.displayName),
     };
-
-    const config: IndexedDBConfig = {
-      dbName: this.dbName,
-      version: 1,
-      objectStores: [
-        {
-          name: this.tables.METADATA,
-          keyPath: 'id',
-        },
-        {
-          name: this.tables.EVENTS,
-          keyPath: 'eventId',
-          autoIncrement: true,
-          indexes: [
-            { name: 'recordingId', keyPath: 'recordingId', unique: false },
-            { name: 'timestamp', keyPath: 'timestamp', unique: false },
-            { name: 'by-recording-timestamp', keyPath: ['recordingId', 'timestamp'], unique: false },
-          ],
-        },
-      ],
-    } as const;
-
-    this.db = await IndexedDBClient.open(config);
+    this.db = await IndexedDBClient.open(RECORDING_DB_CONFIG);
     await this.db.put(this.tables.METADATA, this.metadata);
   }
 

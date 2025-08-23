@@ -4,10 +4,10 @@ import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import { getAudioDelay } from '../audio/synchronization/utils';
 import PianoClient from '../clients/PianoClient';
 import { DEFAULT_VELOCITY, type Note } from '../constants';
-import { selectIsRecording, selectRecordingLeader } from '../selectors/recordingSelectors';
+import { selectIsRecording } from '../selectors/recordingSelectors';
 import { selectMyUser } from '../selectors/workspaceSelectors';
 import { setNotesByMidiStore } from '../stores/NotesByMidiStore';
-import RecordingActions from './RecordingActions';
+import { recordKeyDown, recordKeyUp, recordSustainDown, recordSustainUp } from './RecordingActions';
 import { getResolvedUserId, getUserColor } from './utils';
 
 
@@ -41,7 +41,7 @@ export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: stri
   addNote(note);
 
   if (shouldRecord()) {
-    RecordingActions.recordKeyDown(note, instrument.type, audioDelay);
+    recordKeyDown(note, instrument.type, audioDelay);
   }
 
   // Return color for piano visualizer
@@ -68,7 +68,7 @@ export function keyUp(midi: number, peerId?: string): string | undefined {
   removeNote(midi, resolvedUserId);
 
   if (shouldRecord()) {
-    RecordingActions.recordKeyUp(midi, resolvedUserId, audioDelay);
+    recordKeyUp(midi, resolvedUserId, audioDelay);
   }
 
   // keyUp doesn't need to return a color for visualization
@@ -89,7 +89,7 @@ export function sustainDown(peerId?: string): void {
   InstrumentRegistry.get(resolvedUserId)?.sustainDown?.();
 
   if (shouldRecord()) {
-    RecordingActions.recordSustainDown(resolvedUserId);
+    recordSustainDown(resolvedUserId);
   }
 }
 
@@ -107,7 +107,7 @@ export function sustainUp(peerId?: string): void {
   InstrumentRegistry.get(resolvedUserId)?.sustainUp?.();
 
   if (shouldRecord()) {
-    RecordingActions.recordSustainUp(resolvedUserId);
+    recordSustainUp(resolvedUserId);
   }
 }
 
@@ -140,6 +140,5 @@ function removeNote(midi: number, peerId: string) {
 }
 
 function shouldRecord(): boolean {
-  const myUserId = selectMyUser(store)?.userId ?? '';
-  return selectIsRecording(store) && selectRecordingLeader(store) === myUserId;
+  return selectIsRecording(store);
 }

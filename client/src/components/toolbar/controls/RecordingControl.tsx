@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import { createSignal, createEffect, For } from 'solid-js';
-import recordingActions from '../../../actions/RecordingActions';
+import { startRecording, stopRecording } from '../../../actions/RecordingActions';
 import { useAppSelector } from '../../../app/hooks';
 import Playback from '../../../audio/recording/Playback';
 import { selectIsRecording, selectRecordings, selectRecordingStartTime } from '../../../selectors/recordingSelectors';
@@ -46,9 +46,9 @@ function RecordingControl() {
     if (!user) return;
 
     if (!isRecording()) {
-      recordingActions.start();
+      startRecording();
     } else {
-      recordingActions.stop();
+      stopRecording();
     }
   };
 

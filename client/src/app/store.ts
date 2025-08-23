@@ -3,6 +3,7 @@ import { initialSharedStore } from '../crdt/types/StoreTypes';
 import { connectionStore } from '../stores/ConnectionStore';
 import { midiStore } from '../stores/MidiStore';
 import { notesByMidiStore } from '../stores/NotesByMidiStore';
+import { recordingStore } from '../stores/RecordingStore';
 import { workspaceStore } from '../stores/WorkspaceStore';
 import type { SharedStore } from '../crdt/types/StoreTypes';
 
@@ -20,6 +21,7 @@ export type RootState = {
   notesByMidi: typeof notesByMidiStore;
   connection: typeof connectionStore;
   midi: typeof midiStore;
+  recording: typeof recordingStore;
   
   /** CRDT-based shared state */
   shared: SharedStore;
@@ -31,6 +33,7 @@ const initialState: RootState = {
   notesByMidi: notesByMidiStore,
   connection: connectionStore,
   midi: midiStore,
+  recording: recordingStore,
   shared: initialSharedStore,
 };
 
