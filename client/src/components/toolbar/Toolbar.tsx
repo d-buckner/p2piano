@@ -3,7 +3,6 @@ import InstrumentSelector from './controls/InstrumentSelector';
 import LatencyIndicator from './controls/LatencyIndicator';
 import MetronomeControl from './controls/MetronomeControl';
 import MidiControl from './controls/MidiControl';
-import RecordingControl from './controls/RecordingControl';
 import * as styles from './Toolbar.css';
 
 
@@ -19,9 +18,6 @@ function Toolbar() {
       </div>
       
       {/* Medium+: Add Recording and Active Users */}
-      <div class={styles.showFromMedium}>
-        <RecordingControl />
-      </div>
       <div class={styles.showFromMedium}>
         <ActiveUsers />
       </div>
