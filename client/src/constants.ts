@@ -17,9 +17,6 @@ export type Note = {
   color: string,
 };
 
-export type NotesByMidi = {
-  [midi: string]: Note[];
-};
 
 export enum Transport {
   WEBSOCKET = 'WEBSOCKET',

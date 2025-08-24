@@ -1,7 +1,7 @@
 import { store } from '../app/store';
 import RecordingClient from '../audio/recording/RecordingClient';
-import { setRecordingStore } from '../stores/RecordingStore';
 import { selectRecordingStartTime } from '../selectors/recordingSelectors';
+import { setRecordingStore } from '../stores/RecordingStore';
 import type { InstrumentType } from '../audio/instruments/Instrument';
 import type { Note } from '../constants';
 

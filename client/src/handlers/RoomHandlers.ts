@@ -3,7 +3,7 @@ import { setRoom, setUserId } from '../actions/RoomActions';
 import { store } from '../app/store';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import Logger from '../lib/Logger';
-import { selectNotesByMidi } from '../selectors/noteSelectors';
+import { NoteManager } from '../lib/NoteManager';
 import { selectMyUser, selectWorkspace } from '../selectors/workspaceSelectors';
 import type { InstrumentType } from '../audio/instruments/Instrument';
 import type { Room } from '../lib/workspaceTypes';
@@ -102,6 +102,7 @@ export default class RoomHandlers {
   static userDisconnectHandler(payload: UserDisconnectPayload) {
     const { userId, room } = payload;
     InstrumentRegistry.unregister(userId);
+    NoteManager.releaseAllNotesForUser(userId);
     setRoom(room);
   }
 
@@ -112,13 +113,8 @@ export default class RoomHandlers {
 
   static blurHandler() {
     const userId = selectMyUser(store)?.userId;
-    const notes = selectNotesByMidi(store);
-    Object.values(notes).forEach(noteEntries => {
-      noteEntries.forEach(note => {
-        if (note.peerId === userId) {
-          NoteActions.keyUp(note.midi);
-        }
-      });
-    });
+    if (userId) {
+      NoteManager.releaseAllNotesForUser(userId);
+    }
   }
 }

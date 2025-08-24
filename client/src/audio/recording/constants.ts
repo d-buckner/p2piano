@@ -1,5 +1,6 @@
 import type { IndexedDBConfig } from '../../clients/IndexedDBClient';
 
+
 export const RECORDING_DB_CONFIG: IndexedDBConfig = {
   dbName: 'recordings',
   version: 1,

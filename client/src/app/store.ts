@@ -2,7 +2,6 @@ import { createStore } from 'solid-js/store';
 import { initialSharedStore } from '../crdt/types/StoreTypes';
 import { connectionStore } from '../stores/ConnectionStore';
 import { midiStore } from '../stores/MidiStore';
-import { notesByMidiStore } from '../stores/NotesByMidiStore';
 import { recordingStore } from '../stores/RecordingStore';
 import { workspaceStore } from '../stores/WorkspaceStore';
 import type { SharedStore } from '../crdt/types/StoreTypes';
@@ -18,7 +17,6 @@ export type MetronomeState = {
 // Define the combined state type
 export type RootState = {
   workspace: typeof workspaceStore;
-  notesByMidi: typeof notesByMidiStore;
   connection: typeof connectionStore;
   midi: typeof midiStore;
   recording: typeof recordingStore;
@@ -30,7 +28,6 @@ export type RootState = {
 // Create the initial state
 const initialState: RootState = {
   workspace: workspaceStore,
-  notesByMidi: notesByMidiStore,
   connection: connectionStore,
   midi: midiStore,
   recording: recordingStore,
