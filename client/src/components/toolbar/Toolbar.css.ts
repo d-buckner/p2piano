@@ -16,10 +16,10 @@ export const showFromMobile = style({
   display: 'flex', // Show on all screen sizes
 });
 
-export const showFromMedium = style({
+export const showFromTablet = style({
   display: 'none',
   '@media': {
-    '(min-width: 510px)': {
+    '(min-width: 768px)': {
       display: 'flex',
     },
   },
@@ -28,7 +28,16 @@ export const showFromMedium = style({
 export const showFromDesktop = style({
   display: 'none',
   '@media': {
-    '(min-width: 768px)': {
+    '(min-width: 1024px)': {
+      display: 'flex',
+    },
+  },
+});
+
+export const showFromLarge = style({
+  display: 'none',
+  '@media': {
+    '(min-width: 1280px)': {
       display: 'flex',
     },
   },

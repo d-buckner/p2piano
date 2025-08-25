@@ -2,13 +2,13 @@ import { Sampler as ToneSampler } from 'tone';
 import { DEFAULT_VELOCITY } from '../../constants';
 import { toFrequency } from '../../lib/NoteHelpers';
 import getDelayTime from './getDelayTime';
-import type { Instrument } from './Instrument';
+import type { BaseInstrument } from './Instrument';
 
 
 const BASE_PATH = '/assets/samples/';
 const FILE_TYPE = 'ogg';
 
-export default class Sampler implements Instrument {
+export default class Sampler implements BaseInstrument {
   protected instrument: ToneSampler;
 
   constructor(baseName: string, notenames: string[]) {

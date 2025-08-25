@@ -1,8 +1,8 @@
 import clsx from 'clsx';
 import { createSignal, createEffect, onCleanup, For } from 'solid-js';
+import MetronomeActions from '../../../actions/MetronomeActions';
 import { useAppSelector } from '../../../app/hooks';
 import { MIN_BPM, MAX_BPM } from '../../../constants/metronome';
-import { metronomeActions } from '../../../crdt/actions';
 import { selectMetronome } from '../../../selectors/metronomeSelectors';
 import { selectMyUser } from '../../../selectors/workspaceSelectors';
 import Dropdown from '../../ui/Dropdown';
@@ -40,21 +40,21 @@ function MetronomeControl() {
     const newActive = !metronome().active;
 
     if (!newActive) {
-      metronomeActions.stop();
+      MetronomeActions.stop();
       return;
     }
 
     // Starting metronome - become leader
     const myUserId = myUser()?.userId;
     if (myUserId) {
-      metronomeActions.start(myUserId);
+      MetronomeActions.start(myUserId);
     };
   };
 
   const handleBpmChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
     const newBpm = Number(target.value);
-    metronomeActions.setBpm(newBpm);
+    MetronomeActions.setBpm(newBpm);
   };
 
   return (
@@ -115,7 +115,7 @@ function MetronomeControl() {
                 <For each={timeSignatures}>{sig => (
                   <button
                     class={clsx(styles.timeSignatureButton, { [styles.selected]: metronome().beatsPerMeasure === sig.value })}
-                    onClick={() => metronomeActions.setBeatsPerMeasure(sig.value)}
+                    onClick={() => MetronomeActions.setBeatsPerMeasure(sig.value)}
                   >
                     {sig.label}
                   </button>

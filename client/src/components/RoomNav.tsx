@@ -4,7 +4,6 @@ import * as WorkspaceActions from '../actions/WorkspaceActions';
 import * as styles from './RoomNav.css';
 import Toolbar from './toolbar';
 import InviteButton from './toolbar/controls/InviteButton';
-import RoomCode from './toolbar/controls/RoomCode';
 
 
 function RoomNav() {
@@ -21,12 +20,6 @@ function RoomNav() {
         <div class={styles.showFromMobile}>
           <InviteButton />
         </div>
-
-        {/* Medium+: Add Room Code */}
-        <div class={styles.showFromMedium}>
-          <RoomCode />
-        </div>
-
       </div>
     </nav >
   );

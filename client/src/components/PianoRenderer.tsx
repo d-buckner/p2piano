@@ -1,19 +1,14 @@
 import PianoVisualizer from 'piano-visualizer';
-import { createSignal, createEffect } from 'solid-js';
+import { createSignal, createEffect, onCleanup } from 'solid-js';
 import * as NoteActions from '../actions/NoteActions';
+import { NoteManager } from '../lib/NoteManager';
 import { oceanTheme } from '../styles/theme.css';
 import * as styles from './PianoRenderer.css';
-import type { Note } from '../constants';
 
 
-type Props = {
-    notes: Note[],
-};
-
-export default function PianoRenderer(props: Props) {
+export default function PianoRenderer() {
     const [containerRef, setContainerRef] = createSignal<HTMLDivElement>();
     let renderer: PianoVisualizer | undefined;
-    const activeNotes = new Map<number, Note>();
 
     // Initialize renderer when container is available
     createEffect(() => {
@@ -31,25 +26,22 @@ export default function PianoRenderer(props: Props) {
         }
     });
 
+    // Set up event bus listeners
     createEffect(() => {
-        const currentNotes = props.notes.reduce((arr, note) => arr.set(note.midi, note),
-            new Map<number, Note>()
-        );
+        const handleNoteStart = (data: { midi: number; color: string }) => {
+            renderer?.startNote(data.midi, data.color);
+        };
 
-        activeNotes.forEach(note => {
-            const currentEntry = currentNotes.get(note.midi);
-            if (!currentEntry || currentEntry.peerId !== note.peerId) {
-                activeNotes.delete(note.midi);
-                renderer?.endNote(note.midi);
-            }
-        });
+        const handleNoteEnd = (data: { midi: number }) => {
+            renderer?.endNote(data.midi);
+        };
 
-        currentNotes.forEach(note => {
-            const prevEntry = activeNotes.get(note.midi);
-            if (!prevEntry) {
-                activeNotes.set(note.midi, note);
-                renderer?.startNote(note.midi, note.color || 'blue');
-            }
+        NoteManager.onNoteStart(handleNoteStart);
+        NoteManager.onNoteEnd(handleNoteEnd);
+
+        onCleanup(() => {
+            NoteManager.offNoteStart(handleNoteStart);
+            NoteManager.offNoteEnd(handleNoteEnd);
         });
     });
 

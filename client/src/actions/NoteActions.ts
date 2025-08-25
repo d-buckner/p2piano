@@ -1,9 +1,11 @@
-import { produce } from 'solid-js/store';
+import { store } from '../app/store';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import { getAudioDelay } from '../audio/synchronization/utils';
 import PianoClient from '../clients/PianoClient';
 import { DEFAULT_VELOCITY, type Note } from '../constants';
-import { setNotesByMidiStore } from '../stores/NotesByMidiStore';
+import { NoteManager } from '../lib/NoteManager';
+import { selectIsRecording } from '../selectors/recordingSelectors';
+import { recordKeyDown, recordKeyUp, recordSustainDown, recordSustainUp } from './RecordingActions';
 import { getResolvedUserId, getUserColor } from './utils';
 
 
@@ -18,19 +20,29 @@ export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: stri
     return;
   }
 
-  InstrumentRegistry.get(resolvedUserId)?.keyDown(
+  const instrument = InstrumentRegistry.get(resolvedUserId);
+  if (!instrument) return;
+  const audioDelay = getAudioDelay(resolvedUserId);
+  instrument.keyDown(
     midi,
-    getAudioDelay(resolvedUserId),
+    audioDelay,
     velocity,
   );
 
-  const color = getUserColor(resolvedUserId);
-  addNote({
+  const color = getUserColor(resolvedUserId)!;
+  const note: Note = {
     midi,
     peerId: resolvedUserId,
     velocity,
     color
-  });
+  };
+
+  // Start note - this handles both tracking and visualization events
+  NoteManager.startNote(midi, resolvedUserId, color);
+
+  if (shouldRecord()) {
+    recordKeyDown(note, instrument.type, audioDelay);
+  }
 
   // Return color for piano visualizer
   return color;
@@ -47,12 +59,18 @@ export function keyUp(midi: number, peerId?: string): string | undefined {
     return;
   }
 
+  const audioDelay = getAudioDelay(resolvedUserId);
   InstrumentRegistry.get(resolvedUserId)?.keyUp(
     midi,
-    getAudioDelay(resolvedUserId),
+    audioDelay,
   );
 
-  removeNote(midi, resolvedUserId);
+  // End note - this handles both tracking and visualization events
+  NoteManager.endNote(midi, resolvedUserId);
+
+  if (shouldRecord()) {
+    recordKeyUp(midi, resolvedUserId, audioDelay);
+  }
 
   // keyUp doesn't need to return a color for visualization
   return undefined;
@@ -70,6 +88,10 @@ export function sustainDown(peerId?: string): void {
   }
 
   InstrumentRegistry.get(resolvedUserId)?.sustainDown?.();
+
+  if (shouldRecord()) {
+    recordSustainDown(resolvedUserId);
+  }
 }
 
 export function sustainUp(peerId?: string): void {
@@ -84,32 +106,12 @@ export function sustainUp(peerId?: string): void {
   }
 
   InstrumentRegistry.get(resolvedUserId)?.sustainUp?.();
+
+  if (shouldRecord()) {
+    recordSustainUp(resolvedUserId);
+  }
 }
 
-function addNote(note: Note) {
-   // Add note to the store
-  setNotesByMidiStore(note.midi.toString(), (existingNotes = []) => {
-    const noteIndex = existingNotes.findIndex(n => n.peerId === note.peerId);
-    if (noteIndex === -1) {
-      return [...existingNotes, note];
-    } else {
-      const newNotes = [...existingNotes];
-      newNotes[noteIndex] = note;
-      return newNotes;
-    }
-  }); 
-}
-
-function removeNote(midi: number, peerId: string) {
-    setNotesByMidiStore(produce((store) => {
-    if (!store[midi]) return;
-    
-    const filteredNotes = store[midi].filter(note => note.peerId !== peerId);
-    if (filteredNotes.length === 0) {
-      delete store[midi];
-      return;
-    }
-    
-    store[midi] = filteredNotes;
-  }));
+function shouldRecord(): boolean {
+  return selectIsRecording(store);
 }

@@ -7,7 +7,7 @@
 
 /**
  * Shared state that is synchronized across all peers via CRDT.
- * Only contains metronome state for musical coordination.
+ * Contains metronome state for musical coordination.
  */
 export interface SharedStore {
   /** Metronome state for musical synchronization */
@@ -36,7 +36,6 @@ export interface SharedMetronomeState {
   /** Timestamp of when metronome was started (for sync) */
   startTimestamp: number;
 }
-
 
 /**
  * Default/initial state values

@@ -1,6 +1,7 @@
 import HuMIDI from 'humidi';
 import * as MidiActions from '../actions/MidiActions';
 import * as NoteActions from '../actions/NoteActions';
+import { loadUserRecordings } from '../actions/RecordingActions';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import AudioSyncCoordinator from '../audio/synchronization/AudioSyncCoordinator';
 import KeyboardController from '../controllers/KeyboardController';
@@ -51,7 +52,8 @@ export function bootstrap() {
   keyboardController.registerKeyDownHandler(NoteActions.keyDown);
   keyboardController.registerKeyUpHandler(NoteActions.keyUp);
 
-  // Start WebSocket connection (don't wait for it)
+  loadUserRecordings();
+
   const websocketController = WebsocketController.getInstance();
   // Subscribe to WebSocket handlers
   subscribe(websocketController, WEBSOCKET_HANDLERS);

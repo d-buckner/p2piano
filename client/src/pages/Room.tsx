@@ -9,14 +9,12 @@ import WelcomeModal from '../components/WelcomeModal';
 import { metronomeController } from '../controllers/MetronomeController';
 import ClientPreferences from '../lib/ClientPreferences';
 import registerServiceWorker from '../lib/registerServiceWorker';
-import { selectNotes } from '../selectors/noteSelectors';
 import { selectWorkspace } from '../selectors/workspaceSelectors';
 import * as styles from './Room.css';
 
 
 const Room = () => {
   const workspace = useAppSelector(selectWorkspace);
-  const notes = useAppSelector(selectNotes);
   const [hasDisplayName, setHasDisplayName] = createSignal<boolean>(ClientPreferences.hasUserDefinedDisplayName());
   const [audioActivated, setAudioActivated] = createSignal(AudioManager.active);
 
@@ -58,7 +56,7 @@ const Room = () => {
               <RoomNav workspace={workspace()} />
             </nav>
             <main class={styles.visualArea}>
-              <PianoRenderer notes={notes()} />
+              <PianoRenderer />
             </main>
           </div>
         </Match>

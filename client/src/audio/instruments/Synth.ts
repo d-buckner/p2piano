@@ -2,10 +2,11 @@ import { PolySynth, Synth as ToneSynth } from 'tone';
 import { DEFAULT_VELOCITY } from '../../constants';
 import { toFrequency } from '../../lib/NoteHelpers';
 import getDelayTime from './getDelayTime';
-import type { Instrument } from './Instrument';
+import { InstrumentType, type Instrument } from './Instrument';
 
 
 export default class Synth implements Instrument {
+  public readonly type = InstrumentType.SYNTH;
   private instrument: PolySynth;
 
   constructor() {

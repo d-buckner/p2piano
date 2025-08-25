@@ -14,12 +14,9 @@ export type Note = {
   peerId: string,
   midi: number,
   velocity: number,
-  color?: string,
+  color: string,
 };
 
-export type NotesByMidi = {
-  [midi: string]: Note[];
-};
 
 export enum Transport {
   WEBSOCKET = 'WEBSOCKET',
