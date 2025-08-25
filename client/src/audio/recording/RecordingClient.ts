@@ -9,6 +9,7 @@ import type {
   KeyUpEvent,
   RecordingEvent,
   RecordingMetadata,
+  RetrievedRecordingEvent,
   SustainDownEvent,
   SustainUpEvent,
 } from './types';
@@ -30,18 +31,45 @@ export default class RecordingClient {
     const recordings = await db.getAll<RecordingMetadata>('metadata');
     db.close();
     
-    return recordings;
+    // Sort by createdAt descending (newest first)
+    return recordings.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   }
 
   public async initialize(): Promise<void> {
+    this.db = await IndexedDBClient.open(RECORDING_DB_CONFIG);
+    
+    // Try to load existing metadata
+    try {
+      this.metadata = await this.db.get<RecordingMetadata>(this.tables.METADATA, this.recordingId);
+    } catch {
+      // Metadata doesn't exist yet - that's okay for new recordings
+    }
+  }
+
+  public async createRecording(): Promise<void> {
+    this.ensureInitializedDb();
+    
     const users = selectUsers(store);
+    const createdAt = Date.now(); // UTC timestamp
     this.metadata = {
       id: this.recordingId,
-      title: new Date().toLocaleString(),
+      title: new Date(createdAt).toLocaleString(),
       displayNames: Object.values(users).map(u => u.displayName),
+      duration: 0,
+      createdAt,
     };
-    this.db = await IndexedDBClient.open(RECORDING_DB_CONFIG);
-    await this.db.put(this.tables.METADATA, this.metadata);
+    
+    await this.db!.put(this.tables.METADATA, this.metadata);
+  }
+
+  public async updateDuration(duration: number) {
+    this.ensureInitialized();
+    if (!this.metadata) {
+      throw new Error('Cannot update duration for recording before it exists');
+    }
+
+    this.metadata.duration = duration;
+    await this.db!.put(this.tables.METADATA, this.metadata);
   }
 
   public keyDown(note: Note, instrument: InstrumentType, timestamp: number): void {
@@ -108,13 +136,40 @@ export default class RecordingClient {
     };
   }
 
+  public async deleteRecording(): Promise<void> {
+    this.ensureInitializedDb();
+    
+    // Delete all events for this recording using the recordingId index
+    await this.db!.deleteByIndex(this.tables.EVENTS, 'recordingId', this.recordingId);
+    
+    // Delete the metadata
+    await this.db!.delete(this.tables.METADATA, this.recordingId);
+  }
+
+  public async updateTitle(newTitle: string): Promise<void> {
+    this.ensureInitialized();
+    
+    if (!this.metadata) {
+      throw new Error('Cannot update title for recording before it exists');
+    }
+
+    this.metadata.title = newTitle;
+    await this.db!.put(this.tables.METADATA, this.metadata);
+  }
+
   public close(): void {
     this.db?.close();
   }
 
-  private ensureInitialized() {
+  private ensureInitializedDb() {
     if (!this.db) {
-      throw new Error('Cannot record events before database is initialized');
+      throw new Error('Database not initialized - call initialize() first');
+    }
+  }
+
+  private ensureInitialized() {
+    if (!this.db || !this.metadata) {
+      throw new Error('Cannot record events before the recording has been created');
     }
   }
 }

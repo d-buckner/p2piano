@@ -128,6 +128,29 @@ class IndexedDBClient {
     });
   }
 
+  deleteByIndex(storeName: string, indexName: string, indexValue: IDBValidKey): Promise<number> {
+    return new Promise((resolve, reject) => {
+      const transaction = this.db.transaction([storeName], 'readwrite');
+      const store = transaction.objectStore(storeName);
+      const index = store.index(indexName);
+      
+      let deletedCount = 0;
+      const request = index.openCursor(IDBKeyRange.only(indexValue));
+      
+      request.onerror = () => reject(request.error);
+      request.onsuccess = (event) => {
+        const cursor = (event.target as IDBRequest<IDBCursorWithValue>).result;
+        if (cursor) {
+          cursor.delete();
+          deletedCount++;
+          cursor.continue();
+        } else {
+          resolve(deletedCount);
+        }
+      };
+    });
+  }
+
   query<T>(
     storeName: string,
     query?: IDBValidKey | IDBKeyRange | null,

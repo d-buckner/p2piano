@@ -15,6 +15,7 @@ interface PlaybackState {
   lastEventTimestamp?: number;
   lastStreamedTimestamp?: number;
   isStreaming: boolean;
+  isComplete: boolean;
 }
 
 export default class Playback {
@@ -23,21 +24,26 @@ export default class Playback {
     isPaused: false,
     currentPosition: 0,
     startTime: 0,
-    isStreaming: false
+    isStreaming: false,
+    isComplete: false
   };
 
   private readonly LOOKAHEAD_MS = 100;
   private streamInterval?: NodeJS.Timeout;
   private scheduledEvents: number[] = [];
+  private onComplete?: () => void;
+  private activeUserIds = new Set<string>();
 
   private constructor(private client: RecordingClient) {
     this.scheduleEvent = this.scheduleEvent.bind(this);
   }
 
-  static async load(recordingId: string) {
+  static async load(recordingId: string, onComplete?: () => void) {
     const client = new RecordingClient(recordingId);
     await client.initialize();
-    return new Playback(client);
+    const playback = new Playback(client);
+    playback.onComplete = onComplete;
+    return playback;
   }
 
   async start() {
@@ -45,8 +51,12 @@ export default class Playback {
 
     this.state.isPlaying = true;
     this.state.isPaused = false;
+    this.state.isComplete = false;
     this.state.startTime = performance.now();
     this.state.lastStreamedTimestamp = undefined;
+    
+    // Clear previous playback state
+    this.activeUserIds.clear();
 
     // Start Tone.js Transport for scheduled events
     getTransport().start();
@@ -66,6 +76,9 @@ export default class Playback {
 
       if (events.length === 0) {
         this.state.isStreaming = false;
+        if (!hasMore && !this.state.isComplete) {
+          this.handlePlaybackComplete();
+        }
         return false;
       }
 
@@ -84,15 +97,19 @@ export default class Playback {
   }
 
   private startLookaheadLoop() {
-    this.streamInterval = setInterval(() => {
-      if (!this.state.isPlaying || this.state.isPaused) return;
+    this.streamInterval = setInterval(async () => {
+      if (!this.state.isPlaying || this.state.isPaused || this.state.isComplete) return;
 
       const currentTime = performance.now() - this.state.startTime;
       const needsMoreEvents = this.state.lastEventTimestamp &&
         (currentTime + this.LOOKAHEAD_MS >= this.state.lastEventTimestamp);
 
       if (needsMoreEvents && !this.state.isStreaming) {
-        this.loadAndScheduleNextBatch();
+        const hasMore = await this.loadAndScheduleNextBatch();
+        if (!hasMore && this.state.lastEventTimestamp && 
+            currentTime >= this.state.lastEventTimestamp && !this.state.isComplete) {
+          this.handlePlaybackComplete();
+        }
       }
     }, this.LOOKAHEAD_MS);
   }
@@ -111,6 +128,7 @@ export default class Playback {
     this.state.currentPosition = 0;
     this.state.lastEventTimestamp = undefined;
     this.state.lastStreamedTimestamp = undefined;
+    this.state.isComplete = false;
 
     if (this.streamInterval) {
       clearInterval(this.streamInterval);
@@ -123,17 +141,54 @@ export default class Playback {
     this.scheduledEvents.forEach(eventId => transport.clear(eventId));
     this.scheduledEvents = [];
 
+    // Release all active notes from recording playback
+    this.releaseAllActiveNotes();
+
     // Stop Tone.js Transport
     transport.stop();
+  }
+
+  private handlePlaybackComplete() {
+    this.state.isComplete = true;
+    this.state.isPlaying = false;
+    
+    if (this.streamInterval) {
+      clearInterval(this.streamInterval);
+      this.streamInterval = undefined;
+    }
+    
+    // Release any notes that might still be active when playback ends
+    this.releaseAllActiveNotes();
+    
+    if (this.onComplete) {
+      this.onComplete();
+    }
   }
 
   getState() {
     return { ...this.state };
   }
 
+  private releaseAllActiveNotes() {
+    // Release all notes for users encountered during playback
+    this.activeUserIds.forEach(userId => {
+      // Release all notes in NoteManager for this user
+      NoteManager.releaseAllNotesForUser(userId);
+      
+      // Also release all notes in the instrument
+      const instrument = InstrumentRegistry.get(userId);
+      if (instrument) {
+        instrument.releaseAll();
+      }
+    });
+  }
+
   private scheduleEvent(event: RecordingEvent) {
     const instrument = InstrumentRegistry.get(event.userId);
     if (!instrument) return;
+
+    // Track user IDs for cleanup
+    this.activeUserIds.add(event.userId);
 
     const timeString = getDelayTime(event.timestamp);
 

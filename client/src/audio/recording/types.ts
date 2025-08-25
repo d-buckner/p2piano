@@ -6,6 +6,8 @@ export interface RecordingMetadata {
   title: string,
   id: string, // client generated (can't trust)
   displayNames: string[],
+  duration: number,
+  createdAt: number, // timestamp for sorting
 }
 
 export type PersistedRecordingMetadata = {
@@ -46,6 +48,11 @@ export type SustainUpEvent = {
 } & BaseRecordingEvent;
 
 export type RecordingEvent = KeyUpEvent | KeyDownEvent | SustainDownEvent | SustainUpEvent;
+
+// Retrieved events include the eventId from IndexedDB
+export type RetrievedRecordingEvent = RecordingEvent & {
+  eventId: number;
+};
 
 export interface EventsPageResult {
   events: RecordingEvent[];

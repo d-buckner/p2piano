@@ -14,13 +14,14 @@ function Dropdown(props: DropdownProps) {
   let dropdownRef: HTMLDivElement | undefined;
 
   const isOpen = () => props.open !== undefined ? props.open : internalOpen();
-  
+
   const setOpen = (value: boolean) => {
     if (props.onOpenChange) {
       props.onOpenChange(value);
-    } else {
-      setInternalOpen(value);
+      return;
     }
+
+    setInternalOpen(value);
   };
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -35,7 +36,7 @@ function Dropdown(props: DropdownProps) {
     }
   };
 
-  const handleTriggerClick = () => {
+  const toggleOpen = () => {
     setOpen(!isOpen());
   };
 
@@ -46,7 +47,7 @@ function Dropdown(props: DropdownProps) {
 
   return (
     <div ref={dropdownRef} class={styles.dropdownContainer}>
-      <div onClick={handleTriggerClick}>
+      <div onClick={toggleOpen}>
         {props.trigger}
       </div>
       <Show when={isOpen()}>
