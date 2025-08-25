@@ -2,17 +2,21 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import { getAudioDelay } from '../audio/synchronization/utils';
 import PianoClient from '../clients/PianoClient';
-import { DEFAULT_VELOCITY, type Note } from '../constants';
+import { DEFAULT_VELOCITY } from '../constants';
+import { NoteManager } from '../lib/NoteManager';
 import { selectUser, selectWorkspace } from '../selectors/workspaceSelectors';
-import { setNotesByMidiStore } from '../stores/NotesByMidiStore';
 import { keyDown, keyUp, sustainDown, sustainUp } from './NoteActions';
+import { getResolvedUserId, getUserColor } from './utils';
+import type { Instrument } from '../audio/instruments/Instrument';
+import type { User } from '../lib/workspaceTypes';
 
 // Mock dependencies
-vi.mock('../stores/NotesByMidiStore');
+vi.mock('../lib/NoteManager');
 vi.mock('../audio/instruments/InstrumentRegistry');
 vi.mock('../audio/synchronization/utils');
 vi.mock('../clients/PianoClient');
 vi.mock('../selectors/workspaceSelectors');
+vi.mock('./utils');
 
 describe('NoteActions', () => {
   const mockInstrument = {
@@ -20,7 +24,8 @@ describe('NoteActions', () => {
     keyUp: vi.fn(),
     sustainDown: vi.fn(),
     sustainUp: vi.fn(),
-  };
+    type: 'piano'
+  } as unknown as Instrument;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -28,8 +33,10 @@ describe('NoteActions', () => {
     // Setup mocked functions
     vi.mocked(InstrumentRegistry.get).mockReturnValue(mockInstrument);
     vi.mocked(getAudioDelay).mockReturnValue(0);
-    vi.mocked(selectUser).mockReturnValue(() => ({ color: '#ff0000' }));
+    vi.mocked(selectUser).mockReturnValue(() => ({ color: '#ff0000' } as User));
     vi.mocked(selectWorkspace).mockReturnValue({ userId: 'current-user-id' });
+    vi.mocked(getResolvedUserId).mockReturnValue('current-user-id');
+    vi.mocked(getUserColor).mockReturnValue('#ff0000');
   });
 
   afterEach(() => {
@@ -77,44 +84,23 @@ describe('NoteActions', () => {
       expect(mockInstrument.keyDown).toHaveBeenCalledWith(midi, expectedDelay, velocity);
     });
 
-    it('should add note to store with correct data', () => {
+    it('should start note with correct data', () => {
       const midi = 60;
       const velocity = 100;
       const expectedColor = '#ff0000';
       
       keyDown(midi, velocity);
       
-      expect(setNotesByMidiStore).toHaveBeenCalledWith('60', expect.any(Function));
-      
-      const updateFunction = vi.mocked(setNotesByMidiStore).mock.calls[0][1];
-      const existingNotes: Note[] = [];
-      const result = updateFunction(existingNotes);
-      
-      expect(result).toEqual([{
-        midi,
-        peerId: 'current-user-id',
-        velocity,
-        color: expectedColor,
-      }]);
+      expect(NoteManager.startNote).toHaveBeenCalledWith(midi, 'current-user-id', expectedColor);
     });
 
-    it('should update existing note for same user', () => {
+    it('should start note regardless of existing notes', () => {
       const midi = 60;
       const velocity = 100;
-      const existingNotes = [
-        { midi: 60, peerId: 'current-user-id', velocity: 80, color: '#ff0000' },
-        { midi: 60, peerId: 'other-user', velocity: 90, color: '#00ff00' },
-      ];
       
       keyDown(midi, velocity);
       
-      const updateFunction = vi.mocked(setNotesByMidiStore).mock.calls[0][1];
-      const result = updateFunction(existingNotes);
-      
-      expect(result).toEqual([
-        { midi: 60, peerId: 'current-user-id', velocity: 100, color: '#ff0000' },
-        { midi: 60, peerId: 'other-user', velocity: 90, color: '#00ff00' },
-      ]);
+      expect(NoteManager.startNote).toHaveBeenCalledWith(midi, 'current-user-id', '#ff0000');
     });
 
     it('should return user color for visualization', () => {
@@ -131,7 +117,8 @@ describe('NoteActions', () => {
       const peerId = 'remote-user';
       const remoteUserColor = '#00ff00';
       
-      vi.mocked(selectUser).mockReturnValue(() => ({ color: remoteUserColor }));
+      vi.mocked(getResolvedUserId).mockReturnValue(peerId);
+      vi.mocked(getUserColor).mockReturnValue(remoteUserColor);
       
       const result = keyDown(midi, DEFAULT_VELOCITY, peerId);
       
@@ -141,21 +128,22 @@ describe('NoteActions', () => {
     });
 
     it('should return undefined when no workspace userId available', () => {
-      vi.mocked(selectWorkspace).mockReturnValue({ userId: undefined });
+      vi.mocked(getResolvedUserId).mockReturnValue(undefined);
       
       const result = keyDown(60);
       
       expect(result).toBeUndefined();
       expect(InstrumentRegistry.get).not.toHaveBeenCalled();
-      expect(setNotesByMidiStore).not.toHaveBeenCalled();
+      expect(NoteManager.startNote).not.toHaveBeenCalled();
     });
 
     it('should handle missing instrument gracefully', () => {
       vi.mocked(InstrumentRegistry.get).mockReturnValue(null);
       
-      expect(() => keyDown(60)).not.toThrow();
+      const result = keyDown(60);
       
-      expect(setNotesByMidiStore).toHaveBeenCalled();
+      expect(result).toBeUndefined();
+      expect(NoteManager.startNote).not.toHaveBeenCalled();
     });
   });
 
@@ -189,24 +177,12 @@ describe('NoteActions', () => {
       expect(mockInstrument.keyUp).toHaveBeenCalledWith(midi, expectedDelay);
     });
 
-    it('should remove note from store', () => {
+    it('should end note', () => {
       const midi = 60;
       
       keyUp(midi);
       
-      expect(setNotesByMidiStore).toHaveBeenCalledWith(expect.any(Function));
-    });
-
-    it('should call setNotesByMidiStore to remove note', () => {
-      keyUp(60);
-      
-      expect(setNotesByMidiStore).toHaveBeenCalled();
-    });
-
-    it('should call setNotesByMidiStore to handle note removal', () => {
-      keyUp(60);
-      
-      expect(setNotesByMidiStore).toHaveBeenCalled();
+      expect(NoteManager.endNote).toHaveBeenCalledWith(midi, 'current-user-id');
     });
 
     it('should always return undefined', () => {
@@ -218,20 +194,23 @@ describe('NoteActions', () => {
       const midi = 60;
       const peerId = 'remote-user';
       
+      vi.mocked(getResolvedUserId).mockReturnValue(peerId);
+      
       keyUp(midi, peerId);
       
       expect(InstrumentRegistry.get).toHaveBeenCalledWith(peerId);
       expect(getAudioDelay).toHaveBeenCalledWith(peerId);
+      expect(NoteManager.endNote).toHaveBeenCalledWith(midi, peerId);
     });
 
     it('should return undefined when no workspace userId available', () => {
-      vi.mocked(selectWorkspace).mockReturnValue({ userId: undefined });
+      vi.mocked(getResolvedUserId).mockReturnValue(undefined);
       
       const result = keyUp(60);
       
       expect(result).toBeUndefined();
       expect(InstrumentRegistry.get).not.toHaveBeenCalled();
-      expect(setNotesByMidiStore).not.toHaveBeenCalled();
+      expect(NoteManager.endNote).not.toHaveBeenCalled();
     });
 
     it('should handle missing instrument gracefully', () => {
@@ -239,36 +218,18 @@ describe('NoteActions', () => {
       
       expect(() => keyUp(60)).not.toThrow();
       
-      expect(setNotesByMidiStore).toHaveBeenCalled();
+      expect(NoteManager.endNote).toHaveBeenCalledWith(60, 'current-user-id');
     });
   });
 
   describe('edge cases', () => {
-    it('should handle empty existing notes array in keyDown', () => {
-      keyDown(60);
-      
-      const updateFunction = vi.mocked(setNotesByMidiStore).mock.calls[0][1];
-      const result = updateFunction(undefined);
-      
-      expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({
-        midi: 60,
-        peerId: 'current-user-id',
-      });
-    });
-
-    it('should handle empty existing notes array in keyUp', () => {
-      keyUp(60);
-      
-      expect(setNotesByMidiStore).toHaveBeenCalled();
-    });
-
     it('should handle missing user color', () => {
-      vi.mocked(selectUser).mockReturnValue(() => ({ color: undefined }));
+      vi.mocked(getUserColor).mockReturnValue(undefined);
       
       const result = keyDown(60);
       
       expect(result).toBeUndefined();
+      expect(NoteManager.startNote).not.toHaveBeenCalled();
     });
   });
 
@@ -297,6 +258,8 @@ describe('NoteActions', () => {
     it('should trigger instrument sustainDown with provided peerId', () => {
       const peerId = 'remote-user';
       
+      vi.mocked(getResolvedUserId).mockReturnValue(peerId);
+      
       sustainDown(peerId);
       
       expect(InstrumentRegistry.get).toHaveBeenCalledWith(peerId);
@@ -304,7 +267,7 @@ describe('NoteActions', () => {
     });
 
     it('should return early when no workspace userId available', () => {
-      vi.mocked(selectWorkspace).mockReturnValue({ userId: undefined });
+      vi.mocked(getResolvedUserId).mockReturnValue(undefined);
       
       sustainDown();
       
@@ -357,6 +320,8 @@ describe('NoteActions', () => {
     it('should trigger instrument sustainUp with provided peerId', () => {
       const peerId = 'remote-user';
       
+      vi.mocked(getResolvedUserId).mockReturnValue(peerId);
+      
       sustainUp(peerId);
       
       expect(InstrumentRegistry.get).toHaveBeenCalledWith(peerId);
@@ -364,7 +329,7 @@ describe('NoteActions', () => {
     });
 
     it('should return early when no workspace userId available', () => {
-      vi.mocked(selectWorkspace).mockReturnValue({ userId: undefined });
+      vi.mocked(getResolvedUserId).mockReturnValue(undefined);
       
       sustainUp();
       

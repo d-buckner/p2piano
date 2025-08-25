@@ -173,7 +173,6 @@ describe('Room', () => {
     expect(screen.getByTestId('piano-renderer')).toBeInTheDocument();
     
     expect(screen.getByTestId('room-nav')).toHaveTextContent('"roomId":"test-room"');
-    expect(screen.getByTestId('piano-renderer')).toHaveTextContent('{}');
   });
 
   it('should show welcome modal for users without display name or inactive audio', async () => {

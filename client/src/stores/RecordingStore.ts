@@ -1,6 +1,7 @@
 import { createStore } from 'solid-js/store';
 import type { RecordingMetadata } from '../audio/recording/types';
 
+
 export enum PlaybackStatus {
   STOPPED = 'stopped',
   PLAYING = 'playing',

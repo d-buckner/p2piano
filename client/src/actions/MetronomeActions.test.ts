@@ -1,26 +1,38 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MIN_BPM, MAX_BPM } from '../constants/metronome';
-import { MetronomeActions } from './MetronomeActions';
-import type { SharedStoreRoot } from '../crdt/store/SharedStoreRoot';
+import { sharedStoreRoot } from '../crdt/store';
+import metronomeActions from './MetronomeActions';
 
-// Mock the SharedStoreRoot
-const mockSharedStoreRoot = {
-  change: vi.fn(),
-} as unknown as SharedStoreRoot;
+// Mock the sharedStoreRoot dependency
+vi.mock('../crdt/store', () => ({
+  sharedStoreRoot: {
+    change: vi.fn(),
+  },
+}));
+
+// Mock SharedStoreActions
+vi.mock('../crdt/store/SharedStoreActions', () => ({
+  SharedStoreActions: class MockSharedStoreActions {
+    constructor(key, root) {
+      this.key = key;
+      this.root = root;
+    }
+    change(fn) {
+      this.root.change(this.key, fn);
+    }
+  },
+}));
 
 describe('MetronomeActions', () => {
-  let metronomeActions: MetronomeActions;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    metronomeActions = new MetronomeActions(mockSharedStoreRoot);
   });
 
   describe('setActive', () => {
     it('should set metronome active to true', () => {
       metronomeActions.setActive(true);
       
-      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+      expect(sharedStoreRoot.change).toHaveBeenCalledWith(
         'metronome',
         expect.any(Function)
       );
@@ -29,7 +41,7 @@ describe('MetronomeActions', () => {
     it('should set metronome active to false and reset state', () => {
       metronomeActions.setActive(false);
       
-      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+      expect(sharedStoreRoot.change).toHaveBeenCalledWith(
         'metronome',
         expect.any(Function)
       );
@@ -41,7 +53,7 @@ describe('MetronomeActions', () => {
       const validBpm = 120;
       metronomeActions.setBpm(validBpm);
       
-      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+      expect(sharedStoreRoot.change).toHaveBeenCalledWith(
         'metronome',
         expect.any(Function)
       );
@@ -51,7 +63,7 @@ describe('MetronomeActions', () => {
       const tooLow = MIN_BPM - 10;
       metronomeActions.setBpm(tooLow);
       
-      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+      expect(sharedStoreRoot.change).toHaveBeenCalledWith(
         'metronome',
         expect.any(Function)
       );
@@ -61,7 +73,7 @@ describe('MetronomeActions', () => {
       const tooHigh = MAX_BPM + 10;
       metronomeActions.setBpm(tooHigh);
       
-      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+      expect(sharedStoreRoot.change).toHaveBeenCalledWith(
         'metronome',
         expect.any(Function)
       );
@@ -69,13 +81,13 @@ describe('MetronomeActions', () => {
 
     it('should handle edge case values', () => {
       metronomeActions.setBpm(MIN_BPM);
-      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+      expect(sharedStoreRoot.change).toHaveBeenCalledWith(
         'metronome',
         expect.any(Function)
       );
 
       metronomeActions.setBpm(MAX_BPM);
-      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+      expect(sharedStoreRoot.change).toHaveBeenCalledWith(
         'metronome',
         expect.any(Function)
       );
@@ -87,7 +99,7 @@ describe('MetronomeActions', () => {
       const userId = 'user-123';
       metronomeActions.start(userId);
       
-      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+      expect(sharedStoreRoot.change).toHaveBeenCalledWith(
         'metronome',
         expect.any(Function)
       );
@@ -98,7 +110,7 @@ describe('MetronomeActions', () => {
     it('should stop metronome and reset state', () => {
       metronomeActions.stop();
       
-      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+      expect(sharedStoreRoot.change).toHaveBeenCalledWith(
         'metronome',
         expect.any(Function)
       );
@@ -110,7 +122,7 @@ describe('MetronomeActions', () => {
       const beat = 3;
       metronomeActions.setCurrentBeat(beat);
       
-      expect(mockSharedStoreRoot.change).toHaveBeenCalledWith(
+      expect(sharedStoreRoot.change).toHaveBeenCalledWith(
         'metronome',
         expect.any(Function)
       );

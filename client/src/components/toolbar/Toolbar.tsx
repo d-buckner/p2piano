@@ -1,11 +1,11 @@
+import { useAppSelector } from '../../app/hooks';
+import { selectUserCount } from '../../selectors/workspaceSelectors';
 import ActiveUsers from './controls/ActiveUsers';
 import InstrumentSelector from './controls/InstrumentSelector';
 import LatencyIndicator from './controls/LatencyIndicator';
 import MetronomeControl from './controls/MetronomeControl';
 import MidiControl from './controls/MidiControl';
 import RecordingControl from './controls/RecordingControl';
-import { useAppSelector } from '../../app/hooks';
-import { selectUserCount } from '../../selectors/workspaceSelectors';
 import * as styles from './Toolbar.css';
 
 

@@ -11,3 +11,18 @@ vi.mock('../lib/ponyfill', () => ({
     return mockIdleCallbacks.length;
   }),
 }));
+
+// Mock IndexedDB for tests
+const mockIndexedDB = {
+  open: vi.fn(() => ({
+    result: {},
+    onerror: null,
+    onsuccess: null,
+    onupgradeneeded: null,
+  })),
+};
+
+Object.defineProperty(globalThis, 'indexedDB', {
+  value: mockIndexedDB,
+  writable: true,
+});

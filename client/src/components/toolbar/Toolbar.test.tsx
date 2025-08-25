@@ -23,6 +23,21 @@ vi.mock('./controls/LatencyIndicator', () => ({
   default: () => <div data-testid="latency-indicator">LatencyIndicator</div>
 }));
 
+vi.mock('./controls/RecordingControl', () => ({
+  default: () => <div data-testid="recording-control">RecordingControl</div>
+}));
+
+vi.mock('../../app/hooks', () => ({
+  useAppSelector: vi.fn((selector) => {
+    // Return appropriate default values for different selectors
+    if (selector.name === 'selectUserCount') return 1;
+    if (selector.name === 'selectMyUser') return { userId: 'test-user' };
+    if (selector.name === 'selectSelectedRecording') return null;
+    if (selector.name === 'selectPlaybackStatus') return 'idle';
+    return null;
+  }),
+}));
+
 describe('Toolbar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -32,14 +47,14 @@ describe('Toolbar', () => {
     cleanup();
   });
 
-  it('should render all toolbar components', () => {
+  it('should render core toolbar components', () => {
     const { getByTestId } = render(() => <Toolbar />);
     
     expect(getByTestId('metronome-control')).toBeInTheDocument();
     expect(getByTestId('instrument-selector')).toBeInTheDocument();
     expect(getByTestId('active-users')).toBeInTheDocument();
     expect(getByTestId('midi-control')).toBeInTheDocument();
-    expect(getByTestId('latency-indicator')).toBeInTheDocument();
+    // Note: latency-indicator is conditionally rendered when userCount > 1
   });
 
   it('should render toolbar structure', () => {

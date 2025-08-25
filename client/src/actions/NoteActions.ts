@@ -21,7 +21,9 @@ export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: stri
   }
 
   const instrument = InstrumentRegistry.get(resolvedUserId);
-  if (!instrument) return;
+  const color = getUserColor(resolvedUserId);
+  if (!instrument || !color) return;
+
   const audioDelay = getAudioDelay(resolvedUserId);
   instrument.keyDown(
     midi,
@@ -29,7 +31,6 @@ export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: stri
     velocity,
   );
 
-  const color = getUserColor(resolvedUserId)!;
   const note: Note = {
     midi,
     peerId: resolvedUserId,
@@ -37,7 +38,6 @@ export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: stri
     color
   };
 
-  // Start note - this handles both tracking and visualization events
   NoteManager.startNote(midi, resolvedUserId, color);
 
   if (shouldRecord()) {
@@ -65,7 +65,6 @@ export function keyUp(midi: number, peerId?: string): string | undefined {
     audioDelay,
   );
 
-  // End note - this handles both tracking and visualization events
   NoteManager.endNote(midi, resolvedUserId);
 
   if (shouldRecord()) {

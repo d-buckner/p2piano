@@ -1,6 +1,6 @@
 import { store } from '../app/store';
-import RecordingClient from '../audio/recording/RecordingClient';
 import Playback from '../audio/recording/Playback';
+import RecordingClient from '../audio/recording/RecordingClient';
 import { selectRecordingStartTime, selectRecordings, selectSelectedRecordingId, selectCurrentRecordingId } from '../selectors/recordingSelectors';
 import { setRecordingStore, PlaybackStatus } from '../stores/RecordingStore';
 import type { InstrumentType } from '../audio/instruments/Instrument';

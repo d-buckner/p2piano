@@ -156,7 +156,7 @@ describe('SharedStoreRoot', () => {
       const newPeerId = 'new-peer-456';
       
       // Simulate peer connection through NetworkBridge
-      const networkBridge = (sharedStoreRoot as TestSharedStoreRoot).networkBridge;
+      const networkBridge = (sharedStoreRoot as unknown as TestSharedStoreRoot).networkBridge;
       if (networkBridge?.onPeerConnect) {
         networkBridge.onPeerConnect(newPeerId);
       }
@@ -175,7 +175,7 @@ describe('SharedStoreRoot', () => {
       const peerId = 'disconnecting-peer';
       
       // First connect the peer
-      const networkBridge = (sharedStoreRoot as TestSharedStoreRoot).networkBridge;
+      const networkBridge = (sharedStoreRoot as unknown as TestSharedStoreRoot).networkBridge;
       if (networkBridge?.onPeerConnect) {
         networkBridge.onPeerConnect(peerId);
       }
@@ -224,7 +224,7 @@ describe('SharedStoreRoot', () => {
     });
 
     it('should handle sync messages without crashing on invalid data', () => {
-      const networkBridge = (sharedStoreRoot as TestSharedStoreRoot).networkBridge;
+      const networkBridge = (sharedStoreRoot as unknown as TestSharedStoreRoot).networkBridge;
       const syncHandler = networkBridge?.onSyncMessage;
       
       if (syncHandler) {
@@ -240,13 +240,13 @@ describe('SharedStoreRoot', () => {
       await sharedStoreRoot.initialize(mockRTC as unknown as RealTimeController);
       
       // Verify network bridge was created
-      const networkBridge = (sharedStoreRoot as TestSharedStoreRoot).networkBridge;
+      const networkBridge = (sharedStoreRoot as unknown as TestSharedStoreRoot).networkBridge;
       expect(networkBridge).toBeDefined();
       
       sharedStoreRoot.dispose();
       
       // Verify cleanup
-      expect((sharedStoreRoot as TestSharedStoreRoot).networkBridge).toBeNull();
+      expect((sharedStoreRoot as unknown as TestSharedStoreRoot).networkBridge).toBeNull();
       expect(mockRTC.off).toHaveBeenCalled();
     });
 
@@ -262,7 +262,7 @@ describe('SharedStoreRoot', () => {
 
   describe('edge cases', () => {
     it('should handle missing user ID gracefully', async () => {
-      mockSelectUserId.mockReturnValue(null);
+      mockSelectUserId.mockReturnValue(undefined);
       
       expect(async () => {
         await sharedStoreRoot.initialize(mockRTC as unknown as RealTimeController);
@@ -275,6 +275,32 @@ describe('SharedStoreRoot', () => {
       expect(async () => {
         await sharedStoreRoot.initialize(mockRTC as unknown as RealTimeController);
       }).not.toThrow();
+    });
+
+    it('should handle initialization without network bridge', async () => {
+      // Create a new instance to test the network bridge early return path
+      const testRoot = new SharedStoreRoot();
+      
+      // Initialize with RTC but then simulate the network bridge being null
+      await testRoot.initialize(mockRTC as unknown as RealTimeController);
+      testRoot['networkBridge'] = null;
+      
+      // This should test the early return in initiateSyncWithConnectedPeers
+      expect(() => {
+        testRoot['initiateSyncWithConnectedPeers']();
+      }).not.toThrow();
+    });
+
+    it('should handle root level document changes', async () => {
+      await sharedStoreRoot.initialize(mockRTC as unknown as RealTimeController);
+      vi.clearAllMocks();
+
+      // Simulate a root level change by creating multiple changes across different keys
+      sharedStoreRoot.change('metronome', m => m.bpm = 100);
+      
+      // The patches should trigger granular updates, not full root updates
+      // This tests the applyPatchesToStore method path discrimination
+      expect(mockSetStore).toHaveBeenCalledWith('shared', 'metronome', expect.any(Object));
     });
 
     it('should prevent changes before RealTimeController initialization', () => {

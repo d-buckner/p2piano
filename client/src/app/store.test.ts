@@ -14,8 +14,9 @@ describe('store', () => {
       });
     });
 
-    it('should have empty initial notes state', () => {
-      expect(store.notesByMidi).toEqual({});
+    it('should have initial shared state', () => {
+      expect(store.shared).toBeDefined();
+      expect(store.shared.metronome).toBeDefined();
     });
 
     it('should have correct initial connection state', () => {

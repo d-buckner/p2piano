@@ -4,9 +4,9 @@ import { setRoom, setUserId } from '../actions/RoomActions';
 import { InstrumentType } from '../audio/instruments/Instrument';
 import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import '../lib/Logger'; // Import Logger so it's available when handlers run
-import { selectNotesByMidi } from '../selectors/noteSelectors';
+import { NoteManager } from '../lib/NoteManager';
 import { selectWorkspace, selectMyUser } from '../selectors/workspaceSelectors';
-import { createTestRoom, createTestUser, createTestNotesByMidi } from '../test-utils/testDataFactories';
+import { createTestRoom, createTestUser} from '../test-utils/testDataFactories';
 import RoomHandlers from './RoomHandlers';
 
 // Mock all dependencies
@@ -34,8 +34,10 @@ vi.mock('../selectors/workspaceSelectors', () => ({
   selectMyUser: vi.fn(),
 }));
 
-vi.mock('../selectors/noteSelectors', () => ({
-  selectNotesByMidi: vi.fn(),
+vi.mock('../lib/NoteManager', () => ({
+  NoteManager: {
+    releaseAllNotesForUser: vi.fn(),
+  },
 }));
 
 vi.mock('../app/store', () => ({
@@ -282,41 +284,28 @@ describe('RoomHandlers', () => {
   describe('blurHandler', () => {
     it('should release all notes for current user', () => {
       const currentUser = createTestUser({ userId: 'currentUser' });
-      const mockNotes = createTestNotesByMidi([
-        { midi: 60, peerId: 'currentUser' },
-        { midi: 60, peerId: 'otherUser' },
-        { midi: 64, peerId: 'currentUser' },
-        { midi: 67, peerId: 'otherUser' },
-      ]);
-
       vi.mocked(selectMyUser).mockReturnValue(currentUser);
-      vi.mocked(selectNotesByMidi).mockReturnValue(mockNotes);
 
       RoomHandlers.blurHandler();
 
-      expect(NoteActions.keyUp).toHaveBeenCalledWith(60);
-      expect(NoteActions.keyUp).toHaveBeenCalledWith(64);
-      expect(NoteActions.keyUp).not.toHaveBeenCalledWith(67);
-      expect(NoteActions.keyUp).toHaveBeenCalledTimes(2);
+      expect(NoteManager.releaseAllNotesForUser).toHaveBeenCalledWith('currentUser');
     });
 
     it('should handle no current user', () => {
       vi.mocked(selectMyUser).mockReturnValue(null);
-      vi.mocked(selectNotesByMidi).mockReturnValue({});
 
       RoomHandlers.blurHandler();
 
-      expect(NoteActions.keyUp).not.toHaveBeenCalled();
+      expect(NoteManager.releaseAllNotesForUser).not.toHaveBeenCalled();
     });
 
-    it('should handle empty notes', () => {
-      const currentUser = createTestUser({ userId: 'currentUser' });
+    it('should handle user without userId', () => {
+      const currentUser = createTestUser({ userId: undefined });
       vi.mocked(selectMyUser).mockReturnValue(currentUser);
-      vi.mocked(selectNotesByMidi).mockReturnValue({});
 
       RoomHandlers.blurHandler();
 
-      expect(NoteActions.keyUp).not.toHaveBeenCalled();
+      expect(NoteManager.releaseAllNotesForUser).not.toHaveBeenCalled();
     });
   });
 

@@ -8,20 +8,18 @@ import {
   pausePlayback,
   resumePlayback,
   stopPlayback,
-  previousRecording,
-  nextRecording,
   deleteRecording,
   renameRecording
 } from '../../../actions/RecordingActions';
-import type { RecordingMetadata } from '../../../audio/recording/types';
 import { useAppSelector } from '../../../app/hooks';
-import { selectIsRecording, selectRecordings, selectRecordingStartTime, selectSelectedRecording, selectPlaybackStatus, selectPlaybackDuration } from '../../../selectors/recordingSelectors';
+import { selectIsRecording, selectRecordings, selectRecordingStartTime, selectSelectedRecording, selectPlaybackStatus } from '../../../selectors/recordingSelectors';
 import { selectMyUser } from '../../../selectors/workspaceSelectors';
 import { PlaybackStatus } from '../../../stores/RecordingStore';
 import Dropdown from '../../ui/Dropdown';
 import Tooltip from '../../ui/Tooltip';
-import { CircleIcon, SquareIcon, PlayIcon, PauseIcon, StopIcon, ChevronDownIcon, PreviousIcon, NextIcon, EditIcon, TrashIcon } from '../icons';
+import { CircleIcon, SquareIcon, PlayIcon, StopIcon, ChevronDownIcon, EditIcon, TrashIcon } from '../icons';
 import * as styles from './RecordingControl.css';
+import type { RecordingMetadata } from '../../../audio/recording/types';
 
 
 function RecordingControl() {
@@ -30,14 +28,13 @@ function RecordingControl() {
   const recordings = useAppSelector(selectRecordings);
   const selectedRecording = useAppSelector(selectSelectedRecording);
   const playbackStatus = useAppSelector(selectPlaybackStatus);
-  const playbackDuration = useAppSelector(selectPlaybackDuration);
   const myUser = useAppSelector(selectMyUser);
   const [recordingTime, setRecordingTime] = createSignal(0);
   const [showRecordingsDropdown, setShowRecordingsDropdown] = createSignal(false);
   const [searchTerm, setSearchTerm] = createSignal('');
   const [editingRecordingId, setEditingRecordingId] = createSignal<string | null>(null);
   const [editingTitle, setEditingTitle] = createSignal('');
-  let editInputRef: HTMLInputElement;
+  let editInputRef!: HTMLInputElement;
   
   // Timer effect
   createEffect(() => {
@@ -57,11 +54,6 @@ function RecordingControl() {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const getCurrentRecordingDuration = () => {
-    const duration = playbackDuration();
-    return duration ? formatTime(duration) : '--:--';
   };
 
   const handleRecordClick = async () => {
@@ -87,14 +79,6 @@ function RecordingControl() {
 
   const handleStop = async () => {
     await stopPlayback();
-  };
-
-  const handlePrevious = async () => {
-    await previousRecording();
-  };
-
-  const handleNext = async () => {
-    await nextRecording();
   };
 
   const handleRecordingSelect = async (recordingId: string) => {
@@ -149,15 +133,6 @@ function RecordingControl() {
     }
   };
 
-  const formatRecordingDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    } catch {
-      return dateString;
-    }
-  };
-
   return (
     <div class={styles.recordingControl}>
       {/* Main Control */}
@@ -165,6 +140,7 @@ function RecordingControl() {
         {/* Record Button */}
         <Tooltip text={isRecording() ? 'Stop Recording' : 'Start Recording'}>
           <button
+            data-testid="record-button"
             class={clsx(styles.controlButton, styles.recordButton, { [styles.recording]: isRecording() })}
             onClick={handleRecordClick}
           >

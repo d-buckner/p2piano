@@ -30,19 +30,6 @@ export const createTestNote = (overrides: Partial<{
   ...overrides,
 });
 
-export const createTestNotesByMidi = (notes: Array<{ midi: number; peerId: string; velocity?: number }> = []) => {
-  const notesByMidi: Record<number, Array<{ midi: number; peerId: string; velocity?: number }>> = {};
-  
-  notes.forEach(note => {
-    if (!notesByMidi[note.midi]) {
-      notesByMidi[note.midi] = [];
-    }
-    notesByMidi[note.midi].push(note);
-  });
-  
-  return notesByMidi;
-};
-
 export const createTestWorkspace = (overrides: Partial<{
   room: Room | null;
   userId: string | null;

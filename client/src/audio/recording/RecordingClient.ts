@@ -9,7 +9,6 @@ import type {
   KeyUpEvent,
   RecordingEvent,
   RecordingMetadata,
-  RetrievedRecordingEvent,
   SustainDownEvent,
   SustainUpEvent,
 } from './types';
