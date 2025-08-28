@@ -21,14 +21,14 @@ export class NoteManager {
   private static listeners = new Map<string, Set<EventListener>>();
   private static activeNotes = new Map<string, Set<number>>(); // userId -> Set<midi>
 
-  static onNoteStart(listener: EventListener<NoteStartEvent>): void {
+  public static onNoteStart(listener: EventListener<NoteStartEvent>): void {
     if (!this.listeners.has(NOTE_EVENTS.START)) {
       this.listeners.set(NOTE_EVENTS.START, new Set());
     }
     this.listeners.get(NOTE_EVENTS.START)!.add(listener);
   }
 
-  static onNoteEnd(listener: EventListener<NoteEndEvent>): void {
+  public static onNoteEnd(listener: EventListener<NoteEndEvent>): void {
     if (!this.listeners.has(NOTE_EVENTS.END)) {
       this.listeners.set(NOTE_EVENTS.END, new Set());
     }
@@ -45,19 +45,19 @@ export class NoteManager {
     });
   }
 
-  static offNoteStart(listener: EventListener<NoteStartEvent>): void {
+  public static offNoteStart(listener: EventListener<NoteStartEvent>): void {
     this.listeners.get(NOTE_EVENTS.START)?.delete(listener);
   }
 
-  static offNoteEnd(listener: EventListener<NoteEndEvent>): void {
+  public static offNoteEnd(listener: EventListener<NoteEndEvent>): void {
     this.listeners.get(NOTE_EVENTS.END)?.delete(listener);
   }
 
-  static removeAllListeners(): void {
+  public static removeAllListeners(): void {
     this.listeners.clear();
   }
 
-  static startNote(midi: number, userId: string, color: string): void {
+  public static startNote(midi: number, userId: string, color: string): void {
     if (!this.activeNotes.has(userId)) {
       this.activeNotes.set(userId, new Set());
     }
@@ -65,7 +65,7 @@ export class NoteManager {
     this.emit(NOTE_EVENTS.START, { midi, userId, color });
   }
 
-  static endNote(midi: number, userId: string): void {
+  public static endNote(midi: number, userId: string): void {
     const userNotes = this.activeNotes.get(userId);
     if (userNotes) {
       userNotes.delete(midi);
@@ -76,7 +76,7 @@ export class NoteManager {
     this.emit(NOTE_EVENTS.END, { midi, userId });
   }
 
-  static releaseAllNotesForUser(userId: string): void {
+  public static releaseAllNotesForUser(userId: string): void {
     const userNotes = this.activeNotes.get(userId);
     if (userNotes) {
       const notesToRelease = Array.from(userNotes);

@@ -16,11 +16,11 @@ export default class ElectricBass extends Sampler implements Instrument {
     ]);
   }
 
-  keyDown(midi: number, delay?: number, velocity?: number) {
+  public keyDown(midi: number, delay?: number, velocity?: number) {
     super.keyDown(midi + MIDI_OFFSET, delay, velocity);
   }
 
-  keyUp(midi: number, delay?: number) {
+  public keyUp(midi: number, delay?: number) {
     super.keyUp(midi + MIDI_OFFSET, delay);
   }
 }

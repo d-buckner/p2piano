@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package audio;
+
+// Audio events for real-time piano performance
+message KeyDownEvent {
+  int32 note = 1;
+  int32 velocity = 2;
+}
+
+message KeyUpEvent {
+  int32 note = 1;
+}

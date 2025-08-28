@@ -1,11 +1,11 @@
 import * as NoteActions from '../actions/NoteActions';
 import { setRoom, setUserId } from '../actions/RoomActions';
 import { store } from '../app/store';
-import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
+import { appContainer } from '../core/AppContainer';
+import { ServiceTokens } from '../core/ServiceTokens';
 import Logger from '../lib/Logger';
 import { NoteManager } from '../lib/NoteManager';
 import { selectMyUser, selectWorkspace } from '../selectors/workspaceSelectors';
-import type { InstrumentType } from '../audio/instruments/Instrument';
 import type { Room } from '../lib/workspaceTypes';
 
 
@@ -48,41 +48,44 @@ type SustainPayload = {
 export default class RoomHandlers {
   private constructor() { }
 
-  static keyDownHandler(payload: KeyDownPayload) {
+  public static keyDownHandler(payload: KeyDownPayload) {
     NoteActions.keyDown(payload.note, payload.velocity, payload.userId);
   }
 
-  static keyUpHandler(payload: KeyUpPayload) {
+  public static keyUpHandler(payload: KeyUpPayload) {
     NoteActions.keyUp(payload.note, payload.userId);
   }
 
-  static sustainDownHandler(payload: SustainPayload) {
+  public static sustainDownHandler(payload: SustainPayload) {
     NoteActions.sustainDown(payload.userId);
   }
 
-  static sustainUpHandler(payload: SustainPayload) {
+  public static sustainUpHandler(payload: SustainPayload) {
     NoteActions.sustainUp(payload.userId);
   }
 
-  static roomJoinHandler(payload: RoomJoinPayload) {
+  public static roomJoinHandler(payload: RoomJoinPayload) {
     const { room, userId } = payload;
+    const audioEngine = appContainer.resolve(ServiceTokens.AudioEngine);
+    
     Object.values(room.users ?? {}).forEach(u => {
-      InstrumentRegistry.register(u.userId, u.instrument as InstrumentType);
+      audioEngine.registerInstrument(u.userId, u.instrument as string);
     });
 
     setUserId(userId);
     setRoom(room);
   }
 
-  static userConnectHandler(payload: UserConnectPayload) {
+  public static userConnectHandler(payload: UserConnectPayload) {
     const { userId, room } = payload;
-    const instrument = room.users?.[userId].instrument as InstrumentType;
-    InstrumentRegistry.register(userId, instrument);
+    const audioEngine = appContainer.resolve(ServiceTokens.AudioEngine);
+    const instrument = room.users?.[userId].instrument as string;
+    audioEngine.registerInstrument(userId, instrument);
 
     setRoom(room);
   }
 
-  static userUpdateHandler(payload: UserUpdatePayload) {
+  public static userUpdateHandler(payload: UserUpdatePayload) {
     const { room: oldRoom } = selectWorkspace(store);
     const { userId, room } = payload;
     const oldUser = oldRoom?.users?.[userId];
@@ -90,28 +93,30 @@ export default class RoomHandlers {
     if (!newUser) {
       return;
     }
-    const newInstrument = newUser.instrument as InstrumentType;
+    const newInstrument = newUser.instrument as string;
 
     if (oldUser?.instrument !== newInstrument) {
-      InstrumentRegistry.register(userId, newInstrument);
+      const audioEngine = appContainer.resolve(ServiceTokens.AudioEngine);
+      audioEngine.registerInstrument(userId, newInstrument);
     }
 
     setRoom(room);
   }
 
-  static userDisconnectHandler(payload: UserDisconnectPayload) {
+  public static userDisconnectHandler(payload: UserDisconnectPayload) {
     const { userId, room } = payload;
-    InstrumentRegistry.unregister(userId);
+    const audioEngine = appContainer.resolve(ServiceTokens.AudioEngine);
+    audioEngine.unregisterInstrument(userId);
     NoteManager.releaseAllNotesForUser(userId);
     setRoom(room);
   }
 
-  static newerConnectionHandler() {
+  public static newerConnectionHandler() {
     Logger.ERROR('Booted for newer connection');
     window.location.pathname = '/';
   }
 
-  static blurHandler() {
+  public static blurHandler() {
     const userId = selectMyUser(store)?.userId;
     if (userId) {
       NoteManager.releaseAllNotesForUser(userId);

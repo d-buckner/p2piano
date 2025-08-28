@@ -98,7 +98,7 @@ export default class WebRtcController extends AbstractNetworkController {
     return this.activePeerIds;
   }
 
-  static destroy() {
+  public static destroy() {
     WebRtcController.instance?.peers.forEach(peer => peer.destroy());
     WebRtcController.instance = undefined;
   }

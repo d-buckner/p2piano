@@ -14,7 +14,7 @@ class MetronomeActions extends SharedStoreActions<SharedMetronomeState> {
     super('metronome', sharedStoreRoot);
   }
 
-  setActive(active: boolean) {
+  public setActive(active: boolean) {
     this.change(metronome => {
       metronome.active = active;
       if (!active) {
@@ -25,7 +25,7 @@ class MetronomeActions extends SharedStoreActions<SharedMetronomeState> {
     });
   }
 
-  start(userId: string) {
+  public start(userId: string) {
     this.change(metronome => {
       metronome.active = true;
       metronome.leaderId = userId;
@@ -34,7 +34,7 @@ class MetronomeActions extends SharedStoreActions<SharedMetronomeState> {
     });
   }
 
-  stop() {
+  public stop() {
     this.change(metronome => {
       metronome.active = false;
       metronome.leaderId = '';
@@ -43,19 +43,19 @@ class MetronomeActions extends SharedStoreActions<SharedMetronomeState> {
     });
   }
 
-  setBpm(bpm: number) {
+  public setBpm(bpm: number) {
     this.change(metronome => {
       metronome.bpm = Math.max(MIN_BPM, Math.min(MAX_BPM, bpm));
     });
   }
 
-  setCurrentBeat(beat: number) {
+  public setCurrentBeat(beat: number) {
     this.change(metronome => {
       metronome.currentBeat = beat;
     });
   }
 
-  setBeatsPerMeasure(beats: number) {
+  public setBeatsPerMeasure(beats: number) {
     this.change(metronome => {
       metronome.beatsPerMeasure = beats;
       // Reset current beat when changing time signature

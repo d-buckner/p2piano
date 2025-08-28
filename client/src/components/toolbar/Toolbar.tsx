@@ -1,5 +1,6 @@
 import { useAppSelector } from '../../app/hooks';
 import { selectUserCount } from '../../selectors/workspaceSelectors';
+import Volume from '../Volume';
 import ActiveUsers from './controls/ActiveUsers';
 import InstrumentSelector from './controls/InstrumentSelector';
 import LatencyIndicator from './controls/LatencyIndicator';
@@ -23,9 +24,12 @@ function Toolbar() {
         <InstrumentSelector />
       </div>
       
-      {/* Tablet+: Add Recording */}
+      {/* Tablet+: Add Recording and Volume */}
       <div class={styles.showFromTablet}>
         <RecordingControl />
+      </div>
+      <div class={styles.showFromTablet}>
+        <Volume />
       </div>
       
       {/* Desktop+: Add collaboration features */}

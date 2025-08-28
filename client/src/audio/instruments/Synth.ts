@@ -23,7 +23,7 @@ export default class Synth implements Instrument {
     this.instrument.toDestination();
   }
 
-  keyDown(midi: number, delay?: number, velocity = DEFAULT_VELOCITY) {
+  public keyDown(midi: number, delay?: number, velocity = DEFAULT_VELOCITY) {
     this.instrument.triggerAttack(
       toFrequency(midi),
       getDelayTime(delay),
@@ -31,14 +31,14 @@ export default class Synth implements Instrument {
     );
   }
 
-  keyUp(midi: number, delay?: number) {
+  public keyUp(midi: number, delay?: number) {
     this.instrument.triggerRelease(
       toFrequency(midi),
       getDelayTime(delay)
     );
   }
 
-  releaseAll() {
+  public releaseAll() {
     this.instrument.releaseAll();
   }
 }

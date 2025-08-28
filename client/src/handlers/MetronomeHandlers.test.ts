@@ -6,6 +6,25 @@ import { TICK_TYPE } from '../constants/metronome';
 import { selectMyUser } from '../selectors/workspaceSelectors';
 import MetronomeHandlers from './MetronomeHandlers';
 
+// Mock AudioEngine service
+const mockAudioEngine = {
+  isReady: vi.fn(() => true),
+  initialize: vi.fn(),
+  scheduleEvent: vi.fn()
+};
+
+// Mock AppContainer
+vi.mock('../core/AppContainer', () => ({
+  appContainer: {
+    resolve: vi.fn((token) => {
+      if (token.name === 'AudioEngine') {
+        return mockAudioEngine;
+      }
+      throw new Error(`Service ${token.name} is not registered`);
+    })
+  }
+}));
+
 // Mock dependencies
 vi.mock('../app/store', () => ({
   store: {
@@ -45,6 +64,7 @@ describe('MetronomeHandlers', () => {
     vi.clearAllMocks();
     AudioManager.active = true;
     mockGetAudioDelay.mockReturnValue(0.1);
+    mockAudioEngine.isReady.mockReturnValue(true);
   });
 
   describe('tickHandler', () => {
@@ -80,8 +100,8 @@ describe('MetronomeHandlers', () => {
       expect(mockClickSampler.low).not.toHaveBeenCalled();
     });
 
-    it('should not play tick when AudioManager is inactive', () => {
-      AudioManager.active = false;
+    it('should not play tick when AudioEngine is inactive', () => {
+      mockAudioEngine.isReady.mockReturnValue(false);
 
       MetronomeHandlers.tickHandler({
         type: TICK_TYPE.HI,

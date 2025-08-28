@@ -1,7 +1,8 @@
 import { useNavigate } from '@solidjs/router';
 import { createSignal } from 'solid-js';
 import { toggleMidiEnabled } from '../../actions/MidiActions';
-import AudioManager from '../../audio/AudioManager';
+import { useService } from '../../core/hooks/useService';
+import { ServiceTokens } from '../../core/ServiceTokens';
 import ClientPreferences from '../../lib/ClientPreferences';
 import DisplayName from './DisplayName';
 import * as styles from './SettingsModal.css';
@@ -18,6 +19,7 @@ interface LabelProps {
 }
 
 function SettingsModal(props: Props) {
+  const audioEngine = useService(ServiceTokens.AudioEngine);
   const navigate = useNavigate();
   const [hasCopied, setHasCopied] = createSignal(false);
   const initialDisplayName = ClientPreferences.getDisplayName() ?? '';
@@ -44,14 +46,14 @@ function SettingsModal(props: Props) {
     setDisplayNameError(!isDisplayNameValid(name));
   };
 
-  const onSubmit = () => {
-    AudioManager.activate();
+  const onSubmit = async () => {
+    await audioEngine.initialize();
     ClientPreferences.setDisplayName(displayName());
     props.onSubmit();
   };
 
   return (
-    <div class={styles.modalOverlay} onMouseDown={AudioManager.activate}>
+    <div class={styles.modalOverlay} onMouseDown={() => audioEngine.initialize()}>
       <div class={styles.modalContent}>
         <button 
           class={styles.modalCloseButton}

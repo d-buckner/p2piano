@@ -2,11 +2,13 @@ import { A } from '@solidjs/router';
 import { createSignal, onMount, Switch, Match, Show } from 'solid-js';
 import { joinRoom } from '../actions/WorkspaceActions';
 import { useAppSelector } from '../app/hooks';
-import AudioManager from '../audio/AudioManager';
 import PianoRenderer from '../components/PianoRenderer';
 import RoomNav from '../components/RoomNav';
 import WelcomeModal from '../components/WelcomeModal';
 import { metronomeController } from '../controllers/MetronomeController';
+import { useService } from '../core/hooks/useService';
+import { useServiceState } from '../core/hooks/useServiceState';
+import { ServiceTokens } from '../core/ServiceTokens';
 import ClientPreferences from '../lib/ClientPreferences';
 import registerServiceWorker from '../lib/registerServiceWorker';
 import { selectWorkspace } from '../selectors/workspaceSelectors';
@@ -14,14 +16,14 @@ import * as styles from './Room.css';
 
 
 const Room = () => {
+  const audioEngine = useService(ServiceTokens.AudioEngine);
+  const audioState = useServiceState(ServiceTokens.AudioEngine);
   const workspace = useAppSelector(selectWorkspace);
   const [hasDisplayName, setHasDisplayName] = createSignal<boolean>(ClientPreferences.hasUserDefinedDisplayName());
-  const [audioActivated, setAudioActivated] = createSignal(AudioManager.active);
 
-  const start = async () => {
+  const start = () => {
     setHasDisplayName(true);
-    await AudioManager.activate();
-    setAudioActivated(true);
+    audioEngine.initialize();
   };
 
   onMount(() => {
@@ -62,7 +64,7 @@ const Room = () => {
         </Match>
       </Switch>
 
-      <Show when={(!hasDisplayName() || !audioActivated()) && workspace().isValid}>
+      <Show when={(!hasDisplayName() || !audioState.isInitialized) && workspace().isValid}>
         <WelcomeModal onJoin={start} workspace={workspace()} />
       </Show>
     </>

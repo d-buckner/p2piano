@@ -1,4 +1,3 @@
-import AudioManager from '../AudioManager';
 import { type ConcreteInstrument, type Instrument, InstrumentType } from './Instrument';
 
 
@@ -10,27 +9,25 @@ export default class InstrumentRegistry {
   private static instruments: Map<string, Instrument> = new Map();
   private constructor() { }
 
-  static register(identifier: string, instrumentType: InstrumentType) {
-    AudioManager.whenActive(async () => {
-      const IR = InstrumentRegistry;
-      const instrument = await IR.loadInstrument(instrumentType);
-      if (!instrument) return;
+  public static async register(identifier: string, instrumentType: InstrumentType) {
+    const IR = InstrumentRegistry;
+    const instrument = await IR.loadInstrument(instrumentType);
+    if (!instrument) return;
 
-      IR.get(identifier)?.releaseAll();
-      IR.instruments.set(identifier, instrument);
-    });
+    IR.get(identifier)?.releaseAll();
+    IR.instruments.set(identifier, instrument);
   }
 
-  static get(identifier: string): Instrument | null {
+  public static get(identifier: string): Instrument | null {
     return InstrumentRegistry.instruments.get(identifier) || null;
   }
 
-  static unregister(identifier: string) {
+  public static unregister(identifier: string) {
     InstrumentRegistry.get(identifier)?.releaseAll();
     InstrumentRegistry.instruments.delete(identifier);
   }
 
-  static empty() {
+  public static empty() {
     InstrumentRegistry.instruments = new Map();
   }
 

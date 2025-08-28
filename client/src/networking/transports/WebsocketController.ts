@@ -65,7 +65,7 @@ export default class WebsocketController extends AbstractNetworkController {
     return WebsocketController.instance;
   }
 
-  on<T>(action: string, callback: (message: T) => void) {
+  public on<T>(action: string, callback: (message: T) => void) {
     if (!this.socket) {
       // queue handler to be added on connection
       super.on(action, callback);
@@ -83,7 +83,7 @@ export default class WebsocketController extends AbstractNetworkController {
     this.socket.on(action, wrappedCallback);
   }
 
-  off<T>(action: string, callback: (message: T) => void) {
+  public off<T>(action: string, callback: (message: T) => void) {
     if (!this.socket) {
       // prevent this handler being added on connection
       super.off(action, callback);
@@ -131,7 +131,7 @@ export default class WebsocketController extends AbstractNetworkController {
     removePeerConnection(message.userId);
   }
 
-  static destroy(): void {
+  public static destroy(): void {
     WebsocketController.instance?.socket?.disconnect();
     WebsocketController.instance = undefined;
   }

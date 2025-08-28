@@ -13,7 +13,7 @@ class Metronome {
 
   private constructor() { }
 
-  static start() {
+  public static start() {
     this.stop(); // Stop any existing metronome
     this.currentBeat = 0;
     
@@ -30,7 +30,7 @@ class Metronome {
     getTransport().start();
   }
 
-  static stop() {
+  public static stop() {
     const transport = getTransport();
     if (this.loopId !== null) {
       transport.clear(this.loopId);
@@ -40,7 +40,7 @@ class Metronome {
     transport.stop();
   }
 
-  static restart() {
+  public static restart() {
     if (selectMetronome(store).active) {
       this.start();
     }

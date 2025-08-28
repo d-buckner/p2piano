@@ -82,11 +82,6 @@ describe('InstrumentRegistry', () => {
     it('should register a piano instrument for a user', async () => {
       await InstrumentRegistry.register('user1', InstrumentType.PIANO);
       
-      expect(AudioManager.whenActive).toHaveBeenCalled();
-      
-      // Wait for async registration
-      await new Promise(resolve => setTimeout(resolve, 0));
-      
       const instrument = InstrumentRegistry.get('user1');
       expect(instrument).toBeDefined();
     });
@@ -94,22 +89,12 @@ describe('InstrumentRegistry', () => {
     it('should register a synth instrument for a user', async () => {
       await InstrumentRegistry.register('user2', InstrumentType.SYNTH);
       
-      expect(AudioManager.whenActive).toHaveBeenCalled();
-      
-      // Wait for async registration
-      await new Promise(resolve => setTimeout(resolve, 0));
-      
       const instrument = InstrumentRegistry.get('user2');
       expect(instrument).toBeDefined();
     });
 
     it('should register an electric bass instrument for a user', async () => {
       await InstrumentRegistry.register('user3', InstrumentType.ELECTRIC_BASS);
-      
-      expect(AudioManager.whenActive).toHaveBeenCalled();
-      
-      // Wait for async registration
-      await new Promise(resolve => setTimeout(resolve, 0));
       
       const instrument = InstrumentRegistry.get('user3');
       expect(instrument).toBeDefined();

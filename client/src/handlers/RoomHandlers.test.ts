@@ -9,6 +9,27 @@ import { selectWorkspace, selectMyUser } from '../selectors/workspaceSelectors';
 import { createTestRoom, createTestUser} from '../test-utils/testDataFactories';
 import RoomHandlers from './RoomHandlers';
 
+// Mock AudioEngine service
+const mockAudioEngine = {
+  isReady: vi.fn(() => true),
+  initialize: vi.fn(),
+  registerInstrument: vi.fn(),
+  unregisterInstrument: vi.fn(),
+  scheduleEvent: vi.fn()
+};
+
+// Mock AppContainer
+vi.mock('../core/AppContainer', () => ({
+  appContainer: {
+    resolve: vi.fn((token) => {
+      if (token.name === 'AudioEngine') {
+        return mockAudioEngine;
+      }
+      throw new Error(`Service ${token.name} is not registered`);
+    })
+  }
+}));
+
 // Mock all dependencies
 vi.mock('../actions/NoteActions', () => ({
   keyDown: vi.fn(),
@@ -49,6 +70,10 @@ describe('RoomHandlers', () => {
     vi.clearAllMocks();
     // Mock window.location using vi.stubGlobal
     vi.stubGlobal('location', { pathname: '' });
+    // Reset audio engine mock
+    mockAudioEngine.isReady.mockReturnValue(true);
+    mockAudioEngine.registerInstrument.mockResolvedValue(undefined);
+    mockAudioEngine.unregisterInstrument.mockReturnValue(undefined);
   });
 
   afterEach(() => {
@@ -153,8 +178,8 @@ describe('RoomHandlers', () => {
 
       RoomHandlers.roomJoinHandler(payload);
 
-      expect(InstrumentRegistry.register).toHaveBeenCalledWith('user1', InstrumentType.PIANO);
-      expect(InstrumentRegistry.register).toHaveBeenCalledWith('user2', InstrumentType.SYNTH);
+      expect(mockAudioEngine.registerInstrument).toHaveBeenCalledWith('user1', InstrumentType.PIANO);
+      expect(mockAudioEngine.registerInstrument).toHaveBeenCalledWith('user2', InstrumentType.SYNTH);
       expect(setUserId).toHaveBeenCalledWith('user1');
       expect(setRoom).toHaveBeenCalledWith(room);
     });
@@ -196,7 +221,7 @@ describe('RoomHandlers', () => {
 
       RoomHandlers.userConnectHandler(payload);
 
-      expect(InstrumentRegistry.register).toHaveBeenCalledWith('newUser', InstrumentType.ELECTRIC_BASS);
+      expect(mockAudioEngine.registerInstrument).toHaveBeenCalledWith('newUser', InstrumentType.ELECTRIC_BASS);
       expect(setRoom).toHaveBeenCalledWith(payload.room);
     });
   });
@@ -223,7 +248,7 @@ describe('RoomHandlers', () => {
 
       RoomHandlers.userUpdateHandler(payload);
 
-      expect(InstrumentRegistry.register).toHaveBeenCalledWith('user1', InstrumentType.SYNTH);
+      expect(mockAudioEngine.registerInstrument).toHaveBeenCalledWith('user1', InstrumentType.SYNTH);
       expect(setRoom).toHaveBeenCalledWith(newRoom);
     });
 
@@ -276,7 +301,7 @@ describe('RoomHandlers', () => {
 
       RoomHandlers.userDisconnectHandler(payload);
 
-      expect(InstrumentRegistry.unregister).toHaveBeenCalledWith('disconnectedUser');
+      expect(mockAudioEngine.unregisterInstrument).toHaveBeenCalledWith('disconnectedUser');
       expect(setRoom).toHaveBeenCalledWith(payload.room);
     });
   });

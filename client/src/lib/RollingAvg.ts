@@ -16,7 +16,7 @@ export default class RollingAvg {
     this.avg = 0;
   }
 
-  add(value: number) {
+  public add(value: number) {
     this.sum += value;
     
     const lastValue = this.buffer[this.currentIndex];

@@ -5,7 +5,7 @@ import solidPlugin from 'eslint-plugin-solid'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'coverage', 'src/proto/**'] },
+  { ignores: ['dist', 'coverage', 'src/proto/**', 'src/**/proto/**', '**/*_pb.js', '**/*_pb.d.ts'] },
   {
     extends: [
       js.configs.recommended,

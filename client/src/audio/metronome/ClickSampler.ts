@@ -10,7 +10,7 @@ class ClickSampler {
 
   private constructor() { }
 
-  static async initialize() {
+  public static async initialize() {
     if (this.sampler) return;
 
     const { Sampler } = await import('tone');
@@ -23,7 +23,7 @@ class ClickSampler {
     }).toDestination();
   }
 
-  static high(delay?: number) {
+  public static high(delay?: number) {
     if (!this.sampler || !this.sampler.loaded) {
       Logger.WARN('ClickSampler not initialized or samples not loaded');
       return;
@@ -35,7 +35,7 @@ class ClickSampler {
     );
   }
 
-  static low(delay?: number) {
+  public static low(delay?: number) {
     if (!this.sampler || !this.sampler.loaded) {
       Logger.WARN('ClickSampler not initialized or samples not loaded');
       return;
@@ -47,7 +47,7 @@ class ClickSampler {
     );
   }
 
-  static scheduleHigh(time: number) {
+  public static scheduleHigh(time: number) {
     if (!this.sampler || !this.sampler.loaded) {
       Logger.WARN('ClickSampler not initialized or samples not loaded');
       return;
@@ -59,7 +59,7 @@ class ClickSampler {
     );
   }
 
-  static scheduleLow(time: number) {
+  public static scheduleLow(time: number) {
     if (!this.sampler || !this.sampler.loaded) {
       Logger.WARN('ClickSampler not initialized or samples not loaded');
       return;
@@ -71,7 +71,7 @@ class ClickSampler {
     );
   }
 
-  static dispose() {
+  public static dispose() {
     if (this.sampler) {
       this.sampler.dispose();
       this.sampler = undefined;

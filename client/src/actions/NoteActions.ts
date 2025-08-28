@@ -1,8 +1,10 @@
 import { store } from '../app/store';
-import InstrumentRegistry from '../audio/instruments/InstrumentRegistry';
 import { getAudioDelay } from '../audio/synchronization/utils';
 import PianoClient from '../clients/PianoClient';
 import { DEFAULT_VELOCITY, type Note } from '../constants';
+import { appContainer } from '../core/AppContainer';
+import { AudioEventType } from '../core/services/audio/AudioEngine';
+import { ServiceTokens } from '../core/ServiceTokens';
 import { NoteManager } from '../lib/NoteManager';
 import { selectIsRecording } from '../selectors/recordingSelectors';
 import { recordKeyDown, recordKeyUp, recordSustainDown, recordSustainUp } from './RecordingActions';
@@ -20,16 +22,20 @@ export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: stri
     return;
   }
 
-  const instrument = InstrumentRegistry.get(resolvedUserId);
   const color = getUserColor(resolvedUserId);
-  if (!instrument || !color) return;
+  if (!color) return;
 
+  const audioEngine = appContainer.resolve(ServiceTokens.AudioEngine);
   const audioDelay = getAudioDelay(resolvedUserId);
-  instrument.keyDown(
+  
+  // Schedule note start event with AudioEngine
+  audioEngine.scheduleEvent({
+    type: AudioEventType.NOTE_START,
+    instrumentId: resolvedUserId,
     midi,
-    audioDelay,
     velocity,
-  );
+    delay: audioDelay
+  });
 
   const note: Note = {
     midi,
@@ -41,7 +47,8 @@ export function keyDown(midi: number, velocity = DEFAULT_VELOCITY, peerId?: stri
   NoteManager.startNote(midi, resolvedUserId, color);
 
   if (shouldRecord()) {
-    recordKeyDown(note, instrument.type, audioDelay);
+    // TODO: Get instrument type from registered instruments or pass it through
+    recordKeyDown(note, 'PIANO', audioDelay);
   }
 
   // Return color for piano visualizer
@@ -60,10 +67,15 @@ export function keyUp(midi: number, peerId?: string): string | undefined {
   }
 
   const audioDelay = getAudioDelay(resolvedUserId);
-  InstrumentRegistry.get(resolvedUserId)?.keyUp(
+  const audioEngine = appContainer.resolve(ServiceTokens.AudioEngine);
+  
+  // Schedule note end event with AudioEngine
+  audioEngine.scheduleEvent({
+    type: AudioEventType.NOTE_END,
+    instrumentId: resolvedUserId,
     midi,
-    audioDelay,
-  );
+    delay: audioDelay
+  });
 
   NoteManager.endNote(midi, resolvedUserId);
 
@@ -86,7 +98,13 @@ export function sustainDown(peerId?: string): void {
     return;
   }
 
-  InstrumentRegistry.get(resolvedUserId)?.sustainDown?.();
+  const audioEngine = appContainer.resolve(ServiceTokens.AudioEngine);
+  
+  // Schedule sustain start event with AudioEngine
+  audioEngine.scheduleEvent({
+    type: AudioEventType.SUSTAIN_START,
+    instrumentId: resolvedUserId
+  });
 
   if (shouldRecord()) {
     recordSustainDown(resolvedUserId);
@@ -104,7 +122,13 @@ export function sustainUp(peerId?: string): void {
     return;
   }
 
-  InstrumentRegistry.get(resolvedUserId)?.sustainUp?.();
+  const audioEngine = appContainer.resolve(ServiceTokens.AudioEngine);
+  
+  // Schedule sustain end event with AudioEngine
+  audioEngine.scheduleEvent({
+    type: AudioEventType.SUSTAIN_END,
+    instrumentId: resolvedUserId
+  });
 
   if (shouldRecord()) {
     recordSustainUp(resolvedUserId);

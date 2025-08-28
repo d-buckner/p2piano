@@ -17,7 +17,7 @@ vi.mock('../crdt/store/SharedStoreActions', () => ({
       this.key = key;
       this.root = root;
     }
-    change(fn) {
+    public change(fn) {
       this.root.change(this.key, fn);
     }
   },
